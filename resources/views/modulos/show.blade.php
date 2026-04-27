@@ -27,6 +27,7 @@
                     3 => [['nombre'=>'guia_bootstrap',   'label'=>'Bootstrap 5']],
                     4 => [['nombre'=>'guia_laravel',     'label'=>'Laravel 11'], ['nombre'=>'guia_laravel13','label'=>'Laravel 13']],
                     5 => [['nombre'=>'guia_moonshine',   'label'=>'Moonshine 3'], ['nombre'=>'guia_moonshine4','label'=>'Moonshine 4']],
+                    6 => [['nombre'=>'guia_flutter',     'label'=>'Flutter'], ['nombre'=>'guia_flet','label'=>'Flet (Python)']],
                 ];
                 $taller      = $talleres[$modulo->orden] ?? null;
                 $guiasModulo = $guias[$modulo->orden] ?? [];

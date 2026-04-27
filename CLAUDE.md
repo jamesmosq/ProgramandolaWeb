@@ -1,10 +1,20 @@
-# CLAUDE.md — Plataforma Educativa CEFIT
+# CLAUDE.md — EduCode · Plataforma Educativa
 
 ## Contexto del proyecto
 
-Plataforma educativa tipo micro-LMS construida con **Laravel 11**, destinada a estudiantes de programación de **CEFIT-SENA** y otras instituciones. Permite aprender paso a paso los temas que el instructor enseña: Bases de Datos, PHP, HTML/CSS, Laravel y Laravel Moonshine.
+Plataforma educativa tipo micro-LMS construida con **Laravel 11**, destinada a estudiantes de programación. Permite aprender paso a paso los temas que el instructor enseña: Bases de Datos, PHP, HTML/CSS, Laravel, Laravel Moonshine y Diseño Móvil.
 
 El instructor es **James**, desarrollador con JetBrains, experto en Laravel, Railway y el stack colombiano de educación técnica.
+
+---
+
+## Marca — REGLA ESTRICTA
+
+La plataforma se llama **EduCode** y solo EduCode.
+
+- ❌ Nunca usar "CEFIT", "CEFIT-SENA" ni "EduCode CEFIT" en: badges, títulos, footers, nombres de app en ejemplos de código, variables de entorno (`APP_NAME`, `MAIL_FROM_NAME`) ni en ningún elemento visible al estudiante.
+- ✅ CEFIT/SENA solo puede aparecer como **contexto institucional** en comentarios internos o documentación técnica (p.ej. "diseñado para uso en CEFIT-SENA"), nunca en la UI.
+- Al generar guías HTML o ejemplos de código, usar siempre `'EduCode'` como nombre de la app, nunca `'EduCode CEFIT'`.
 
 ---
 
@@ -29,67 +39,74 @@ El instructor es **James**, desarrollador con JetBrains, experto en Laravel, Rai
 ```
 app/
 ├── Models/
-│   ├── Modulo.php          # Módulo de curso (BD, PHP, Laravel…)
-│   ├── Leccion.php         # Lección dentro de un módulo
-│   ├── Paso.php            # Paso de contenido dentro de una lección
-│   ├── Ejercicio.php       # Ejercicio propuesto al final de lección
-│   └── Progreso.php        # Relación usuario-lección (completado/no)
+│   ├── Modulo.php
+│   ├── Leccion.php
+│   ├── Paso.php
+│   ├── Ejercicio.php
+│   └── Progreso.php
 ├── Http/Controllers/
 │   ├── ModuloController.php
 │   ├── LeccionController.php
+│   ├── GuiaController.php      ← sirve las guías HTML con navbar inyectada
 │   └── ProgresoController.php
-└── MoonShine/Resources/    # Resources de Moonshine para admin
-    ├── ModuloResource.php
-    ├── LeccionResource.php
-    ├── PasoResource.php
-    └── EjercicioResource.php
+└── MoonShine/Resources/
 
-resources/views/
-├── layouts/
-│   ├── app.blade.php       # Layout principal autenticado
-│   └── guest.blade.php     # Layout login/registro
-├── modulos/
-│   ├── index.blade.php     # Lista de módulos (home del estudiante)
-│   └── show.blade.php      # Detalle módulo → lista de lecciones
-├── lecciones/
-│   └── show.blade.php      # Lección con pasos + ejercicios
-└── components/
-    ├── paso-card.blade.php
-    ├── ejercicio-card.blade.php
-    └── progreso-bar.blade.php
+resources/
+├── views/
+│   ├── layouts/app.blade.php
+│   ├── modulos/index.blade.php
+│   ├── modulos/show.blade.php  ← guías hardcodeadas por $modulo->orden
+│   └── lecciones/show.blade.php
+└── guias/                      ← archivos HTML servidos por GuiaController
+    ├── guia_sql_mysql.html
+    ├── guia_php.html
+    ├── guia_bootstrap.html
+    ├── guia_laravel.html
+    ├── guia_laravel13.html
+    ├── guia_moonshine.html
+    ├── guia_moonshine4.html
+    ├── guia_flutter.html
+    └── guia_flet.html
+
+DataProducts/                   ← fuente original de guías y talleres
 ```
+
+---
+
+## Sistema de guías HTML
+
+Las guías son archivos `.html` standalone que `GuiaController` sirve con una navbar inyectada dinámicamente. Al agregar una guía nueva:
+
+1. Copiar el `.html` a `resources/guias/`
+2. Añadir el nombre al array `$archivosPermitidos['guias']` en `GuiaController`
+3. Vincular en `$guias[$modulo->orden]` dentro de `resources/views/modulos/show.blade.php`
+4. Correr `npm run build` si se tocaron vistas Blade
 
 ---
 
 ## Modelo de base de datos
 
 ```sql
--- Módulos (BD, PHP, HTML/CSS, Laravel, Moonshine)
-modulos: id, nombre, descripcion, icono, orden, activo, timestamps
-
--- Lecciones dentro de un módulo
-lecciones: id, modulo_id(FK), titulo, descripcion, orden, activo, timestamps
-
--- Pasos dentro de una lección (contenido HTML o Markdown)
-pasos: id, leccion_id(FK), titulo, contenido(LONGTEXT), tipo(ENUM:teoria,codigo,tip,advertencia), orden, timestamps
-
--- Ejercicios propuestos al final de cada lección
-ejercicios: id, leccion_id(FK), enunciado(TEXT), dificultad(ENUM:basico,intermedio,avanzado), solucion_visible(BOOL), solucion(TEXT nullable), orden, timestamps
-
--- Progreso del estudiante
-progresos: id, user_id(FK), leccion_id(FK), completado_at(TIMESTAMP nullable), timestamps
-UNIQUE KEY (user_id, leccion_id)
+modulos:   id, nombre, descripcion, icono, color, orden, activo, timestamps
+lecciones: id, modulo_id(FK), titulo, descripcion, orden, duracion_minutos, activa, timestamps
+pasos:     id, leccion_id(FK), titulo, contenido(LONGTEXT), tipo(ENUM:teoria,codigo,tip), orden, timestamps
+ejercicios:id, leccion_id(FK), enunciado(TEXT), dificultad(ENUM:facil,medio,dificil), orden, timestamps
+progresos: id, user_id(FK), leccion_id(FK), completada_at(TIMESTAMP nullable), timestamps
+           UNIQUE KEY (user_id, leccion_id)
 ```
 
 ---
 
 ## Módulos de contenido (en orden)
 
-1. **Bases de Datos** — SQL, MySQL, normalización, scripts, CASCADE
-2. **PHP Puro** — sintaxis, funciones, arrays, OOP, formularios
-3. **HTML & CSS** — estructura, semántica, Flexbox, Grid, responsive
-4. **Laravel** — instalación, MVC, rutas, Eloquent, Blade, Breeze
-5. **Laravel Moonshine** — instalación, Resources, Fields, Actions, relaciones
+1. **Bases de Datos** (cyan 🗄️) — SQL, MySQL, normalización, JOINs
+2. **PHP Puro** (violet 🐘) — variables, funciones, POO, PDO
+3. **HTML & CSS** (pink 🎨) — semántica, Tailwind, Flexbox, Grid
+4. **Laravel 11** (orange ⚡) — MVC, Eloquent, Blade, Breeze
+5. **Laravel Moonshine** (purple 🌙) — Resources, Fields, HasMany inline
+6. **Diseño Móvil** (emerald 📱) — Flutter (Dart) + Flet (Python)
+
+Al agregar un nuevo módulo hay que añadir su color al array `$colores` en `modulos/index.blade.php`.
 
 ---
 
@@ -98,7 +115,7 @@ UNIQUE KEY (user_id, leccion_id)
 ### General
 - Código en **español** para variables de negocio (nombre, descripcion, activo)
 - Comentarios en español
-- Inglés solo para convenciones de Laravel (models, controllers, migrations en inglés estándar)
+- Inglés solo para convenciones de Laravel (models, controllers, migrations)
 - Siempre `ENGINE=InnoDB` y `charset=utf8mb4` en migraciones
 
 ### Migraciones
@@ -111,18 +128,6 @@ UNIQUE KEY (user_id, leccion_id)
 - Definir todas las relaciones `hasMany` / `belongsTo`
 - Usar `$casts` para booleanos y enums
 
-### Rutas
-```php
-// Rutas públicas: solo landing
-// Rutas auth: módulos, lecciones, progreso
-// Rutas admin: prefijo /admin → Moonshine
-Route::middleware('auth')->group(function () {
-    Route::resource('modulos', ModuloController::class)->only(['index','show']);
-    Route::resource('lecciones', LeccionController::class)->only(['show']);
-    Route::post('progreso/{leccion}', [ProgresoController::class, 'marcar']);
-});
-```
-
 ### Blade / Frontend
 - Tailwind CSS v3 — NO usar clases arbitrarias innecesarias
 - Alpine.js para interactividad ligera (tabs, acordeones, progress)
@@ -132,7 +137,6 @@ Route::middleware('auth')->group(function () {
 ### Moonshine (Admin)
 - Un Resource por modelo principal
 - Usar `BelongsTo` y `HasMany` fields para relaciones
-- Ordenar campos igual que la migración
 - Proteger con middleware `moonshine.auth`
 
 ---
@@ -140,7 +144,7 @@ Route::middleware('auth')->group(function () {
 ## Variables de entorno Railway (producción)
 
 ```env
-APP_NAME="EduCode CEFIT"
+APP_NAME="EduCode"
 APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://[TU-DOMINIO].up.railway.app
@@ -159,7 +163,7 @@ MAIL_USERNAME=contaeducolombia@gmail.com
 MAIL_PASSWORD=[APP_PASSWORD_NUEVA]
 MAIL_ENCRYPTION=tls
 MAIL_FROM_ADDRESS=contaeducolombia@gmail.com
-MAIL_FROM_NAME="EduCode CEFIT"
+MAIL_FROM_NAME="EduCode"
 
 CACHE_DRIVER=database
 SESSION_DRIVER=database
@@ -173,19 +177,19 @@ QUEUE_CONNECTION=database
 ```bash
 # Desarrollo local
 php artisan serve
-php artisan migrate:fresh --seed
-php artisan moonshine:install
-php artisan moonshine:resource ModuloResource
+npm run dev
+npm run build
 
-# Seeders en orden
-php artisan db:seed --class=ModuloSeeder
-php artisan db:seed --class=LeccionSeeder
-php artisan db:seed --class=PasoSeeder
+# Seeder principal (único seeder del proyecto)
+php artisan db:seed --class=ModulosSeeder
+
+# Reset completo local
+php artisan migrate:fresh --seed
 
 # Railway deploy
 railway up
 railway run php artisan migrate --force
-railway run php artisan db:seed --force
+railway run php artisan db:seed --class=ModulosSeeder --force
 ```
 
 ---
@@ -193,11 +197,11 @@ railway run php artisan db:seed --force
 ## Lo que Claude Code debe hacer
 
 1. Leer este archivo completo antes de generar cualquier código
-2. Respetar el orden de migraciones (padre → hijo)
-3. Generar Moonshine Resources con los fields correctos según el modelo
-4. No instalar paquetes adicionales sin consultar
+2. Respetar la regla de marca EduCode — nunca CEFIT/SENA en UI o código
+3. Respetar el orden de migraciones (padre → hijo)
+4. Al agregar módulos: seeder + color en index.blade.php + guias en show.blade.php + GuiaController + npm run build
 5. Blade views deben ser limpias, semánticas y usar los componentes definidos
-6. Todo formulario de auth usa las vistas de Breeze sin modificar la lógica, solo el estilo si se pide
+6. No instalar paquetes adicionales sin consultar
 
 ---
 
@@ -205,5 +209,5 @@ railway run php artisan db:seed --force
 
 - La App Password de Gmail **debe ser nueva** (la anterior fue expuesta). Generar en myaccount.google.com/apppasswords
 - Railway tiene plan de pago — no preocuparse por límites de free tier
-- El contenido de lecciones (pasos) puede ser HTML enriquecido o Markdown — el campo `contenido` es LONGTEXT
-- Las guías HTML prefabricadas (MySQL, PHP, Laravel, Moonshine) se usarán como referencia visual para el frontend del estudiante
+- El contenido de lecciones (pasos) puede ser HTML o Markdown — el campo `contenido` es LONGTEXT
+- Las guías HTML en `resources/guias/` reciben una navbar inyectada automáticamente por `GuiaController`

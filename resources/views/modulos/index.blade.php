@@ -3,7 +3,7 @@
 
     <x-slot name="header">
         <h2 class="text-xl font-bold text-white">Módulos del curso</h2>
-        <p class="text-sm text-gray-400 mt-0.5">5 módulos en secuencia — de bases de datos a panel admin.</p>
+        <p class="text-sm text-gray-400 mt-0.5">6 módulos en secuencia — de bases de datos a diseño móvil.</p>
     </x-slot>
 
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
@@ -15,7 +15,8 @@
                     'violet' => ['hover' => 'group-hover:text-violet-400', 'bar' => 'from-violet-500 to-violet-400', 'border' => 'hover:border-violet-400/30','badge' => 'bg-violet-400/10 text-violet-400 border-violet-400/15'],
                     'pink'   => ['hover' => 'group-hover:text-pink-400',   'bar' => 'from-pink-500 to-pink-400',   'border' => 'hover:border-pink-400/30',  'badge' => 'bg-pink-400/10 text-pink-400 border-pink-400/15'],
                     'orange' => ['hover' => 'group-hover:text-orange-400', 'bar' => 'from-orange-500 to-orange-400', 'border' => 'hover:border-orange-400/30','badge' => 'bg-orange-400/10 text-orange-400 border-orange-400/15'],
-                    'purple' => ['hover' => 'group-hover:text-purple-400', 'bar' => 'from-purple-500 to-purple-400', 'border' => 'hover:border-purple-400/30','badge' => 'bg-purple-400/10 text-purple-400 border-purple-400/15'],
+                    'purple'  => ['hover' => 'group-hover:text-purple-400',  'bar' => 'from-purple-500 to-purple-400',  'border' => 'hover:border-purple-400/30', 'badge' => 'bg-purple-400/10 text-purple-400 border-purple-400/15'],
+                    'emerald' => ['hover' => 'group-hover:text-emerald-400', 'bar' => 'from-emerald-500 to-emerald-400', 'border' => 'hover:border-emerald-400/30','badge' => 'bg-emerald-400/10 text-emerald-400 border-emerald-400/15'],
                 ];
                 $c = $colores[$modulo->color] ?? $colores['cyan'];
                 $pct = $modulo->lecciones_count > 0

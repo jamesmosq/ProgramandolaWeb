@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 class GuiaController extends Controller
 {
     private array $archivosPermitidos = [
-        'guias'    => ['guia_sql_mysql','guia_php','guia_laravel','guia_laravel13','guia_moonshine','guia_moonshine4','guia_bootstrap'],
+        'guias'    => ['guia_sql_mysql','guia_php','guia_laravel','guia_laravel13','guia_moonshine','guia_moonshine4','guia_bootstrap','guia_flutter','guia_flet'],
         'talleres' => ['taller_01_bases_de_datos','taller_02_php_puro','taller_03_html_css','taller_04_laravel','taller_05_moonshine'],
     ];
 

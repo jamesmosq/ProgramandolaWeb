@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flutter — Apps móviles con Dart</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0f6ff;
+    --surface: #ffffff;
+    --surface2: #e8f0fe;
+    --border: #c8d8f8;
+    --accent: #0175c2;
+    --accent2: #54c5f8;
+    --accent3: #02569b;
+    --ok: #13b9fd;
+    --warn: #ffa000;
+    --danger: #e53935;
+    --text: #0d1b2e;
+    --text-dim: #2c4870;
+    --text-muted: #90a8c8;
+    --code-bg: #0d1b2e;
+    --dart: #00b4ab;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+
+  header{
+    background:linear-gradient(135deg,var(--accent3) 0%,var(--accent) 50%,var(--accent2) 100%);
+    color:#fff;padding:68px 40px 56px;
+    position:relative;overflow:hidden;text-align:center;
+  }
+  header::before{
+    content:'';position:absolute;inset:0;
+    background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .flutter-logo{
+    display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:22px;position:relative;
+  }
+  .logo-icon{
+    width:46px;height:46px;
+    background:rgba(255,255,255,0.2);
+    border:2px solid rgba(255,255,255,0.4);
+    border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;
+  }
+  .badge{
+    font-family:'Fira Code',monospace;font-size:11px;letter-spacing:2px;
+    color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.15);
+    border:1px solid rgba(255,255,255,0.3);
+    padding:4px 12px;border-radius:20px;text-transform:uppercase;
+  }
+  h1{font-size:clamp(2rem,5vw,3.4rem);font-weight:900;line-height:1.1;position:relative;max-width:700px;margin-inline:auto}
+  h1 em{font-style:normal;color:#54c5f8}
+  header p{margin-top:14px;font-size:1rem;color:rgba(255,255,255,0.7);max-width:540px;line-height:1.7;font-weight:300;position:relative;margin-inline:auto}
+
+  .progress-wrap{
+    padding:14px 40px;background:var(--accent3);
+    border-bottom:1px solid rgba(255,255,255,0.1);
+    position:sticky;top:0;z-index:100;
+    display:flex;align-items:center;gap:14px;
+  }
+  .progress-label{font-family:'Fira Code',monospace;font-size:10px;color:rgba(255,255,255,0.4);white-space:nowrap}
+  .progress-bar-outer{flex:1;height:5px;background:rgba(255,255,255,0.15);border-radius:10px;overflow:hidden}
+  .progress-bar-inner{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:10px;transition:width .4s}
+  .progress-count{font-family:'Fira Code',monospace;font-size:10px;color:var(--accent2);white-space:nowrap}
+
+  .nav-pills{
+    display:flex;gap:6px;flex-wrap:wrap;
+    padding:12px 40px;background:var(--surface);
+    border-bottom:2px solid var(--border);
+  }
+  .nav-pill{
+    font-family:'Fira Code',monospace;font-size:10px;
+    padding:4px 11px;border-radius:20px;
+    background:var(--surface2);border:1px solid var(--border);
+    color:var(--text-muted);cursor:pointer;transition:all .15s;text-decoration:none;
+  }
+  .nav-pill:hover,.nav-pill.active{
+    background:var(--accent);border-color:var(--accent);color:#fff;
+  }
+
+  main{max-width:900px;margin:0 auto;padding:44px 24px 80px}
+
+  .step-card{
+    background:var(--surface);border:1.5px solid var(--border);border-radius:14px;
+    margin-bottom:24px;overflow:hidden;scroll-margin-top:100px;
+    animation:fadeUp .35s ease both;transition:border-color .2s, box-shadow .2s;
+  }
+  .step-card:hover{box-shadow:0 4px 20px rgba(1,117,194,0.1)}
+  .step-card.done{border-color:var(--dart)}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+  .step-header{display:flex;align-items:center;gap:14px;padding:18px 22px;cursor:pointer;user-select:none;transition:background .15s}
+  .step-header:hover{background:var(--surface2)}
+
+  .step-num{
+    font-family:'Fira Code',monospace;font-size:11px;font-weight:700;
+    color:#fff;background:var(--accent);
+    width:34px;height:34px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;transition:all .2s;
+  }
+  .step-card.done .step-num{background:var(--dart)}
+
+  .step-title-wrap{flex:1}
+  .step-title{font-size:.97rem;font-weight:800}
+  .step-meta{font-family:'Fira Code',monospace;font-size:.67rem;color:var(--text-muted);margin-top:3px}
+  .step-toggle{font-size:13px;color:var(--text-muted);transition:transform .3s;flex-shrink:0}
+  .step-card.open .step-toggle{transform:rotate(180deg)}
+
+  .step-body{display:none;padding:0 22px 24px;border-top:1.5px solid var(--border)}
+  .step-card.open .step-body{display:block}
+  .step-body p,.step-body li{color:var(--text-dim);line-height:1.8;font-size:.9rem}
+  .step-body ul,.step-body ol{padding-left:20px;margin:10px 0}
+  .step-body li{margin-bottom:5px}
+  .step-body h3{
+    font-family:'Fira Code',monospace;font-size:.7rem;text-transform:uppercase;
+    letter-spacing:2px;color:var(--text-muted);margin:18px 0 10px;
+    border-bottom:1px solid var(--border);padding-bottom:6px;
+  }
+
+  .info-box{border-radius:8px;padding:12px 16px;margin:12px 0;font-size:.86rem;line-height:1.7;display:flex;gap:10px;align-items:flex-start}
+  .info-box .icon{font-size:15px;flex-shrink:0;margin-top:2px}
+  .info-box.tip{background:rgba(0,180,171,0.08);border:1px solid rgba(0,180,171,0.25);color:#00695c}
+  .info-box.warn{background:rgba(255,160,0,0.08);border:1px solid rgba(255,160,0,0.25);color:#e65100}
+  .info-box.info{background:rgba(1,117,194,0.08);border:1px solid rgba(1,117,194,0.25);color:#01579b}
+  .info-box.new{background:rgba(84,197,248,0.08);border:1px solid rgba(84,197,248,0.3);color:#0277bd}
+
+  .code-block{margin:14px 0;border-radius:10px;overflow:hidden;border:1.5px solid #1a2e45}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:#0a1525;border-bottom:1px solid #1a2e45}
+  .code-lang{font-family:'Fira Code',monospace;font-size:10px;color:var(--accent2);letter-spacing:2px;text-transform:uppercase}
+  .copy-btn{font-family:'Fira Code',monospace;font-size:10px;padding:3px 10px;border-radius:5px;background:rgba(84,197,248,0.12);border:1px solid rgba(84,197,248,0.3);color:var(--accent2);cursor:pointer;transition:all .15s}
+  .copy-btn:hover{background:rgba(84,197,248,0.22)}
+  .copy-btn.copied{color:var(--dart);border-color:var(--dart)}
+  pre{background:var(--code-bg);padding:18px 20px;overflow-x:auto;font-family:'Fira Code',monospace;font-size:12.5px;line-height:1.75;color:#c8daf4}
+
+  /* Dart syntax */
+  .kw{color:#54c5f8;font-weight:600}
+  .fn{color:#80cbc4}
+  .str{color:#c5e478}
+  .num{color:#f48fb1}
+  .cm{color:#2a4060;font-style:italic}
+  .cls{color:#ffcc80;font-weight:600}
+  .type{color:#ce93d8}
+  .var{color:#c8daf4}
+  .dec{color:#80cbc4}
+
+  .tabla{background:var(--code-bg);border:1.5px solid #1a2e45;border-radius:8px;overflow-x:auto;margin:12px 0}
+  .tabla table{border-collapse:collapse;width:100%;min-width:480px}
+  .tabla th{background:#0a1525;color:var(--accent2);font-family:'Fira Code',monospace;font-size:11px;padding:9px 14px;text-align:left;border-bottom:1px solid #1a2e45}
+  .tabla td{font-family:'Fira Code',monospace;font-size:11px;padding:8px 14px;border-bottom:1px solid rgba(26,46,69,0.5);color:#90a8c8}
+  .tabla tr:last-child td{border-bottom:none}
+  .hl{color:var(--accent2);font-weight:600}
+  .hl2{color:var(--dart)}
+  .hl3{color:#ffcc80}
+
+  .check-btn{margin-top:16px;display:inline-flex;align-items:center;gap:8px;font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:700;padding:8px 18px;border-radius:8px;background:rgba(0,180,171,0.08);border:1.5px solid rgba(0,180,171,0.3);color:var(--dart);cursor:pointer;transition:all .15s}
+  .check-btn:hover{background:rgba(0,180,171,0.16)}
+
+  footer{text-align:center;padding:32px;color:var(--text-muted);font-family:'Fira Code',monospace;font-size:.72rem;border-top:1.5px solid var(--border)}
+
+  @media(max-width:600px){
+    header{padding:40px 18px}
+    .nav-pills,.progress-wrap{padding:10px 14px}
+    main{padding:20px 10px 60px}
+    .step-header{padding:14px}
+    .step-body{padding:0 14px 18px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="flutter-logo">
+    <div class="logo-icon">🐦</div>
+    <div class="badge">Dart · Flutter SDK · docs.flutter.dev · EduCode</div>
+  </div>
+  <h1>Flutter — Apps <em>nativas</em><br>con Dart desde cero</h1>
+  <p>Construye apps para Android, iOS, Web y Desktop con un solo código. Basado en la documentación oficial de docs.flutter.dev.</p>
+</header>
+
+<div class="progress-wrap">
+  <span class="progress-label">PROGRESO</span>
+  <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+  <span class="progress-count" id="progressCount">0 / 10</span>
+</div>
+
+<div class="nav-pills">
+  <a class="nav-pill" href="#p1">1. Instalación</a>
+  <a class="nav-pill" href="#p2">2. Dart básico</a>
+  <a class="nav-pill" href="#p3">3. Primera app</a>
+  <a class="nav-pill" href="#p4">4. Widgets</a>
+  <a class="nav-pill" href="#p5">5. Layout</a>
+  <a class="nav-pill" href="#p6">6. Estado</a>
+  <a class="nav-pill" href="#p7">7. Listas</a>
+  <a class="nav-pill" href="#p8">8. Navegación</a>
+  <a class="nav-pill" href="#p9">9. Formularios</a>
+  <a class="nav-pill" href="#p10">10. Proyecto final</a>
+</div>
+
+<main>
+
+<!-- ══════ PASO 1 ══════ -->
+<div class="step-card" id="p1">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">01</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Instalación del SDK de Flutter</div>
+      <div class="step-meta">flutter SDK · Dart · Android Studio · VS Code · flutter doctor</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Flutter incluye Dart integrado. Solo necesitas descargar el SDK, configurar el PATH y verificar con <code>flutter doctor</code>.</p>
+
+    <div class="info-box new">
+      <span class="icon">🐦</span>
+      <div><strong>Flutter</strong> compila a código nativo ARM/x86 para móvil, bytecode JS para web, y ejecutables nativos para desktop. No usa WebView ni puentes JS — es código nativo real en todas las plataformas.</div>
+    </div>
+
+    <h3>Instalación en Windows</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal — Windows</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Opción A: con winget (recomendado)</span>
+winget install Google.Flutter
+
+<span class="cm"># Opción B: descargar SDK manualmente
+# docs.flutter.dev/install/quick → descargar zip
+# Extraer en C:\flutter
+# Agregar C:\flutter\bin al PATH del sistema</span>
+
+<span class="cm"># Verificar instalación completa</span>
+flutter doctor
+
+<span class="cm"># Acepta licencias de Android</span>
+flutter doctor --android-licenses</pre>
+    </div>
+
+    <h3>Instalación en macOS / Linux</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal — Mac/Linux</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># macOS con Homebrew</span>
+brew install flutter
+
+<span class="cm"># Linux — snap</span>
+sudo snap install flutter --classic
+
+<span class="cm"># Verificar</span>
+flutter doctor -v
+
+<span class="cm"># Crear primer proyecto</span>
+flutter create mi_app
+cd mi_app
+flutter run</pre>
+    </div>
+
+    <h3>Output de flutter doctor (lo que debes ver)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Salida esperada</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>[✓] Flutter (Channel stable, 3.x.x)
+[✓] Android toolchain - develop for Android devices
+[✓] Android Studio (version x.x)
+[✓] VS Code (version x.x)
+[✓] Connected device (x available)
+[✓] Network resources</pre>
+    </div>
+
+    <div class="info-box tip">
+      <span class="icon">✅</span>
+      <div>Para el curso basta con tener <strong>Android toolchain</strong> y un emulador o dispositivo físico Android. iOS solo se puede compilar desde macOS.</div>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p1')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════ PASO 2 ══════ -->
+<div class="step-card" id="p2">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">02</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Dart — el lenguaje de Flutter</div>
+      <div class="step-meta">variables · tipos · funciones · clases · null safety · async/await</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Flutter usa <strong>Dart</strong>, un lenguaje tipado, compilado, con null safety desde Dart 2.12. Si ya sabes Java o C# te va a resultar familiar.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Dart — Fundamentos</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// Variables y tipos</span>
+<span class="type">String</span> nombre = <span class="str">'Ana Gómez'</span>;
+<span class="type">int</span>    edad   = <span class="num">22</span>;
+<span class="type">double</span> nota   = <span class="num">4.5</span>;
+<span class="type">bool</span>   activo = <span class="kw">true</span>;
+<span class="kw">var</span>    ficha  = <span class="str">'2876543'</span>; <span class="cm">// inferencia de tipo</span>
+
+<span class="cm">// Null safety — el tipo puede ser null solo con ?</span>
+<span class="type">String</span>? telefono = <span class="kw">null</span>;    <span class="cm">// nullable</span>
+<span class="type">String</span>  correo   = <span class="str">'a@b.com'</span>; <span class="cm">// non-nullable</span>
+
+<span class="cm">// Listas y Maps</span>
+<span class="type">List</span>&lt;<span class="type">String</span>&gt; cursos = [<span class="str">'BD'</span>, <span class="str">'PHP'</span>, <span class="str">'Laravel'</span>];
+<span class="type">Map</span>&lt;<span class="type">String</span>, <span class="kw">dynamic</span>&gt; estudiante = {
+  <span class="str">'nombre'</span>: <span class="str">'Ana'</span>,
+  <span class="str">'nota'</span>: <span class="num">4.5</span>,
+};
+
+<span class="cm">// Funciones</span>
+<span class="type">String</span> <span class="fn">saludar</span>(<span class="type">String</span> nombre) {
+  <span class="kw">return</span> <span class="str">'Hola, $nombre!'</span>;  <span class="cm">// interpolación con $</span>
+}
+
+<span class="cm">// Arrow function</span>
+<span class="type">int</span> <span class="fn">sumar</span>(<span class="type">int</span> a, <span class="type">int</span> b) => a + b;
+
+<span class="cm">// Parámetros nombrados y opcionales</span>
+<span class="type">void</span> <span class="fn">mostrar</span>({<span class="kw">required</span> <span class="type">String</span> nombre, <span class="type">int</span> edad = <span class="num">18</span>}) {
+  <span class="fn">print</span>(<span class="str">'$nombre tiene $edad años'</span>);
+}
+<span class="fn">mostrar</span>(nombre: <span class="str">'Luis'</span>, edad: <span class="num">25</span>);
+
+<span class="cm">// Clases</span>
+<span class="kw">class</span> <span class="cls">Estudiante</span> {
+  <span class="kw">final</span> <span class="type">String</span> nombre;
+  <span class="kw">final</span> <span class="type">String</span> ficha;
+  <span class="type">double</span> nota;
+
+  <span class="cls">Estudiante</span>({
+    <span class="kw">required</span> <span class="kw">this</span>.nombre,
+    <span class="kw">required</span> <span class="kw">this</span>.ficha,
+    <span class="kw">this</span>.nota = <span class="num">0.0</span>,
+  });
+
+  <span class="type">bool</span> <span class="fn">get</span> aprobo => nota >= <span class="num">3.0</span>;
+
+  <span class="dec">@override</span>
+  <span class="type">String</span> <span class="fn">toString</span>() => <span class="str">'$nombre ($ficha)'</span>;
+}
+
+<span class="cm">// Async / Await</span>
+<span class="type">Future</span>&lt;<span class="type">String</span>&gt; <span class="fn">obtenerDatos</span>() <span class="kw">async</span> {
+  <span class="kw">await</span> <span class="cls">Future</span>.<span class="fn">delayed</span>(<span class="cls">Duration</span>(seconds: <span class="num">2</span>));
+  <span class="kw">return</span> <span class="str">'Datos cargados'</span>;
+}
+
+<span class="kw">void</span> <span class="fn">main</span>() <span class="kw">async</span> {
+  <span class="kw">var</span> resultado = <span class="kw">await</span> <span class="fn">obtenerDatos</span>();
+  <span class="fn">print</span>(resultado);
+}</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p2')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════ PASO 3 ══════ -->
+<div class="step-card" id="p3">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">03</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Primera app Flutter</div>
+      <div class="step-meta">main() · runApp() · MaterialApp · Scaffold · pubspec.yaml</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Toda app Flutter arranca en <code>main()</code> que llama a <code>runApp()</code>. La estructura base usa <code>MaterialApp</code> → <code>Scaffold</code> → widgets.</p>
+
+    <h3>Estructura generada por flutter create</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Árbol del proyecto</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>mi_app/
+├── lib/
+│   └── main.dart        ← código principal
+├── android/             ← proyecto Android nativo
+├── ios/                 ← proyecto iOS nativo
+├── web/                 ← proyecto web
+├── test/
+│   └── widget_test.dart
+└── pubspec.yaml         ← dependencias (como package.json)</pre>
+    </div>
+
+    <h3>lib/main.dart — estructura base</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Dart — main.dart completo</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">import</span> <span class="str">'package:flutter/material.dart'</span>;
+
+<span class="cm">// Punto de entrada de toda app Flutter</span>
+<span class="kw">void</span> <span class="fn">main</span>() {
+  <span class="fn">runApp</span>(<span class="kw">const</span> <span class="cls">MiApp</span>());
+}
+
+<span class="cm">// Widget raíz — sin estado (Stateless)</span>
+<span class="kw">class</span> <span class="cls">MiApp</span> <span class="kw">extends</span> <span class="cls">StatelessWidget</span> {
+  <span class="kw">const</span> <span class="cls">MiApp</span>({<span class="kw">super</span>.key});
+
+  <span class="dec">@override</span>
+  <span class="cls">Widget</span> <span class="fn">build</span>(<span class="cls">BuildContext</span> context) {
+    <span class="kw">return</span> <span class="cls">MaterialApp</span>(
+      title: <span class="str">'EduCode'</span>,
+      debugShowCheckedModeBanner: <span class="kw">false</span>,
+      theme: <span class="cls">ThemeData</span>(
+        colorScheme: <span class="cls">ColorScheme</span>.<span class="fn">fromSeed</span>(
+          seedColor: <span class="cls">Colors</span>.blue,
+        ),
+        useMaterial3: <span class="kw">true</span>,
+      ),
+      home: <span class="kw">const</span> <span class="cls">PantallaInicio</span>(),
+    );
+  }
+}
+
+<span class="cm">// Pantalla principal con Scaffold</span>
+<span class="kw">class</span> <span class="cls">PantallaInicio</span> <span class="kw">extends</span> <span class="cls">StatelessWidget</span> {
+  <span class="kw">const</span> <span class="cls">PantallaInicio</span>({<span class="kw">super</span>.key});
+
+  <span class="dec">@override</span>
+  <span class="cls">Widget</span> <span class="fn">build</span>(<span class="cls">BuildContext</span> context) {
+    <span class="kw">return</span> <span class="cls">Scaffold</span>(
+      <span class="cm">// AppBar — barra superior</span>
+      appBar: <span class="cls">AppBar</span>(
+        title: <span class="kw">const</span> <span class="cls">Text</span>(<span class="str">'EduCode'</span>),
+        backgroundColor: <span class="cls">Theme</span>.<span class="fn">of</span>(context).colorScheme.inversePrimary,
+      ),
+
+      <span class="cm">// Cuerpo principal</span>
+      body: <span class="kw">const</span> <span class="cls">Center</span>(
+        child: <span class="cls">Column</span>(
+          mainAxisAlignment: <span class="cls">MainAxisAlignment</span>.center,
+          children: [
+            <span class="cls">Icon</span>(<span class="cls">Icons</span>.school, size: <span class="num">80</span>, color: <span class="cls">Colors</span>.blue),
+            <span class="cls">SizedBox</span>(height: <span class="num">20</span>),
+            <span class="cls">Text</span>(
+              <span class="str">'Bienvenido a EduCode'</span>,
+              style: <span class="cls">TextStyle</span>(fontSize: <span class="num">24</span>, fontWeight: <span class="cls">FontWeight</span>.bold),
+            ),
+          ],
+        ),
+      ),
+
+      <span class="cm">// FAB — botón flotante</span>
+      floatingActionButton: <span class="cls">FloatingActionButton</span>(
+        onPressed: () {},
+        child: <span class="kw">const</span> <span class="cls">Icon</span>(<span class="cls">Icons</span>.add),
+      ),
+    );
+  }
+}</pre>
+    </div>
+
+    <h3>pubspec.yaml — agregar dependencias</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">YAML — pubspec.yaml</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>name: mi_app
+description: App educativa CEFIT
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  http: ^1.2.0            # peticiones HTTP
+  shared_preferences: ^2.2.2  # almacenamiento local
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+  fonts:
+    - family: MiFuente
+      fonts:
+        - asset: fonts/MiFuente-Regular.ttf</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Instalar dependencias del pubspec.yaml</span>
+flutter pub get
+
+<span class="cm"># Correr en emulador/dispositivo</span>
+flutter run
+
+<span class="cm"># Hot reload: presiona 'r' en la terminal
+# Hot restart: presiona 'R'</span>
+
+<span class="cm"># Compilar para release</span>
+flutter build apk --release</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p3')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════ PASO 4 ══════ -->
+<div class="step-card" id="p4">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">04</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Widgets — todo es un widget</div>
+      <div class="step-meta">StatelessWidget · StatefulWidget · Text · Button · Container · Image</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>En Flutter <strong>todo es un widget</strong>: textos, botones, layouts, padding, color de fondo — todo. Los widgets se componen en árboles anidados.</p>
+
+    <h3>StatelessWidget vs StatefulWidget</h3>
+    <div class="tabla">
+      <table>
+        <tr><th>Tipo</th><th>Cuándo usarlo</th><th>Tiene setState()</th></tr>
+        <tr><td class="hl">StatelessWidget</td><td>UI estática, no cambia después de construirse</td><td>No</td></tr>
+        <tr><td class="hl">StatefulWidget</td><td>UI que cambia por interacción o datos</td><td>Sí</td></tr>
+      </table>
+    </div>
+
+    <h3>Widgets esenciales de Material 3</h3>
+    <div class="tabla">
+      <table>
+        <tr><th>Widget</th><th>Qué hace</th></tr>
+        <tr><td class="hl">Text</td><td>Mostrar texto con estilo</td></tr>
+        <tr><td class="hl">ElevatedButton</td><td>Botón elevado Material</td></tr>
+        <tr><td class="hl">OutlinedButton</td><td>Botón con borde</td></tr>
+        <tr><td class="hl">TextButton</td><td>Botón solo texto</td></tr>
+        <tr><td class="hl">IconButton</td><td>Botón de ícono</td></tr>
+        <tr><td class="hl">FloatingActionButton</td><td>Botón flotante (FAB)</td></tr>
+        <tr><td class="hl">TextField</td><td>Campo de texto con controlador</td></tr>
+        <tr><td class="hl">Container</td><td>Caja con decoración, padding, margin</td></tr>
+        <tr><td class="hl">Card</td><td>Tarjeta Material con sombra</td></tr>
+        <tr><td class="hl">Image.asset / Image.network</td><td>Imagen local o de internet</td></tr>
+        <tr><td class="hl">Icon</td><td>Ícono de Material Icons</td></tr>
+        <tr><td class="hl">CircularProgressIndicator</td><td>Indicador de carga circular</td></tr>
+        <tr><td class="hl">Chip</td><td>Etiqueta compacta</td></tr>
+        <tr><td class="hl">Switch / Checkbox / Radio</td><td>Controles de selección</td></tr>
+        <tr><td class="hl">Slider</td><td>Control deslizable</td></tr>
+        <tr><td class="hl">DropdownButton</td><td>Lista desplegable</td></tr>
+        <tr><td class="hl">SnackBar</td><td>Notificación temporal</td></tr>
+        <tr><td class="hl">AlertDialog</td><td>Diálogo de confirmación</td></tr>
+        <tr><td class="hl">BottomSheet</td><td>Panel desde abajo</td></tr>
+      </table>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Dart — Widgets en acción</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// Text con estilo</span>
+<span class="cls">Text</span>(
+  <span class="str">'EduCode'</span>,
+  style: <span class="cls">TextStyle</span>(
+    fontSize: <span class="num">24</span>,
+    fontWeight: <span class="cls">FontWeight</span>.bold,
+    color: <span class="cls">Colors</span>.blue,
+    letterSpacing: <span class="num">1.5</span>,
+  ),
+)
+
+<span class="cm">// Container con decoración</span>
+<span class="cls">Container</span>(
+  width: <span class="num">200</span>,
+  height: <span class="num">80</span>,
+  margin: <span class="kw">const</span> <span class="cls">EdgeInsets</span>.all(<span class="num">8</span>),
+  padding: <span class="kw">const</span> <span class="cls">EdgeInsets</span>.symmetric(horizontal: <span class="num">16</span>, vertical: <span class="num">8</span>),
+  decoration: <span class="cls">BoxDecoration</span>(
+    color: <span class="cls">Colors</span>.blue,
+    borderRadius: <span class="cls">BorderRadius</span>.circular(<span class="num">12</span>),
+    boxShadow: [
+      <span class="cls">BoxShadow</span>(color: <span class="cls">Colors</span>.blue.withOpacity(<span class="num">0.3</span>), blurRadius: <span class="num">8</span>)
+    ],
+  ),
+  child: <span class="kw">const</span> <span class="cls">Text</span>(<span class="str">'Tarjeta'</span>, style: <span class="cls">TextStyle</span>(color: <span class="cls">Colors</span>.white)),
+)
+
+<span class="cm">// Card Material</span>
+<span class="cls">Card</span>(
+  elevation: <span class="num">4</span>,
+  child: <span class="cls">ListTile</span>(
+    leading: <span class="kw">const</span> <span class="cls">Icon</span>(<span class="cls">Icons</span>.person),
+    title: <span class="kw">const</span> <span class="cls">Text</span>(<span class="str">'Ana Gómez'</span>),
+    subtitle: <span class="kw">const</span> <span class="cls">Text</span>(<span class="str">'Ficha: 2876543'</span>),
+    trailing: <span class="kw">const</span> <span class="cls">Icon</span>(<span class="cls">Icons</span>.arrow_forward_ios),
+    onTap: () {},
+  ),
+)
+
+<span class="cm">// Botones</span>
+<span class="cls">ElevatedButton</span>(
+  onPressed: () { <span class="fn">print</span>(<span class="str">'Presionado'</span>); },
+  child: <span class="kw">const</span> <span class="cls">Text</span>(<span class="str">'Guardar'</span>),
+)
+
+<span class="cls">ElevatedButton</span>.<span class="fn">icon</span>(
+  onPressed: () {},
+  icon: <span class="kw">const</span> <span class="cls">Icon</span>(<span class="cls">Icons</span>.save),
+  label: <span class="kw">const</span> <span class="cls">Text</span>(<span class="str">'Guardar'</span>),
+)</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p4')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════ PASO 5 ══════ -->
+<div class="step-card" id="p5">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">05</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Layout — Row, Column, Stack, Expanded</div>
+      <div class="step-meta">Row · Column · Stack · Expanded · Flexible · SizedBox · Padding</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Dart — Layouts esenciales</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// Row — horizontal</span>
+<span class="cls">Row</span>(
+  mainAxisAlignment: <span class="cls">MainAxisAlignment</span>.spaceBetween,
+  crossAxisAlignment: <span class="cls">CrossAxisAlignment</span>.center,
+  children: [
+    <span class="kw">const</span> <span class="cls">Text</span>(<span class="str">'Izquierda'</span>),
+    <span class="kw">const</span> <span class="cls">Text</span>(<span class="str">'Centro'</span>),
+    <span class="kw">const</span> <span class="cls">Text</span>(<span class="str">'Derecha'</span>),
+  ],
+)
+
+<span class="cm">// Column — vertical</span>
+<span class="cls">Column</span>(
+  mainAxisAlignment: <span class="cls">MainAxisAlignment</span>.center,
+  crossAxisAlignment: <span class="cls">CrossAxisAlignment</span>.stretch,
+  children: [
+    <span class="kw">const</span> <span class="cls">Text</span>(<span class="str">'Arriba'</span>),
+    <span class="kw">const</span> <span class="cls">SizedBox</span>(height: <span class="num">16</span>),  <span class="cm">// espaciador fijo</span>
+    <span class="kw">const</span> <span class="cls">Text</span>(<span class="str">'Abajo'</span>),
+  ],
+)
+
+<span class="cm">// Expanded — llena el espacio disponible</span>
+<span class="cls">Row</span>(
+  children: [
+    <span class="cls">Expanded</span>(                 <span class="cm">// ocupa todo el espacio restante</span>
+      child: <span class="cls">TextField</span>(decoration: <span class="cls">InputDecoration</span>(hintText: <span class="str">'Buscar...'</span>)),
+    ),
+    <span class="kw">const</span> <span class="cls">SizedBox</span>(width: <span class="num">8</span>),
+    <span class="cls">ElevatedButton</span>(onPressed: () {}, child: <span class="kw">const</span> <span class="cls">Text</span>(<span class="str">'Buscar'</span>)),
+  ],
+)
+
+<span class="cm">// Flexible — proporción</span>
+<span class="cls">Row</span>(
+  children: [
+    <span class="cls">Flexible</span>(flex: <span class="num">1</span>, child: <span class="cls">Container</span>(color: <span class="cls">Colors</span>.red, height: <span class="num">50</span>)),
+    <span class="cls">Flexible</span>(flex: <span class="num">3</span>, child: <span class="cls">Container</span>(color: <span class="cls">Colors</span>.blue, height: <span class="num">50</span>)),
+    <span class="cls">Flexible</span>(flex: <span class="num">1</span>, child: <span class="cls">Container</span>(color: <span class="cls">Colors</span>.green, height: <span class="num">50</span>)),
+  ],
+) <span class="cm">// resultado: 20% | 60% | 20%</span>
+
+<span class="cm">// Stack — superponer widgets</span>
+<span class="cls">Stack</span>(
+  children: [
+    <span class="cls">Image</span>.<span class="fn">asset</span>(<span class="str">'assets/fondo.jpg'</span>),
+    <span class="cls">Positioned</span>(
+      bottom: <span class="num">16</span>, left: <span class="num">16</span>,
+      child: <span class="kw">const</span> <span class="cls">Text</span>(<span class="str">'Texto sobre imagen'</span>,
+        style: <span class="cls">TextStyle</span>(color: <span class="cls">Colors</span>.white, fontSize: <span class="num">20</span>)),
+    ),
+  ],
+)
+
+<span class="cm">// Padding y SafeArea</span>
+<span class="cls">Padding</span>(
+  padding: <span class="kw">const</span> <span class="cls">EdgeInsets</span>.all(<span class="num">16</span>),
+  child: <span class="kw">const</span> <span class="cls">Text</span>(<span class="str">'Contenido con padding'</span>),
+)
+
+<span class="cls">SafeArea</span>(         <span class="cm">// respeta notch y barra inferior del dispositivo</span>
+  child: <span class="kw">const</span> <span class="cls">Column</span>(children: [...]),
+)</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p5')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════ PASO 6 ══════ -->
+<div class="step-card" id="p6">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">06</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Estado con StatefulWidget</div>
+      <div class="step-meta">setState() · State · initState · dispose · TextEditingController</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Dart — StatefulWidget completo</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">import</span> <span class="str">'package:flutter/material.dart'</span>;
+
+<span class="cm">// Widget con estado</span>
+<span class="kw">class</span> <span class="cls">ContadorScreen</span> <span class="kw">extends</span> <span class="cls">StatefulWidget</span> {
+  <span class="kw">const</span> <span class="cls">ContadorScreen</span>({<span class="kw">super</span>.key});
+
+  <span class="dec">@override</span>
+  <span class="cls">State</span>&lt;<span class="cls">ContadorScreen</span>&gt; <span class="fn">createState</span>() => <span class="cls">_ContadorScreenState</span>();
+}
+
+<span class="kw">class</span> <span class="cls">_ContadorScreenState</span> <span class="kw">extends</span> <span class="cls">State</span>&lt;<span class="cls">ContadorScreen</span>&gt; {
+  <span class="cm">// Variables de estado</span>
+  <span class="type">int</span> _contador = <span class="num">0</span>;
+  <span class="kw">final</span> <span class="cls">TextEditingController</span> _ctrl = <span class="cls">TextEditingController</span>();
+
+  <span class="cm">// Ciclo de vida: se llama una vez al crear el widget</span>
+  <span class="dec">@override</span>
+  <span class="kw">void</span> <span class="fn">initState</span>() {
+    <span class="kw">super</span>.<span class="fn">initState</span>();
+    _ctrl.text = <span class="str">'0'</span>;
+  }
+
+  <span class="cm">// Ciclo de vida: limpiar recursos al destruir</span>
+  <span class="dec">@override</span>
+  <span class="kw">void</span> <span class="fn">dispose</span>() {
+    _ctrl.<span class="fn">dispose</span>();
+    <span class="kw">super</span>.<span class="fn">dispose</span>();
+  }
+
+  <span class="kw">void</span> <span class="fn">_incrementar</span>() {
+    <span class="fn">setState</span>(() {        <span class="cm">// setState dispara un rebuild del widget</span>
+      _contador++;
+    });
+  }
+
+  <span class="kw">void</span> <span class="fn">_decrementar</span>() {
+    <span class="fn">setState</span>(() {
+      <span class="kw">if</span> (_contador > <span class="num">0</span>) _contador--;
+    });
+  }
+
+  <span class="dec">@override</span>
+  <span class="cls">Widget</span> <span class="fn">build</span>(<span class="cls">BuildContext</span> context) {
+    <span class="kw">return</span> <span class="cls">Scaffold</span>(
+      appBar: <span class="cls">AppBar</span>(title: <span class="kw">const</span> <span class="cls">Text</span>(<span class="str">'Contador'</span>)),
+      body: <span class="cls">Center</span>(
+        child: <span class="cls">Column</span>(
+          mainAxisAlignment: <span class="cls">MainAxisAlignment</span>.center,
+          children: [
+            <span class="cls">Text</span>(
+              <span class="str">'$_contador'</span>,
+              style: <span class="cls">Theme</span>.<span class="fn">of</span>(context).textTheme.displayLarge,
+            ),
+            <span class="kw">const</span> <span class="cls">SizedBox</span>(height: <span class="num">24</span>),
+            <span class="cls">Row</span>(
+              mainAxisAlignment: <span class="cls">MainAxisAlignment</span>.center,
+              children: [
+                <span class="cls">IconButton</span>(
+                  icon: <span class="kw">const</span> <span class="cls">Icon</span>(<span class="cls">Icons</span>.remove),
+                  onPressed: _decrementar,
+                  iconSize: <span class="num">36</span>,
+                ),
+                <span class="kw">const</span> <span class="cls">SizedBox</span>(width: <span class="num">24</span>),
+                <span class="cls">IconButton</span>(
+                  icon: <span class="kw">const</span> <span class="cls">Icon</span>(<span class="cls">Icons</span>.add),
+                  onPressed: _incrementar,
+                  iconSize: <span class="num">36</span>,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p6')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════ PASO 7 ══════ -->
+<div class="step-card" id="p7">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">07</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Listas y grids</div>
+      <div class="step-meta">ListView · ListView.builder · GridView · ListTile · Dismissible</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Dart — Listas</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// ListView simple</span>
+<span class="cls">ListView</span>(
+  children: <span class="kw">const</span> [
+    <span class="cls">ListTile</span>(leading: <span class="cls">Icon</span>(<span class="cls">Icons</span>.book), title: <span class="cls">Text</span>(<span class="str">'Bases de Datos'</span>)),
+    <span class="cls">ListTile</span>(leading: <span class="cls">Icon</span>(<span class="cls">Icons</span>.code), title: <span class="cls">Text</span>(<span class="str">'PHP Puro'</span>)),
+    <span class="cls">Divider</span>(),
+    <span class="cls">ListTile</span>(leading: <span class="cls">Icon</span>(<span class="cls">Icons</span>.web), title: <span class="cls">Text</span>(<span class="str">'Laravel 13'</span>)),
+  ],
+)
+
+<span class="cm">// ListView.builder — para listas largas (eficiente)</span>
+<span class="kw">final</span> cursos = [<span class="str">'BD'</span>, <span class="str">'PHP'</span>, <span class="str">'Laravel'</span>, <span class="str">'Flutter'</span>, <span class="str">'Moonshine'</span>];
+
+<span class="cls">ListView</span>.<span class="fn">builder</span>(
+  itemCount: cursos.length,
+  itemBuilder: (context, index) {
+    <span class="kw">return</span> <span class="cls">Card</span>(
+      margin: <span class="kw">const</span> <span class="cls">EdgeInsets</span>.symmetric(horizontal: <span class="num">16</span>, vertical: <span class="num">8</span>),
+      child: <span class="cls">ListTile</span>(
+        leading: <span class="cls">CircleAvatar</span>(child: <span class="cls">Text</span>(<span class="str">'${index + 1}'</span>)),
+        title: <span class="cls">Text</span>(cursos[index]),
+        trailing: <span class="kw">const</span> <span class="cls">Icon</span>(<span class="cls">Icons</span>.arrow_forward_ios),
+        onTap: () {},
+      ),
+    );
+  },
+)
+
+<span class="cm">// Dismissible — deslizar para eliminar</span>
+<span class="cls">ListView</span>.<span class="fn">builder</span>(
+  itemCount: cursos.length,
+  itemBuilder: (context, index) {
+    <span class="kw">return</span> <span class="cls">Dismissible</span>(
+      key: <span class="cls">Key</span>(cursos[index]),
+      background: <span class="cls">Container</span>(color: <span class="cls">Colors</span>.red,
+        child: <span class="kw">const</span> <span class="cls">Icon</span>(<span class="cls">Icons</span>.delete, color: <span class="cls">Colors</span>.white)),
+      onDismissed: (direction) {
+        cursos.<span class="fn">removeAt</span>(index);
+      },
+      child: <span class="cls">ListTile</span>(title: <span class="cls">Text</span>(cursos[index])),
+    );
+  },
+)
+
+<span class="cm">// GridView — cuadrícula</span>
+<span class="cls">GridView</span>.<span class="fn">builder</span>(
+  gridDelegate: <span class="kw">const</span> <span class="cls">SliverGridDelegateWithFixedCrossAxisCount</span>(
+    crossAxisCount: <span class="num">2</span>,         <span class="cm">// columnas</span>
+    crossAxisSpacing: <span class="num">8</span>,
+    mainAxisSpacing: <span class="num">8</span>,
+    childAspectRatio: <span class="num">1.5</span>,
+  ),
+  itemCount: cursos.length,
+  itemBuilder: (context, index) {
+    <span class="kw">return</span> <span class="cls">Card</span>(
+      child: <span class="cls">Center</span>(child: <span class="cls">Text</span>(cursos[index])),
+    );
+  },
+)</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p7')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════ PASO 8 ══════ -->
+<div class="step-card" id="p8">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">08</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Navegación entre pantallas</div>
+      <div class="step-meta">Navigator · push · pop · named routes · BottomNavigationBar · Drawer</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Dart — Navegación</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// Navegar a otra pantalla</span>
+<span class="cls">ElevatedButton</span>(
+  onPressed: () {
+    <span class="cm">// Ir a la siguiente pantalla</span>
+    <span class="cls">Navigator</span>.<span class="fn">push</span>(
+      context,
+      <span class="cls">MaterialPageRoute</span>(
+        builder: (context) => <span class="cls">DetalleCursoScreen</span>(curso: cursoSeleccionado),
+      ),
+    );
+  },
+  child: <span class="kw">const</span> <span class="cls">Text</span>(<span class="str">'Ver detalle'</span>),
+)
+
+<span class="cm">// Volver a la pantalla anterior</span>
+<span class="cls">Navigator</span>.<span class="fn">pop</span>(context);
+
+<span class="cm">// Pasar y recibir datos entre pantallas</span>
+<span class="kw">final</span> resultado = <span class="kw">await</span> <span class="cls">Navigator</span>.<span class="fn">push</span>&lt;<span class="type">String</span>&gt;(
+  context,
+  <span class="cls">MaterialPageRoute</span>(builder: (context) => <span class="kw">const</span> <span class="cls">FormularioScreen</span>()),
+);
+<span class="fn">print</span>(<span class="str">'Resultado: $resultado'</span>);
+
+<span class="cm">// ──────────────────────────────────────
+// BottomNavigationBar — tabs inferiores
+// ──────────────────────────────────────</span>
+<span class="kw">class</span> <span class="cls">MainScreen</span> <span class="kw">extends</span> <span class="cls">StatefulWidget</span> {
+  <span class="kw">const</span> <span class="cls">MainScreen</span>({<span class="kw">super</span>.key});
+  <span class="dec">@override</span>
+  <span class="cls">State</span>&lt;<span class="cls">MainScreen</span>&gt; <span class="fn">createState</span>() => <span class="cls">_MainScreenState</span>();
+}
+
+<span class="kw">class</span> <span class="cls">_MainScreenState</span> <span class="kw">extends</span> <span class="cls">State</span>&lt;<span class="cls">MainScreen</span>&gt; {
+  <span class="type">int</span> _tabActual = <span class="num">0</span>;
+
+  <span class="kw">final</span> _pantallas = [
+    <span class="kw">const</span> <span class="cls">CursosScreen</span>(),
+    <span class="kw">const</span> <span class="cls">EstudiantesScreen</span>(),
+    <span class="kw">const</span> <span class="cls">PerfilScreen</span>(),
+  ];
+
+  <span class="dec">@override</span>
+  <span class="cls">Widget</span> <span class="fn">build</span>(<span class="cls">BuildContext</span> context) {
+    <span class="kw">return</span> <span class="cls">Scaffold</span>(
+      body: _pantallas[_tabActual],
+      bottomNavigationBar: <span class="cls">NavigationBar</span>(
+        selectedIndex: _tabActual,
+        onDestinationSelected: (index) =>
+            <span class="fn">setState</span>(() => _tabActual = index),
+        destinations: <span class="kw">const</span> [
+          <span class="cls">NavigationDestination</span>(icon: <span class="cls">Icon</span>(<span class="cls">Icons</span>.book), label: <span class="str">'Cursos'</span>),
+          <span class="cls">NavigationDestination</span>(icon: <span class="cls">Icon</span>(<span class="cls">Icons</span>.people), label: <span class="str">'Estudiantes'</span>),
+          <span class="cls">NavigationDestination</span>(icon: <span class="cls">Icon</span>(<span class="cls">Icons</span>.person), label: <span class="str">'Perfil'</span>),
+        ],
+      ),
+    );
+  }
+}
+
+<span class="cm">// Drawer — menú lateral</span>
+<span class="cls">Scaffold</span>(
+  drawer: <span class="cls">Drawer</span>(
+    child: <span class="cls">ListView</span>(
+      children: [
+        <span class="kw">const</span> <span class="cls">DrawerHeader</span>(
+          decoration: <span class="cls">BoxDecoration</span>(color: <span class="cls">Colors</span>.blue),
+          child: <span class="cls">Text</span>(<span class="str">'EduCode'</span>, style: <span class="cls">TextStyle</span>(color: <span class="cls">Colors</span>.white, fontSize: <span class="num">24</span>)),
+        ),
+        <span class="cls">ListTile</span>(
+          leading: <span class="kw">const</span> <span class="cls">Icon</span>(<span class="cls">Icons</span>.book),
+          title: <span class="kw">const</span> <span class="cls">Text</span>(<span class="str">'Cursos'</span>),
+          onTap: () => <span class="cls">Navigator</span>.<span class="fn">pop</span>(context),
+        ),
+      ],
+    ),
+  ),
+)</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p8')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════ PASO 9 ══════ -->
+<div class="step-card" id="p9">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">09</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Formularios y validación</div>
+      <div class="step-meta">Form · GlobalKey · TextFormField · validator · autovalidateMode</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Dart — Formulario con validación</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">class</span> <span class="cls">FormularioScreen</span> <span class="kw">extends</span> <span class="cls">StatefulWidget</span> {
+  <span class="kw">const</span> <span class="cls">FormularioScreen</span>({<span class="kw">super</span>.key});
+  <span class="dec">@override</span>
+  <span class="cls">State</span>&lt;<span class="cls">FormularioScreen</span>&gt; <span class="fn">createState</span>() => <span class="cls">_FormularioScreenState</span>();
+}
+
+<span class="kw">class</span> <span class="cls">_FormularioScreenState</span> <span class="kw">extends</span> <span class="cls">State</span>&lt;<span class="cls">FormularioScreen</span>&gt; {
+  <span class="cm">// Key global para acceder al estado del Form</span>
+  <span class="kw">final</span> _formKey = <span class="cls">GlobalKey</span>&lt;<span class="cls">FormState</span>&gt;();
+
+  <span class="cm">// Controladores para leer valores</span>
+  <span class="kw">final</span> _nombreCtrl = <span class="cls">TextEditingController</span>();
+  <span class="kw">final</span> _correoCtrl = <span class="cls">TextEditingController</span>();
+  <span class="type">String</span>? _nivelSeleccionado;
+
+  <span class="dec">@override</span>
+  <span class="kw">void</span> <span class="fn">dispose</span>() {
+    _nombreCtrl.<span class="fn">dispose</span>();
+    _correoCtrl.<span class="fn">dispose</span>();
+    <span class="kw">super</span>.<span class="fn">dispose</span>();
+  }
+
+  <span class="kw">void</span> <span class="fn">_guardar</span>() {
+    <span class="kw">if</span> (_formKey.currentState!.<span class="fn">validate</span>()) {
+      <span class="cm">// Todos los campos son válidos</span>
+      <span class="cls">ScaffoldMessenger</span>.<span class="fn">of</span>(context).<span class="fn">showSnackBar</span>(
+        <span class="kw">const</span> <span class="cls">SnackBar</span>(content: <span class="cls">Text</span>(<span class="str">'✅ Guardado correctamente'</span>)),
+      );
+    }
+  }
+
+  <span class="dec">@override</span>
+  <span class="cls">Widget</span> <span class="fn">build</span>(<span class="cls">BuildContext</span> context) {
+    <span class="kw">return</span> <span class="cls">Scaffold</span>(
+      appBar: <span class="cls">AppBar</span>(title: <span class="kw">const</span> <span class="cls">Text</span>(<span class="str">'Registro'</span>)),
+      body: <span class="cls">Padding</span>(
+        padding: <span class="kw">const</span> <span class="cls">EdgeInsets</span>.all(<span class="num">16</span>),
+        child: <span class="cls">Form</span>(
+          key: _formKey,
+          autovalidateMode: <span class="cls">AutovalidateMode</span>.onUserInteraction,
+          child: <span class="cls">Column</span>(children: [
+
+            <span class="cm">// Campo nombre</span>
+            <span class="cls">TextFormField</span>(
+              controller: _nombreCtrl,
+              decoration: <span class="kw">const</span> <span class="cls">InputDecoration</span>(
+                labelText: <span class="str">'Nombre *'</span>,
+                prefixIcon: <span class="cls">Icon</span>(<span class="cls">Icons</span>.person),
+                border: <span class="cls">OutlineInputBorder</span>(),
+              ),
+              validator: (val) {
+                <span class="kw">if</span> (val == <span class="kw">null</span> || val.isEmpty) {
+                  <span class="kw">return</span> <span class="str">'El nombre es obligatorio'</span>;
+                }
+                <span class="kw">if</span> (val.length < <span class="num">3</span>) {
+                  <span class="kw">return</span> <span class="str">'Mínimo 3 caracteres'</span>;
+                }
+                <span class="kw">return null</span>; <span class="cm">// null = válido</span>
+              },
+            ),
+            <span class="kw">const</span> <span class="cls">SizedBox</span>(height: <span class="num">16</span>),
+
+            <span class="cm">// Campo correo</span>
+            <span class="cls">TextFormField</span>(
+              controller: _correoCtrl,
+              keyboardType: <span class="cls">TextInputType</span>.emailAddress,
+              decoration: <span class="kw">const</span> <span class="cls">InputDecoration</span>(
+                labelText: <span class="str">'Correo *'</span>,
+                prefixIcon: <span class="cls">Icon</span>(<span class="cls">Icons</span>.email),
+                border: <span class="cls">OutlineInputBorder</span>(),
+              ),
+              validator: (val) {
+                <span class="kw">if</span> (val == <span class="kw">null</span> || !val.<span class="fn">contains</span>(<span class="str">'@'</span>)) {
+                  <span class="kw">return</span> <span class="str">'Ingresa un correo válido'</span>;
+                }
+                <span class="kw">return null</span>;
+              },
+            ),
+            <span class="kw">const</span> <span class="cls">SizedBox</span>(height: <span class="num">16</span>),
+
+            <span class="cm">// Dropdown</span>
+            <span class="cls">DropdownButtonFormField</span>&lt;<span class="type">String</span>&gt;(
+              value: _nivelSeleccionado,
+              decoration: <span class="kw">const</span> <span class="cls">InputDecoration</span>(
+                labelText: <span class="str">'Nivel'</span>,
+                border: <span class="cls">OutlineInputBorder</span>(),
+              ),
+              items: [<span class="str">'Básico'</span>, <span class="str">'Intermedio'</span>, <span class="str">'Avanzado'</span>]
+                  .<span class="fn">map</span>((n) => <span class="cls">DropdownMenuItem</span>(value: n, child: <span class="cls">Text</span>(n)))
+                  .<span class="fn">toList</span>(),
+              onChanged: (val) => <span class="fn">setState</span>(() => _nivelSeleccionado = val),
+              validator: (val) => val == <span class="kw">null</span> ? <span class="str">'Selecciona un nivel'</span> : <span class="kw">null</span>,
+            ),
+            <span class="kw">const</span> <span class="cls">SizedBox</span>(height: <span class="num">24</span>),
+
+            <span class="cls">ElevatedButton</span>.<span class="fn">icon</span>(
+              onPressed: _guardar,
+              icon: <span class="kw">const</span> <span class="cls">Icon</span>(<span class="cls">Icons</span>.save),
+              label: <span class="kw">const</span> <span class="cls">Text</span>(<span class="str">'Guardar'</span>),
+              style: <span class="cls">ElevatedButton</span>.<span class="fn">styleFrom</span>(minimumSize: <span class="kw">const</span> <span class="cls">Size</span>.fromHeight(<span class="num">48</span>)),
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
+}</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p9')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════ PASO 10 ══════ -->
+<div class="step-card" id="p10">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">10</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Proyecto final — App de cursos CEFIT</div>
+      <div class="step-meta">estructura completa · modelo · list + detalle + form · SnackBar · build APK</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>App completa con lista de cursos, pantalla de detalle, formulario de agregar y navegación por tabs. Estructura de archivos recomendada para proyectos reales.</p>
+
+    <h3>Estructura de archivos del proyecto</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Árbol del proyecto</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>lib/
+├── main.dart
+├── models/
+│   └── curso.dart         ← clase Curso
+├── screens/
+│   ├── home_screen.dart   ← tabs principales
+│   ├── cursos_screen.dart ← lista de cursos
+│   ├── detalle_screen.dart← detalle de un curso
+│   └── form_screen.dart   ← formulario agregar
+└── widgets/
+    └── curso_card.dart    ← tarjeta reutilizable</pre>
+    </div>
+
+    <h3>models/curso.dart</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Dart — Modelo Curso</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">class</span> <span class="cls">Curso</span> {
+  <span class="kw">final</span> <span class="type">String</span> nombre;
+  <span class="kw">final</span> <span class="type">String</span> instructor;
+  <span class="kw">final</span> <span class="type">int</span>    horas;
+  <span class="kw">final</span> <span class="type">String</span> nivel;
+  <span class="type">bool</span>         activo;
+
+  <span class="cls">Curso</span>({
+    <span class="kw">required</span> <span class="kw">this</span>.nombre,
+    <span class="kw">required</span> <span class="kw">this</span>.instructor,
+    <span class="kw">required</span> <span class="kw">this</span>.horas,
+    <span class="kw">required</span> <span class="kw">this</span>.nivel,
+    <span class="kw">this</span>.activo = <span class="kw">true</span>,
+  });
+
+  <span class="cm">// Datos de prueba</span>
+  <span class="kw">static</span> <span class="cls">List</span>&lt;<span class="cls">Curso</span>&gt; ejemplos = [
+    <span class="cls">Curso</span>(nombre: <span class="str">'Bases de Datos'</span>,  instructor: <span class="str">'James'</span>, horas: <span class="num">40</span>, nivel: <span class="str">'Básico'</span>),
+    <span class="cls">Curso</span>(nombre: <span class="str">'PHP Puro'</span>,         instructor: <span class="str">'James'</span>, horas: <span class="num">36</span>, nivel: <span class="str">'Básico'</span>),
+    <span class="cls">Curso</span>(nombre: <span class="str">'Laravel 13'</span>,       instructor: <span class="str">'James'</span>, horas: <span class="num">48</span>, nivel: <span class="str">'Intermedio'</span>),
+    <span class="cls">Curso</span>(nombre: <span class="str">'Flutter'</span>,           instructor: <span class="str">'James'</span>, horas: <span class="num">60</span>, nivel: <span class="str">'Avanzado'</span>),
+    <span class="cls">Curso</span>(nombre: <span class="str">'Moonshine 4.x'</span>,    instructor: <span class="str">'James'</span>, horas: <span class="num">32</span>, nivel: <span class="str">'Intermedio'</span>),
+  ];
+}</pre>
+    </div>
+
+    <h3>screens/cursos_screen.dart</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Dart — Lista de cursos</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">class</span> <span class="cls">CursosScreen</span> <span class="kw">extends</span> <span class="cls">StatefulWidget</span> {
+  <span class="kw">const</span> <span class="cls">CursosScreen</span>({<span class="kw">super</span>.key});
+  <span class="dec">@override</span>
+  <span class="cls">State</span>&lt;<span class="cls">CursosScreen</span>&gt; <span class="fn">createState</span>() => <span class="cls">_CursosScreenState</span>();
+}
+
+<span class="kw">class</span> <span class="cls">_CursosScreenState</span> <span class="kw">extends</span> <span class="cls">State</span>&lt;<span class="cls">CursosScreen</span>&gt; {
+  <span class="kw">final</span> cursos = <span class="cls">Curso</span>.ejemplos;
+
+  <span class="dec">@override</span>
+  <span class="cls">Widget</span> <span class="fn">build</span>(<span class="cls">BuildContext</span> context) {
+    <span class="kw">return</span> <span class="cls">Scaffold</span>(
+      appBar: <span class="cls">AppBar</span>(title: <span class="kw">const</span> <span class="cls">Text</span>(<span class="str">'Cursos EduCode'</span>)),
+      body: <span class="cls">ListView</span>.<span class="fn">builder</span>(
+        padding: <span class="kw">const</span> <span class="cls">EdgeInsets</span>.all(<span class="num">12</span>),
+        itemCount: cursos.length,
+        itemBuilder: (ctx, i) {
+          <span class="kw">final</span> c = cursos[i];
+          <span class="kw">return</span> <span class="cls">Card</span>(
+            margin: <span class="kw">const</span> <span class="cls">EdgeInsets</span>.only(bottom: <span class="num">10</span>),
+            child: <span class="cls">ListTile</span>(
+              leading: <span class="cls">CircleAvatar</span>(
+                backgroundColor: <span class="cls">Colors</span>.blue,
+                child: <span class="cls">Text</span>(<span class="str">'${i+1}'</span>, style: <span class="kw">const</span> <span class="cls">TextStyle</span>(color: <span class="cls">Colors</span>.white)),
+              ),
+              title: <span class="cls">Text</span>(c.nombre, style: <span class="kw">const</span> <span class="cls">TextStyle</span>(fontWeight: <span class="cls">FontWeight</span>.bold)),
+              subtitle: <span class="cls">Text</span>(<span class="str">'${c.instructor} · ${c.horas}h · ${c.nivel}'</span>),
+              trailing: <span class="cls">Switch</span>(
+                value: c.activo,
+                onChanged: (v) => <span class="fn">setState</span>(() => c.activo = v),
+              ),
+              onTap: () => <span class="cls">Navigator</span>.<span class="fn">push</span>(
+                context,
+                <span class="cls">MaterialPageRoute</span>(builder: (_) => <span class="cls">DetalleScreen</span>(curso: c)),
+              ),
+            ),
+          );
+        },
+      ),
+      floatingActionButton: <span class="cls">FloatingActionButton</span>.<span class="fn">extended</span>(
+        onPressed: () => <span class="cls">Navigator</span>.<span class="fn">push</span>(
+          context,
+          <span class="cls">MaterialPageRoute</span>(builder: (_) => <span class="kw">const</span> <span class="cls">FormularioScreen</span>()),
+        ),
+        icon: <span class="kw">const</span> <span class="cls">Icon</span>(<span class="cls">Icons</span>.add),
+        label: <span class="kw">const</span> <span class="cls">Text</span>(<span class="str">'Nuevo curso'</span>),
+      ),
+    );
+  }
+}</pre>
+    </div>
+
+    <h3>Compilar para producción</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># APK para Android</span>
+flutter build apk --release
+
+<span class="cm"># App Bundle para Google Play</span>
+flutter build aab --release
+
+<span class="cm"># Web</span>
+flutter build web --release
+
+<span class="cm"># El APK queda en:</span>
+<span class="cm"># build/app/outputs/flutter-apk/app-release.apk</span></pre>
+    </div>
+
+    <div class="info-box tip">
+      <span class="icon">✅</span>
+      <div>Con <strong>flutter run --release</strong> puedes probar el build de producción directamente en un dispositivo físico conectado. Es significativamente más rápido que el modo debug.</div>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p10')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+</main>
+<footer>EduCode · Flutter · Docs: docs.flutter.dev · Dart 3 · Material 3</footer>
+
+<script>
+const TOTAL=10;
+function toggle(h){const c=h.closest('.step-card');const o=c.classList.contains('open');document.querySelectorAll('.step-card.open').forEach(x=>x.classList.remove('open'));if(!o)c.classList.add('open')}
+function copyCode(btn){const pre=btn.closest('.code-block').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='✓ Copiado';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copiar';btn.classList.remove('copied')},2000)})}
+function markDone(btn,id){const c=document.getElementById(id);c.classList.toggle('done');const d=c.classList.contains('done');btn.textContent=d?'✓  Completado':'✓  Marcar como completado';update()}
+function update(){const d=document.querySelectorAll('.step-card.done').length;document.getElementById('progressBar').style.width=(d/TOTAL*100)+'%';document.getElementById('progressCount').textContent=d+' / '+TOTAL}
+document.querySelector('.step-card .step-header').click();
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const id=e.target.id;document.querySelectorAll('.nav-pill').forEach(p=>p.classList.toggle('active',p.getAttribute('href')==='#'+id))}}),{threshold:.4});
+document.querySelectorAll('.step-card').forEach(c=>obs.observe(c));
+</script>
+</body>
+</html>

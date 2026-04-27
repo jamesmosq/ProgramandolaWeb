@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flet — Apps multiplataforma con Python</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2230;
+    --border: #21303f;
+    --accent: #58a6ff;
+    --accent2: #3fb950;
+    --accent3: #f78166;
+    --warn: #e3b341;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --text-muted: #30414f;
+    --code-bg: #0d1117;
+    --py: #4b8bbe;
+    --py2: #ffde57;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+
+  header{
+    position:relative;padding:68px 40px 56px;
+    overflow:hidden;border-bottom:1px solid var(--border);text-align:center;
+  }
+  header::before{
+    content:'';position:absolute;inset:0;
+    background:
+      radial-gradient(ellipse 60% 50% at 0% 50%, rgba(88,166,255,0.1), transparent),
+      radial-gradient(ellipse 50% 60% at 100% 20%, rgba(63,185,80,0.08), transparent);
+  }
+  .logo-row{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:22px;position:relative}
+  .flet-logo{
+    width:44px;height:44px;border-radius:12px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:20px;color:#fff;flex-shrink:0;
+    font-family:'Fira Code',monospace;
+  }
+  .badge{
+    font-family:'Fira Code',monospace;font-size:11px;letter-spacing:2px;
+    color:var(--py2);background:rgba(255,222,87,0.1);
+    border:1px solid rgba(255,222,87,0.25);
+    padding:4px 12px;border-radius:20px;text-transform:uppercase;
+  }
+  h1{
+    font-size:clamp(2rem,5vw,3.4rem);font-weight:800;line-height:1.1;
+    position:relative;max-width:700px;margin-inline:auto;
+  }
+  h1 em{font-style:normal;color:var(--accent)}
+  header p{
+    margin-top:14px;font-size:1rem;color:var(--text-dim);
+    max-width:540px;line-height:1.7;font-weight:300;position:relative;margin-inline:auto;
+  }
+
+  .progress-wrap{
+    padding:14px 40px;background:var(--surface);
+    border-bottom:1px solid var(--border);
+    position:sticky;top:0;z-index:100;
+    display:flex;align-items:center;gap:14px;
+  }
+  .progress-label{font-family:'Fira Code',monospace;font-size:10px;color:var(--text-muted);white-space:nowrap}
+  .progress-bar-outer{flex:1;height:5px;background:var(--border);border-radius:10px;overflow:hidden}
+  .progress-bar-inner{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:10px;transition:width .4s}
+  .progress-count{font-family:'Fira Code',monospace;font-size:10px;color:var(--accent);white-space:nowrap}
+
+  .nav-pills{
+    display:flex;gap:6px;flex-wrap:wrap;
+    padding:12px 40px;background:var(--surface);
+    border-bottom:1px solid var(--border);
+  }
+  .nav-pill{
+    font-family:'Fira Code',monospace;font-size:10px;
+    padding:4px 11px;border-radius:20px;
+    background:var(--surface2);border:1px solid var(--border);
+    color:var(--text-muted);cursor:pointer;transition:all .15s;text-decoration:none;
+  }
+  .nav-pill:hover,.nav-pill.active{
+    background:rgba(88,166,255,0.12);border-color:var(--accent);color:var(--accent);
+  }
+
+  main{max-width:900px;margin:0 auto;padding:44px 24px 80px}
+
+  .step-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:14px;
+    margin-bottom:24px;overflow:hidden;scroll-margin-top:100px;
+    animation:fadeUp .35s ease both;transition:border-color .2s;
+  }
+  .step-card.done{border-color:rgba(63,185,80,0.4)}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+  .step-header{display:flex;align-items:center;gap:14px;padding:18px 22px;cursor:pointer;user-select:none;transition:background .15s}
+  .step-header:hover{background:var(--surface2)}
+
+  .step-num{
+    font-family:'Fira Code',monospace;font-size:11px;font-weight:600;
+    color:var(--text-muted);background:var(--surface2);
+    border:1px solid var(--border);
+    width:34px;height:34px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;transition:all .2s;
+  }
+  .step-card.done .step-num{background:rgba(63,185,80,0.15);border-color:var(--accent2);color:var(--accent2)}
+
+  .step-title-wrap{flex:1}
+  .step-title{font-size:.97rem;font-weight:700}
+  .step-meta{font-family:'Fira Code',monospace;font-size:.68rem;color:var(--text-muted);margin-top:3px}
+  .step-toggle{font-size:13px;color:var(--text-muted);transition:transform .3s;flex-shrink:0}
+  .step-card.open .step-toggle{transform:rotate(180deg)}
+
+  .step-body{display:none;padding:0 22px 24px;border-top:1px solid var(--border)}
+  .step-card.open .step-body{display:block}
+  .step-body p,.step-body li{color:var(--text-dim);line-height:1.8;font-size:.9rem}
+  .step-body ul,.step-body ol{padding-left:20px;margin:10px 0}
+  .step-body li{margin-bottom:5px}
+  .step-body h3{
+    font-family:'Fira Code',monospace;font-size:.7rem;text-transform:uppercase;
+    letter-spacing:2px;color:var(--text-muted);margin:18px 0 10px;
+    border-bottom:1px solid var(--border);padding-bottom:6px;
+  }
+
+  .info-box{border-radius:8px;padding:12px 16px;margin:12px 0;font-size:.86rem;line-height:1.7;display:flex;gap:10px;align-items:flex-start}
+  .info-box .icon{font-size:15px;flex-shrink:0;margin-top:2px}
+  .info-box.tip{background:rgba(63,185,80,0.07);border:1px solid rgba(63,185,80,0.2);color:#7ee787}
+  .info-box.warn{background:rgba(227,179,65,0.07);border:1px solid rgba(227,179,65,0.2);color:#e3b341}
+  .info-box.info{background:rgba(88,166,255,0.07);border:1px solid rgba(88,166,255,0.2);color:#79c0ff}
+  .info-box.new{background:rgba(247,129,102,0.07);border:1px solid rgba(247,129,102,0.2);color:#ffa198}
+
+  .code-block{margin:14px 0;border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:#090d14;border-bottom:1px solid var(--border)}
+  .code-lang{font-family:'Fira Code',monospace;font-size:10px;color:var(--py2);letter-spacing:2px;text-transform:uppercase}
+  .copy-btn{font-family:'Fira Code',monospace;font-size:10px;padding:3px 10px;border-radius:5px;background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.25);color:var(--accent);cursor:pointer;transition:all .15s}
+  .copy-btn:hover{background:rgba(88,166,255,0.2)}
+  .copy-btn.copied{color:var(--accent2);border-color:var(--accent2)}
+  pre{background:var(--code-bg);padding:18px 20px;overflow-x:auto;font-family:'Fira Code',monospace;font-size:12.5px;line-height:1.75;color:#c9d1d9}
+
+  /* Python syntax */
+  .kw{color:#ff7b72;font-weight:600}
+  .fn{color:#d2a8ff}
+  .str{color:#a5d6ff}
+  .num{color:#79c0ff}
+  .cm{color:#30414f;font-style:italic}
+  .cls{color:#ffa657;font-weight:600}
+  .dec{color:#3fb950}
+  .var{color:#e6edf3}
+
+  .tabla{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;overflow-x:auto;margin:12px 0}
+  .tabla table{border-collapse:collapse;width:100%;min-width:480px}
+  .tabla th{background:#090d14;color:var(--accent);font-family:'Fira Code',monospace;font-size:11px;padding:9px 14px;text-align:left;border-bottom:1px solid var(--border)}
+  .tabla td{font-family:'Fira Code',monospace;font-size:11px;padding:8px 14px;border-bottom:1px solid rgba(33,48,63,0.5);color:var(--text-dim)}
+  .tabla tr:last-child td{border-bottom:none}
+  .hl{color:var(--accent);font-weight:600}
+  .hl2{color:var(--accent2)}
+  .hl3{color:var(--warn)}
+
+  .check-btn{margin-top:16px;display:inline-flex;align-items:center;gap:8px;font-family:'Space Grotesk',sans-serif;font-size:.82rem;font-weight:600;padding:8px 18px;border-radius:8px;background:rgba(63,185,80,0.08);border:1px solid rgba(63,185,80,0.25);color:var(--accent2);cursor:pointer;transition:all .15s}
+  .check-btn:hover{background:rgba(63,185,80,0.15)}
+
+  footer{text-align:center;padding:32px;color:var(--text-muted);font-family:'Fira Code',monospace;font-size:.72rem;border-top:1px solid var(--border)}
+
+  @media(max-width:600px){
+    header{padding:40px 18px}
+    .nav-pills,.progress-wrap{padding:10px 14px}
+    main{padding:20px 10px 60px}
+    .step-header{padding:14px}
+    .step-body{padding:0 14px 18px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-row">
+    <div class="flet-logo">ft</div>
+    <div class="badge">Python 3.10+ · flet.dev/docs · EduCode</div>
+  </div>
+  <h1>Flet — Apps <em>multiplataforma</em><br>con Python puro</h1>
+  <p>Construye apps de escritorio, web y móvil en Python sin HTML, CSS ni JavaScript. Basado en la documentación oficial de flet.dev/docs.</p>
+</header>
+
+<div class="progress-wrap">
+  <span class="progress-label">PROGRESO</span>
+  <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+  <span class="progress-count" id="progressCount">0 / 9</span>
+</div>
+
+<div class="nav-pills">
+  <a class="nav-pill" href="#p1">1. Instalación</a>
+  <a class="nav-pill" href="#p2">2. Primera app</a>
+  <a class="nav-pill" href="#p3">3. Controles base</a>
+  <a class="nav-pill" href="#p4">4. Layout</a>
+  <a class="nav-pill" href="#p5">5. Eventos</a>
+  <a class="nav-pill" href="#p6">6. Controles custom</a>
+  <a class="nav-pill" href="#p7">7. Navegación</a>
+  <a class="nav-pill" href="#p8">8. Temas</a>
+  <a class="nav-pill" href="#p9">9. Publicar app</a>
+</div>
+
+<main>
+
+<!-- ══════ PASO 1 ══════ -->
+<div class="step-card" id="p1">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">01</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Instalación y requisitos</div>
+      <div class="step-meta">Python 3.10+ · pip · venv · flet doctor · Windows/Mac/Linux</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Flet requiere <strong>Python 3.10 o superior</strong> y funciona en Windows 10/11, macOS 12+ y Linux (Debian/Ubuntu). Se recomienda siempre usar un entorno virtual.</p>
+
+    <div class="info-box info">
+      <span class="icon">💡</span>
+      <div>Flet es esencialmente <strong>Flutter para Python</strong>. El motor gráfico es Flutter internamente, pero tú escribes solo Python. Esto significa que el mismo código corre como app nativa, web y móvil.</div>
+    </div>
+
+    <h3>Instalar con pip (recomendado para Windows)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Crear carpeta del proyecto</span>
+mkdir mi-app-flet
+cd mi-app-flet
+
+<span class="cm"># Crear entorno virtual</span>
+python -m venv .venv
+.venv\Scripts\activate       <span class="cm"># Windows</span>
+<span class="cm"># source .venv/bin/activate  # Mac/Linux</span>
+
+<span class="cm"># Instalar Flet con todos los extras (desktop + web + mobile)</span>
+pip install 'flet[all]'
+
+<span class="cm"># Verificar instalación</span>
+flet --version
+flet doctor              <span class="cm"># diagnóstico completo del entorno</span></pre>
+    </div>
+
+    <h3>Instalar con uv (alternativa más rápida)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># uv es un gestor de paquetes ultra-rápido escrito en Rust</span>
+pip install uv
+
+uv init --python='>=3.10'
+uv venv
+uv add 'flet[all]'
+
+<span class="cm"># Verificar</span>
+uv run flet --version
+uv run flet doctor</pre>
+    </div>
+
+    <h3>Actualizar Flet</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>pip install 'flet[all]' --upgrade</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p1')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════ PASO 2 ══════ -->
+<div class="step-card" id="p2">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">02</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Crear y correr la primera app</div>
+      <div class="step-meta">flet create · ft.run · page · hot reload · --web · --android</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Toda app Flet tiene una función <code>main(page)</code> que recibe el objeto <code>page</code>. Ahí construyes la UI agregando controles con <code>page.add()</code>.</p>
+
+    <h3>Crear proyecto con flet create</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Crea la estructura del proyecto</span>
+flet create
+
+<span class="cm"># Estructura generada:
+# README.md
+# pyproject.toml
+# src/
+#   assets/
+#     icon.png
+#   main.py
+#   storage/data/ storage/temp/</span></pre>
+    </div>
+
+    <h3>Hola Mundo — src/main.py</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Python</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">import</span> flet <span class="kw">as</span> ft
+
+<span class="kw">def</span> <span class="fn">main</span>(page: ft.Page):
+    page.title = <span class="str">"Mi primera app Flet"</span>
+    page.add(ft.Text(<span class="str">"¡Hola, mundo!"</span>))
+
+ft.<span class="fn">run</span>(main)</pre>
+    </div>
+
+    <h3>Modos de ejecución</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># App de escritorio (ventana nativa)</span>
+flet run src/main.py
+
+<span class="cm"># App web (abre en el navegador)</span>
+flet run --web src/main.py
+
+<span class="cm"># Con hot reload — recarga automática al guardar</span>
+flet run -r src/main.py
+
+<span class="cm"># Puerto personalizado para web</span>
+flet run --web --port 8080 src/main.py</pre>
+    </div>
+
+    <div class="info-box tip">
+      <span class="icon">✅</span>
+      <div><strong>Auto-update:</strong> en Flet moderno NO necesitas llamar <code>page.update()</code> manualmente. Se llama automáticamente al final de cada event handler. Solo desactívalo si haces 100+ cambios en un loop (por rendimiento).</div>
+    </div>
+
+    <h3>App contador — ejemplo completo</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Python — Contador</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">import</span> flet <span class="kw">as</span> ft
+
+<span class="kw">def</span> <span class="fn">main</span>(page: ft.Page):
+    page.title = <span class="str">"Contador"</span>
+    page.vertical_alignment = ft.MainAxisAlignment.CENTER
+
+    <span class="cm"># Control TextField para mostrar el valor</span>
+    contador = ft.TextField(
+        value=<span class="str">"0"</span>,
+        text_align=ft.TextAlign.RIGHT,
+        width=<span class="num">100</span>
+    )
+
+    <span class="kw">def</span> <span class="fn">restar</span>(e):
+        contador.value = <span class="fn">str</span>(<span class="fn">int</span>(contador.value) - <span class="num">1</span>)
+        <span class="cm"># page.update() se llama automáticamente</span>
+
+    <span class="kw">def</span> <span class="fn">sumar</span>(e):
+        contador.value = <span class="fn">str</span>(<span class="fn">int</span>(contador.value) + <span class="num">1</span>)
+
+    page.add(
+        ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            controls=[
+                ft.IconButton(ft.Icons.REMOVE, on_click=restar),
+                contador,
+                ft.IconButton(ft.Icons.ADD, on_click=sumar),
+            ]
+        )
+    )
+
+ft.<span class="fn">run</span>(main)</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p2')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════ PASO 3 ══════ -->
+<div class="step-card" id="p3">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">03</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Controles esenciales</div>
+      <div class="step-meta">Text · Button · TextField · ElevatedButton · Checkbox · Dropdown · Image</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <h3>Tabla de controles principales</h3>
+    <div class="tabla">
+      <table>
+        <tr><th>Control</th><th>Qué hace</th><th>Propiedades clave</th></tr>
+        <tr><td class="hl">ft.Text</td><td>Muestra texto</td><td>value, size, color, weight</td></tr>
+        <tr><td class="hl">ft.Button</td><td>Botón estándar</td><td>content, on_click, bgcolor</td></tr>
+        <tr><td class="hl">ft.ElevatedButton</td><td>Botón Material elevado</td><td>text, on_click, icon</td></tr>
+        <tr><td class="hl">ft.OutlinedButton</td><td>Botón con borde</td><td>text, on_click</td></tr>
+        <tr><td class="hl">ft.TextButton</td><td>Botón solo texto</td><td>text, on_click</td></tr>
+        <tr><td class="hl">ft.TextField</td><td>Campo de texto</td><td>value, hint_text, on_change, password</td></tr>
+        <tr><td class="hl">ft.Checkbox</td><td>Casilla marcable</td><td>label, value, on_change</td></tr>
+        <tr><td class="hl">ft.Dropdown</td><td>Lista desplegable</td><td>options, value, on_change</td></tr>
+        <tr><td class="hl">ft.Switch</td><td>Toggle on/off</td><td>label, value, on_change</td></tr>
+        <tr><td class="hl">ft.Slider</td><td>Control deslizable</td><td>min, max, value, on_change</td></tr>
+        <tr><td class="hl">ft.Image</td><td>Mostrar imágenes</td><td>src, width, height, fit</td></tr>
+        <tr><td class="hl">ft.Icon</td><td>Ícono Material</td><td>name, size, color</td></tr>
+        <tr><td class="hl">ft.IconButton</td><td>Botón con ícono</td><td>icon, on_click, icon_color</td></tr>
+        <tr><td class="hl">ft.ProgressBar</td><td>Barra de progreso</td><td>value, color, bgcolor</td></tr>
+        <tr><td class="hl">ft.DataTable</td><td>Tabla de datos</td><td>columns, rows</td></tr>
+      </table>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Python — Controles en acción</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">import</span> flet <span class="kw">as</span> ft
+
+<span class="kw">def</span> <span class="fn">main</span>(page: ft.Page):
+    page.title = <span class="str">"Demo controles"</span>
+    page.padding = <span class="num">20</span>
+
+    <span class="cm"># Texto con estilo</span>
+    titulo = ft.Text(
+        <span class="str">"Registro de Estudiante"</span>,
+        size=<span class="num">24</span>,
+        weight=ft.FontWeight.BOLD,
+        color=ft.Colors.BLUE_700
+    )
+
+    <span class="cm"># Campo de texto</span>
+    nombre = ft.TextField(
+        label=<span class="str">"Nombre completo"</span>,
+        hint_text=<span class="str">"Ej: Ana Gómez"</span>,
+        prefix_icon=ft.Icons.PERSON
+    )
+
+    correo = ft.TextField(
+        label=<span class="str">"Correo"</span>,
+        keyboard_type=ft.KeyboardType.EMAIL,
+        prefix_icon=ft.Icons.EMAIL
+    )
+
+    <span class="cm"># Dropdown</span>
+    programa = ft.Dropdown(
+        label=<span class="str">"Programa"</span>,
+        options=[
+            ft.dropdown.Option(<span class="str">"Análisis de Sistemas"</span>),
+            ft.dropdown.Option(<span class="str">"Desarrollo de Software"</span>),
+            ft.dropdown.Option(<span class="str">"Bases de Datos"</span>),
+        ]
+    )
+
+    <span class="cm"># Checkbox y Switch</span>
+    activo = ft.Checkbox(label=<span class="str">"Estudiante activo"</span>, value=<span class="kw">True</span>)
+    notif  = ft.Switch(label=<span class="str">"Recibir notificaciones"</span>, value=<span class="kw">False</span>)
+
+    <span class="cm"># Resultado</span>
+    resultado = ft.Text(<span class="str">""</span>, color=ft.Colors.GREEN_700)
+
+    <span class="kw">def</span> <span class="fn">guardar</span>(e):
+        resultado.value = (
+            <span class="str">f"Guardado: {nombre.value} | {programa.value}"</span>
+        )
+
+    btn = ft.ElevatedButton(
+        <span class="str">"Guardar"</span>,
+        icon=ft.Icons.SAVE,
+        on_click=guardar
+    )
+
+    page.add(titulo, nombre, correo, programa, activo, notif, btn, resultado)
+
+ft.<span class="fn">run</span>(main)</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p3')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════ PASO 4 ══════ -->
+<div class="step-card" id="p4">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">04</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Layout — Row, Column, Container, expand</div>
+      <div class="step-meta">Row · Column · Container · expand · Stack · SafeArea · alignment</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Flet usa el mismo sistema de layout que Flutter: <code>Row</code> (horizontal), <code>Column</code> (vertical) y <code>Container</code> (decoración). La propiedad <code>expand</code> distribuye el espacio disponible.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Python — Layout completo</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">import</span> flet <span class="kw">as</span> ft
+
+<span class="kw">def</span> <span class="fn">main</span>(page: ft.Page):
+
+    <span class="cm"># Row — elementos horizontales</span>
+    fila = ft.Row(
+        controls=[
+            ft.Text(<span class="str">"Izquierda"</span>),
+            ft.Text(<span class="str">"Centro"</span>),
+            ft.Text(<span class="str">"Derecha"</span>),
+        ],
+        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    )
+
+    <span class="cm"># Column — elementos verticales</span>
+    columna = ft.Column(
+        controls=[
+            ft.Text(<span class="str">"Primero"</span>),
+            ft.Text(<span class="str">"Segundo"</span>),
+            ft.Text(<span class="str">"Tercero"</span>),
+        ],
+        spacing=<span class="num">10</span>,
+        scroll=ft.ScrollMode.AUTO,  <span class="cm"># columna scrolleable</span>
+    )
+
+    <span class="cm"># Container — agrupa y decora un control</span>
+    caja = ft.Container(
+        content=ft.Text(<span class="str">"Contenido"</span>, color=ft.Colors.WHITE),
+        bgcolor=ft.Colors.BLUE_700,
+        border_radius=ft.BorderRadius.all(<span class="num">12</span>),
+        padding=<span class="num">20</span>,
+        width=<span class="num">200</span>,
+        alignment=ft.alignment.center,
+    )
+
+    <span class="cm"># expand — distribuir espacio proporcional</span>
+    barra = ft.Row(
+        controls=[
+            ft.Container(expand=<span class="num">1</span>, bgcolor=ft.Colors.RED_300, height=<span class="num">50</span>),
+            ft.Container(expand=<span class="num">3</span>, bgcolor=ft.Colors.BLUE_300, height=<span class="num">50</span>),
+            ft.Container(expand=<span class="num">1</span>, bgcolor=ft.Colors.GREEN_300, height=<span class="num">50</span>),
+        ],
+        spacing=<span class="num">8</span>,
+    )
+    <span class="cm"># Resultado: 20% | 60% | 20%  (1+3+1 = 5 partes)</span>
+
+    <span class="cm"># Layout de pantalla completa con sidebar + contenido</span>
+    layout = ft.Row(
+        controls=[
+            <span class="cm"># Sidebar fijo</span>
+            ft.Container(
+                width=<span class="num">200</span>,
+                bgcolor=ft.Colors.BLUE_GREY_900,
+                content=ft.Column(controls=[
+                    ft.Text(<span class="str">"Menú"</span>, color=ft.Colors.WHITE),
+                ])
+            ),
+            <span class="cm"># Contenido principal expandible</span>
+            ft.Container(
+                expand=<span class="kw">True</span>,
+                content=ft.Text(<span class="str">"Área principal"</span>),
+                padding=<span class="num">20</span>,
+            )
+        ],
+        expand=<span class="kw">True</span>,
+    )
+
+    page.add(fila, columna, caja, barra)
+
+ft.<span class="fn">run</span>(main)</pre>
+    </div>
+
+    <div class="info-box info">
+      <span class="icon">💡</span>
+      <div><code>expand=True</code> ocupa todo el espacio disponible. <code>expand=N</code> divide el espacio proporcionalmente. En el ejemplo 1+3+1: los extremos tienen 20% y el centro 60%.</div>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p4')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════ PASO 5 ══════ -->
+<div class="step-card" id="p5">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">05</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Eventos e interactividad</div>
+      <div class="step-meta">on_click · on_change · on_submit · page.dialog · SnackBar · AlertDialog</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Python — Eventos y diálogos</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">import</span> flet <span class="kw">as</span> ft
+
+<span class="kw">def</span> <span class="fn">main</span>(page: ft.Page):
+    page.title = <span class="str">"Eventos"</span>
+
+    campo = ft.TextField(label=<span class="str">"Escribe algo"</span>)
+    output = ft.Text(<span class="str">""</span>)
+
+    <span class="cm"># on_change — se dispara con cada tecla</span>
+    <span class="kw">def</span> <span class="fn">al_cambiar</span>(e):
+        output.value = <span class="str">f"Escribiendo: {campo.value}"</span>
+
+    <span class="cm"># on_submit — se dispara al presionar Enter</span>
+    <span class="kw">def</span> <span class="fn">al_enviar</span>(e):
+        output.value = <span class="str">f"Enviado: {campo.value}"</span>
+        campo.value = <span class="str">""</span>
+
+    campo.on_change = al_cambiar
+    campo.on_submit = al_enviar
+
+    <span class="cm"># SnackBar — notificación temporal</span>
+    <span class="kw">def</span> <span class="fn">mostrar_snack</span>(e):
+        page.open(ft.SnackBar(
+            content=ft.Text(<span class="str">"✅ Guardado correctamente"</span>),
+            bgcolor=ft.Colors.GREEN_700,
+        ))
+
+    <span class="cm"># AlertDialog — ventana de confirmación</span>
+    <span class="kw">def</span> <span class="fn">mostrar_dialogo</span>(e):
+        <span class="kw">def</span> <span class="fn">confirmar</span>(e):
+            page.close(dlg)
+            output.value = <span class="str">"Confirmado"</span>
+
+        dlg = ft.AlertDialog(
+            modal=<span class="kw">True</span>,
+            title=ft.Text(<span class="str">"Confirmar"</span>),
+            content=ft.Text(<span class="str">"¿Estás seguro?"</span>),
+            actions=[
+                ft.TextButton(<span class="str">"Cancelar"</span>, on_click=<span class="kw">lambda</span> e: page.close(dlg)),
+                ft.ElevatedButton(<span class="str">"Aceptar"</span>, on_click=confirmar),
+            ]
+        )
+        page.open(dlg)
+
+    <span class="cm"># BottomSheet</span>
+    <span class="kw">def</span> <span class="fn">mostrar_sheet</span>(e):
+        bs = ft.BottomSheet(
+            content=ft.Container(
+                padding=<span class="num">20</span>,
+                content=ft.Column(
+                    tight=<span class="kw">True</span>,
+                    controls=[
+                        ft.Text(<span class="str">"Opciones"</span>, size=<span class="num">18</span>, weight=ft.FontWeight.BOLD),
+                        ft.ElevatedButton(<span class="str">"Opción 1"</span>),
+                        ft.ElevatedButton(<span class="str">"Opción 2"</span>),
+                    ]
+                )
+            )
+        )
+        page.open(bs)
+
+    page.add(
+        campo,
+        output,
+        ft.Row([
+            ft.ElevatedButton(<span class="str">"Snack"</span>, on_click=mostrar_snack),
+            ft.ElevatedButton(<span class="str">"Diálogo"</span>, on_click=mostrar_dialogo),
+            ft.ElevatedButton(<span class="str">"Sheet"</span>, on_click=mostrar_sheet),
+        ])
+    )
+
+ft.<span class="fn">run</span>(main)</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p5')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════ PASO 6 ══════ -->
+<div class="step-card" id="p6">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">06</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Controles personalizados (Custom Controls)</div>
+      <div class="step-meta">@ft.control · herencia · @dataclass · props tipadas · reusable</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>El decorador <code>@ft.control</code> permite crear componentes reutilizables con propiedades tipadas. Equivale a los <em>widgets</em> de Flutter o los <em>componentes</em> de Vue/React.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Python — Controles custom</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">import</span> flet <span class="kw">as</span> ft
+
+<span class="cm"># Control base con propiedades comunes</span>
+<span class="dec">@ft.control</span>
+<span class="kw">class</span> <span class="cls">CalcButton</span>(ft.Button):
+    expand: <span class="fn">int</span> = <span class="num">1</span>
+
+<span class="cm"># Herencia — botón para dígitos</span>
+<span class="dec">@ft.control</span>
+<span class="kw">class</span> <span class="cls">DigitButton</span>(<span class="cls">CalcButton</span>):
+    bgcolor: ft.Colors = ft.Colors.WHITE_24
+    color:   ft.Colors = ft.Colors.WHITE
+
+<span class="cm"># Botón de operación (naranja)</span>
+<span class="dec">@ft.control</span>
+<span class="kw">class</span> <span class="cls">ActionButton</span>(<span class="cls">CalcButton</span>):
+    bgcolor: ft.Colors = ft.Colors.ORANGE
+    color:   ft.Colors = ft.Colors.WHITE
+
+<span class="cm"># Control complejo — tarjeta de estudiante</span>
+<span class="dec">@ft.control</span>
+<span class="kw">class</span> <span class="cls">TarjetaEstudiante</span>(ft.Container):
+    nombre:   <span class="fn">str</span>  = <span class="str">""</span>
+    ficha:    <span class="fn">str</span>  = <span class="str">""</span>
+    activo:   <span class="fn">bool</span> = <span class="kw">True</span>
+
+    <span class="kw">def</span> <span class="fn">build</span>(self):
+        <span class="kw">return</span> ft.Container(
+            bgcolor=ft.Colors.BLUE_GREY_900,
+            border_radius=<span class="num">12</span>,
+            padding=<span class="num">16</span>,
+            content=ft.Row(controls=[
+                ft.Icon(ft.Icons.PERSON, color=ft.Colors.WHITE),
+                ft.Column(controls=[
+                    ft.Text(self.nombre, color=ft.Colors.WHITE, weight=ft.FontWeight.BOLD),
+                    ft.Text(<span class="str">f"Ficha: {self.ficha}"</span>, color=ft.Colors.BLUE_200, size=<span class="num">12</span>),
+                ], expand=<span class="kw">True</span>),
+                ft.Icon(
+                    ft.Icons.CHECK_CIRCLE <span class="kw">if</span> self.activo <span class="kw">else</span> ft.Icons.CANCEL,
+                    color=ft.Colors.GREEN_400 <span class="kw">if</span> self.activo <span class="kw">else</span> ft.Colors.RED_400
+                )
+            ])
+        )
+
+<span class="kw">def</span> <span class="fn">main</span>(page: ft.Page):
+    page.add(
+        <span class="cls">TarjetaEstudiante</span>(nombre=<span class="str">"Ana Gómez"</span>,    ficha=<span class="str">"2876543"</span>, activo=<span class="kw">True</span>),
+        <span class="cls">TarjetaEstudiante</span>(nombre=<span class="str">"Luis Torres"</span>,  ficha=<span class="str">"2876544"</span>, activo=<span class="kw">False</span>),
+    )
+
+ft.<span class="fn">run</span>(main)</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p6')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════ PASO 7 ══════ -->
+<div class="step-card" id="p7">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">07</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Navegación y routing</div>
+      <div class="step-meta">NavigationBar · NavigationDrawer · AppBar · page.views · routing</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Python — Navegación con múltiples vistas</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">import</span> flet <span class="kw">as</span> ft
+
+<span class="kw">def</span> <span class="fn">main</span>(page: ft.Page):
+    page.title = <span class="str">"EduCode"</span>
+
+    <span class="cm"># AppBar — barra superior</span>
+    page.appbar = ft.AppBar(
+        leading=ft.Icon(ft.Icons.SCHOOL),
+        title=ft.Text(<span class="str">"EduCode"</span>),
+        bgcolor=ft.Colors.BLUE_700,
+        color=ft.Colors.WHITE,
+        actions=[
+            ft.IconButton(ft.Icons.SETTINGS, icon_color=ft.Colors.WHITE),
+        ]
+    )
+
+    <span class="cm"># Contenido de cada sección</span>
+    <span class="kw">def</span> <span class="fn">vista_cursos</span>():
+        <span class="kw">return</span> ft.Column([
+            ft.Text(<span class="str">"Cursos disponibles"</span>, size=<span class="num">20</span>, weight=ft.FontWeight.BOLD),
+            ft.Text(<span class="str">"Bases de Datos"</span>),
+            ft.Text(<span class="str">"PHP Puro"</span>),
+            ft.Text(<span class="str">"Laravel 13"</span>),
+        ], spacing=<span class="num">10</span>)
+
+    <span class="kw">def</span> <span class="fn">vista_perfil</span>():
+        <span class="kw">return</span> ft.Column([
+            ft.Text(<span class="str">"Mi perfil"</span>, size=<span class="num">20</span>, weight=ft.FontWeight.BOLD),
+            ft.Text(<span class="str">"James Mosquera"</span>),
+            ft.Text(<span class="str">"Instructor EduCode"</span>),
+        ])
+
+    contenido = ft.Column([vista_cursos()])
+
+    <span class="cm"># NavigationBar — barra inferior</span>
+    <span class="kw">def</span> <span class="fn">cambiar_tab</span>(e):
+        idx = e.control.selected_index
+        contenido.controls.clear()
+        <span class="kw">if</span> idx == <span class="num">0</span>:
+            contenido.controls.append(vista_cursos())
+        <span class="kw">elif</span> idx == <span class="num">1</span>:
+            contenido.controls.append(vista_perfil())
+
+    page.navigation_bar = ft.NavigationBar(
+        destinations=[
+            ft.NavigationBarDestination(icon=ft.Icons.BOOK, label=<span class="str">"Cursos"</span>),
+            ft.NavigationBarDestination(icon=ft.Icons.PERSON, label=<span class="str">"Perfil"</span>),
+        ],
+        on_change=cambiar_tab,
+    )
+
+    page.add(contenido)
+
+ft.<span class="fn">run</span>(main)</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p7')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════ PASO 8 ══════ -->
+<div class="step-card" id="p8">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">08</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Temas, colores y tipografía</div>
+      <div class="step-meta">page.theme · ThemeMode · ft.Colors · ColorScheme · dark mode</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Python — Temas completos</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">import</span> flet <span class="kw">as</span> ft
+
+<span class="kw">def</span> <span class="fn">main</span>(page: ft.Page):
+    page.title = <span class="str">"EduCode"</span>
+
+    <span class="cm"># Tema personalizado</span>
+    page.theme = ft.Theme(
+        color_scheme_seed=ft.Colors.BLUE,   <span class="cm"># genera paleta desde este color</span>
+        use_material3=<span class="kw">True</span>,
+        font_family=<span class="str">"Roboto"</span>,
+    )
+
+    <span class="cm"># Modo oscuro / claro / sistema</span>
+    page.theme_mode = ft.ThemeMode.SYSTEM   <span class="cm"># LIGHT, DARK, SYSTEM</span>
+
+    <span class="kw">def</span> <span class="fn">toggle_theme</span>(e):
+        page.theme_mode = (
+            ft.ThemeMode.DARK
+            <span class="kw">if</span> page.theme_mode == ft.ThemeMode.LIGHT
+            <span class="kw">else</span> ft.ThemeMode.LIGHT
+        )
+
+    <span class="cm"># Colores predefinidos</span>
+    <span class="cm"># ft.Colors.BLUE_700, GREEN_400, RED_300, ORANGE, etc.</span>
+    <span class="cm"># ft.Colors.WHITE, BLACK, TRANSPARENT</span>
+
+    <span class="cm"># Texto con estilo completo</span>
+    texto = ft.Text(
+        <span class="str">"EduCode"</span>,
+        size=<span class="num">32</span>,
+        weight=ft.FontWeight.W_900,
+        color=ft.Colors.BLUE_700,
+        italic=<span class="kw">False</span>,
+        font_family=<span class="str">"Roboto"</span>,
+        text_align=ft.TextAlign.CENTER,
+    )
+
+    page.add(
+        texto,
+        ft.ElevatedButton(
+            <span class="str">"🌙 Cambiar tema"</span>,
+            on_click=toggle_theme
+        )
+    )
+
+ft.<span class="fn">run</span>(main)</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p8')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════ PASO 9 ══════ -->
+<div class="step-card" id="p9">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">09</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Publicar la app</div>
+      <div class="step-meta">flet publish · web · APK Android · iOS · desktop · pyproject.toml</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal — Publicar para cada plataforma</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Web — genera carpeta build/web</span>
+flet publish src/main.py
+
+<span class="cm"># Android APK</span>
+flet build apk
+
+<span class="cm"># Android App Bundle (Google Play)</span>
+flet build aab
+
+<span class="cm"># iOS (requiere Mac + Xcode)</span>
+flet build ipa
+
+<span class="cm"># Desktop Windows (exe)</span>
+flet build windows
+
+<span class="cm"># Desktop macOS</span>
+flet build macos
+
+<span class="cm"># Desktop Linux</span>
+flet build linux</pre>
+    </div>
+
+    <h3>pyproject.toml — configuración del app</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">TOML — pyproject.toml</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>[tool.flet]
+app_name = "EduCode"
+description = "Plataforma educativa EduCode"
+product = "EduCode"
+company = "CEFIT"
+copyright = "2025 EduCode"
+version = "1.0.0"
+
+[tool.flet.app]
+module = "src.main"
+
+[tool.flet.android]
+min_sdk_version = 21
+
+[tool.flet.permissions]
+android = ["android.permission.INTERNET"]</pre>
+    </div>
+
+    <div class="info-box tip">
+      <span class="icon">✅</span>
+      <div>Para la web, el comando <code>flet publish</code> genera una carpeta <code>build/web</code> lista para subir a cualquier hosting estático (Netlify, Vercel, GitHub Pages) o servidor web.</div>
+    </div>
+
+    <div class="info-box warn">
+      <span class="icon">⚠️</span>
+      <div>Para compilar para <strong>iOS</strong> necesitas una Mac con Xcode instalado. Para <strong>Android</strong> necesitas el Android SDK o tener Flutter instalado previamente en el equipo.</div>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p9')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+</main>
+<footer>EduCode · Flet · Docs: flet.dev/docs · Python 3.10+</footer>
+
+<script>
+const TOTAL=9;
+function toggle(h){const c=h.closest('.step-card');const o=c.classList.contains('open');document.querySelectorAll('.step-card.open').forEach(x=>x.classList.remove('open'));if(!o)c.classList.add('open')}
+function copyCode(btn){const pre=btn.closest('.code-block').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='✓ Copiado';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copiar';btn.classList.remove('copied')},2000)})}
+function markDone(btn,id){const c=document.getElementById(id);c.classList.toggle('done');const d=c.classList.contains('done');btn.textContent=d?'✓  Completado':'✓  Marcar como completado';update()}
+function update(){const d=document.querySelectorAll('.step-card.done').length;document.getElementById('progressBar').style.width=(d/TOTAL*100)+'%';document.getElementById('progressCount').textContent=d+' / '+TOTAL}
+document.querySelector('.step-card .step-header').click();
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const id=e.target.id;document.querySelectorAll('.nav-pill').forEach(p=>p.classList.toggle('active',p.getAttribute('href')==='#'+id))}}),{threshold:.4});
+document.querySelectorAll('.step-card').forEach(c=>obs.observe(c));
+</script>
+</body>
+</html>

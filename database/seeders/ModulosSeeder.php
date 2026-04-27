@@ -236,6 +236,45 @@ class ModulosSeeder extends Seeder
                 ],
             ],
             [
+                'nombre'      => 'Diseño Móvil',
+                'descripcion' => 'Apps nativas y multiplataforma con Flutter (Dart) y Flet (Python). Un solo código para Android, iOS, Web y Desktop.',
+                'icono'       => '📱',
+                'color'       => 'emerald',
+                'orden'       => 6,
+                'lecciones'   => [
+                    [
+                        'titulo'           => 'Flutter — Apps nativas con Dart',
+                        'descripcion'      => 'Instala Flutter, aprende Dart y construye tu primera app con widgets, layouts y navegación.',
+                        'orden'            => 1,
+                        'duracion_minutos' => 60,
+                        'pasos' => [
+                            ['titulo' => '¿Qué es Flutter?', 'tipo' => 'teoria', 'contenido' => "Flutter es el framework de Google para crear apps nativas para Android, iOS, Web y Desktop desde un único código Dart.\nNo usa WebView — compila a código nativo real en todas las plataformas.\nEl lenguaje Dart tiene tipado estricto y null safety desde Dart 2.12."],
+                            ['titulo' => 'Instalación y primer proyecto', 'tipo' => 'codigo', 'contenido' => "# Windows con winget\nwinget install Google.Flutter\n\n# Verificar instalación\nflutter doctor\n\n# Crear proyecto y correr\nflutter create mi_app\ncd mi_app\nflutter run"],
+                            ['titulo' => 'Todo es un widget', 'tipo' => 'tip', 'contenido' => "En Flutter todo es un widget: Text, Button, Container, Padding, Column, Row, incluso el color de fondo.\nLos widgets se componen en árboles anidados.\nStatelessWidget: UI estática. StatefulWidget: UI que cambia con setState()."],
+                        ],
+                        'ejercicios' => [
+                            ['enunciado' => 'Instala Flutter y crea un StatefulWidget con contador: muestra el número y dos botones para sumar y restar.', 'dificultad' => 'medio'],
+                            ['enunciado' => 'Construye una pantalla con ListView.builder que liste los 6 módulos de EduCode. Cada item muestra icono, nombre y navega al presionar.', 'dificultad' => 'dificil'],
+                        ],
+                    ],
+                    [
+                        'titulo'           => 'Flet — Apps multiplataforma con Python',
+                        'descripcion'      => 'Instala Flet y construye apps de escritorio, web y móvil usando solo Python.',
+                        'orden'            => 2,
+                        'duracion_minutos' => 50,
+                        'pasos' => [
+                            ['titulo' => '¿Qué es Flet?', 'tipo' => 'teoria', 'contenido' => "Flet usa Flutter internamente pero tú escribes solo Python. Sin HTML, CSS ni JavaScript.\nEl mismo código corre como app nativa de escritorio, en el browser y en Android/iOS.\nRequiere Python 3.10 o superior."],
+                            ['titulo' => 'Instalación', 'tipo' => 'codigo', 'contenido' => "# Crear entorno virtual\npython -m venv .venv\n.venv\\Scripts\\activate    # Windows\nsource .venv/bin/activate  # Mac/Linux\n\n# Instalar Flet completo\npip install 'flet[all]'\nflet --version"],
+                            ['titulo' => 'Primera app Flet', 'tipo' => 'codigo', 'contenido' => "import flet as ft\n\ndef main(page: ft.Page):\n    page.title = \"EduCode\"\n    page.add(ft.Text(\"Bienvenido a EduCode\", size=24, weight=ft.FontWeight.BOLD))\n\nft.run(main)"],
+                        ],
+                        'ejercicios' => [
+                            ['enunciado' => 'Instala Flet y crea un contador con ft.TextField e IconButton para sumar y restar.', 'dificultad' => 'facil'],
+                            ['enunciado' => 'Crea una lista scrolleable con ft.ListView de los 6 módulos de EduCode usando ft.ListTile con icono y nombre.', 'dificultad' => 'medio'],
+                        ],
+                    ],
+                ],
+            ],
+            [
                 'nombre'      => 'Laravel Moonshine',
                 'descripcion' => 'Panel de administración con Resources, Fields, Actions y relaciones HasMany inline.',
                 'icono'       => '🌙',
