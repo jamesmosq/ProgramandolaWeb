@@ -123,7 +123,7 @@
     {{-- Stats --}}
     <div class="flex flex-wrap items-center justify-center gap-8 mt-14">
         @foreach([
-            ['5', 'Módulos'],
+            ['6', 'Módulos'],
             ['30+', 'Lecciones'],
             ['100+', 'Ejercicios'],
             ['0', 'Costo'],
@@ -162,7 +162,7 @@
 
         <div class="text-center mb-14">
             <span class="mono text-xs text-violet-400 tracking-widest uppercase">Contenido del curso</span>
-            <h2 class="text-3xl sm:text-4xl font-extrabold mt-3">5 módulos, una ruta clara</h2>
+            <h2 class="text-3xl sm:text-4xl font-extrabold mt-3">6 módulos, una ruta clara</h2>
             <p class="text-gray-400 mt-3 max-w-xl mx-auto">Cada módulo construye sobre el anterior. Al terminar tendrás una plataforma web real funcionando.</p>
         </div>
 
@@ -229,7 +229,7 @@
             </div>
 
             {{-- Módulo 5: Moonshine --}}
-            <div class="glow-card card-hover bg-gray-900 border border-gray-800 rounded-2xl p-6 group cursor-default sm:col-span-2 lg:col-span-1">
+            <div class="glow-card card-hover bg-gray-900 border border-gray-800 rounded-2xl p-6 group cursor-default">
                 <div class="flex items-start justify-between mb-5">
                     <span class="text-4xl">🌙</span>
                     <span class="mono text-xs text-gray-600 bg-gray-800 px-2.5 py-1 rounded-lg">Módulo 05</span>
@@ -239,6 +239,21 @@
                 <div class="flex flex-wrap gap-2">
                     @foreach(['Moonshine v3', 'Resources', 'Admin panel', 'CRUD'] as $tag)
                     <span class="mono text-xs bg-purple-400/10 text-purple-400 border border-purple-400/15 px-2 py-0.5 rounded-md">{{ $tag }}</span>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- Módulo 6: Diseño Móvil --}}
+            <div class="glow-card card-hover bg-gray-900 border border-gray-800 rounded-2xl p-6 group cursor-default">
+                <div class="flex items-start justify-between mb-5">
+                    <span class="text-4xl">📱</span>
+                    <span class="mono text-xs text-gray-600 bg-gray-800 px-2.5 py-1 rounded-lg">Módulo 06</span>
+                </div>
+                <h3 class="font-bold text-lg group-hover:text-emerald-400 transition-colors mb-2">Diseño Móvil</h3>
+                <p class="text-gray-400 text-sm leading-relaxed mb-4">Apps nativas para Android, iOS, Web y Desktop con Flutter (Dart) y Flet (Python).</p>
+                <div class="flex flex-wrap gap-2">
+                    @foreach(['Flutter', 'Dart', 'Flet', 'Python'] as $tag)
+                    <span class="mono text-xs bg-emerald-400/10 text-emerald-400 border border-emerald-400/15 px-2 py-0.5 rounded-md">{{ $tag }}</span>
                     @endforeach
                 </div>
             </div>
@@ -259,13 +274,14 @@
 
         <div class="space-y-4">
             @foreach([
-                ['🗄️', 'Aprende SQL y crea la base de datos', 'Diseñas las tablas reales de la plataforma. Entienes relaciones, claves foráneas y por qué importa el orden.', 'cyan'],
+                ['🗄️', 'Aprende SQL y crea la base de datos', 'Diseñas las tablas reales de la plataforma. Entiendes relaciones, claves foráneas y por qué importa el orden.', 'cyan'],
                 ['🐘', 'Domina PHP antes de Laravel', 'Variables, arrays, POO y PDO. Con esto entenderás el framework en lugar de solo copiar código.', 'violet'],
                 ['🎨', 'Diseña interfaces con HTML y Tailwind', 'Construyes la UI de la plataforma desde cero. Responsive, dark mode y componentes reutilizables.', 'pink'],
                 ['⚡', 'Construye el LMS con Laravel', 'Conectas todo: migraciones, modelos, controladores, vistas Blade y autenticación real con Breeze.', 'orange'],
                 ['🌙', 'Agrega el panel de administración', 'Moonshine convierte tu app en un producto completo con CRUD, búsquedas y gestión de contenido.', 'purple'],
+                ['📱', 'Crea apps móviles con Flutter y Flet', 'Un solo código para Android, iOS, Web y Desktop. Dart con Flutter o Python puro con Flet.', 'emerald'],
             ] as $i => [$emoji, $titulo, $desc, $color])
-            <div class="flex gap-5 relative {{ $i < 4 ? 'step-line' : '' }}">
+            <div class="flex gap-5 relative {{ $i < 5 ? 'step-line' : '' }}">
                 {{-- Número --}}
                 <div @class([
                     'w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 font-bold mono text-sm border-2 relative z-10',
@@ -274,6 +290,7 @@
                     'bg-pink-400/10 border-pink-400/40 text-pink-400' => $color === 'pink',
                     'bg-orange-400/10 border-orange-400/40 text-orange-400' => $color === 'orange',
                     'bg-purple-400/10 border-purple-400/40 text-purple-400' => $color === 'purple',
+                    'bg-emerald-400/10 border-emerald-400/40 text-emerald-400' => $color === 'emerald',
                 ])>
                     0{{ $i + 1 }}
                 </div>

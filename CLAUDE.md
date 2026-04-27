@@ -108,6 +108,17 @@ progresos: id, user_id(FK), leccion_id(FK), completada_at(TIMESTAMP nullable), t
 
 Al agregar un nuevo módulo hay que añadir su color al array `$colores` en `modulos/index.blade.php`.
 
+### Landing page — OBLIGATORIO al agregar módulos
+
+Cada vez que se añade un módulo nuevo, actualizar **`resources/views/welcome.blade.php`**:
+
+1. **Stat de módulos** — cambiar el número en el array `['N', 'Módulos']` del hero
+2. **Encabezado de sección** — `"N módulos, una ruta clara"`
+3. **Tarjeta del módulo** — añadir card en el grid de `#modulos` con icono, nombre, descripción y tags con el color correspondiente. Con 6+ módulos el grid de 3 cols ya no necesita `sm:col-span-2` en el último.
+4. **Ruta de aprendizaje** — añadir paso en el array de `#ruta` con emoji, título corto, descripción y color
+5. **Condición step-line** — ajustar `$i < N-1` para que la línea conectora no aparezca en el último paso
+6. **Clase del color** — añadir la entrada `'bg-COLOR-400/10 border-COLOR-400/40 text-COLOR-400' => $color === 'COLOR'` al `@class` del número de paso
+
 ---
 
 ## Reglas de desarrollo
