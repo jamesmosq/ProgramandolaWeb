@@ -7,6 +7,7 @@
 
         <title>{{ isset($title) ? $title . ' — ' : '' }}{{ config('app.name', 'EduCode') }}</title>
 
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 

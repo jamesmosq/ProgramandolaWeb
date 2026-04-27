@@ -6,10 +6,7 @@
             <div class="flex items-center gap-8">
                 <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5">
                     <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center text-sm font-bold text-white shadow-lg">E</div>
-                    <span class="font-bold text-base tracking-tight">
-                        {{ config('app.name', 'EduCode') }}
-                        <span class="mono text-xs font-normal text-gray-500 ml-1">CEFIT</span>
-                    </span>
+                    <span class="font-bold text-base tracking-tight">{{ config('app.name', 'EduCode') }}</span>
                 </a>
 
                 {{-- Nav links (desktop) --}}

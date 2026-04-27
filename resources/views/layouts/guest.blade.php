@@ -7,6 +7,7 @@
 
         <title>{{ config('app.name', 'EduCode') }}</title>
 
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
@@ -27,10 +28,7 @@
                 <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center text-sm font-bold text-white shadow-lg">
                     E
                 </div>
-                <div>
-                    <span class="font-bold text-base tracking-tight">{{ config('app.name', 'EduCode') }}</span>
-                    <span class="mono text-xs font-normal text-gray-500 ml-1.5">CEFIT</span>
-                </div>
+                <span class="font-bold text-base tracking-tight">{{ config('app.name', 'EduCode') }}</span>
             </a>
 
             {{-- Card --}}
@@ -41,7 +39,7 @@
 
             {{-- Footer --}}
             <p class="mono text-xs text-gray-700 mt-4">
-                {{ config('app.name') }} · CEFIT-SENA
+                {{ config('app.name') }}
             </p>
         </div>
 

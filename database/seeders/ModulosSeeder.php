@@ -12,6 +12,10 @@ class ModulosSeeder extends Seeder
 {
     public function run(): void
     {
+        if (Modulo::count() > 0) {
+            return;
+        }
+
         $modulos = [
             [
                 'nombre'      => 'Bases de Datos',

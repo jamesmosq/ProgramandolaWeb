@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'EduCode') }} — Aprende programación paso a paso</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -49,10 +50,7 @@
             <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center text-sm font-bold text-white shadow-lg">
                 E
             </div>
-            <span class="font-bold text-base tracking-tight">
-                {{ config('app.name', 'EduCode') }}
-                <span class="mono text-xs font-normal text-gray-500 ml-1">CEFIT</span>
-            </span>
+            <span class="font-bold text-base tracking-tight">{{ config('app.name', 'EduCode') }}</span>
         </a>
 
         {{-- Links centro (tablet+) --}}
@@ -89,7 +87,7 @@
     {{-- Badge --}}
     <div class="inline-flex items-center gap-2 mono text-xs text-cyan-400 bg-cyan-400/10 border border-cyan-400/20 px-4 py-1.5 rounded-full mb-8">
         <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
-        CEFIT-SENA · Formación técnica en programación
+        Formación técnica en programación
     </div>
 
     {{-- Headline --}}
@@ -280,7 +278,7 @@
 
             <div>
                 <span class="mono text-xs text-violet-400 tracking-widest uppercase">¿Para quién es?</span>
-                <h2 class="text-3xl sm:text-4xl font-extrabold mt-3 mb-5">Diseñado para estudiantes CEFIT-SENA</h2>
+                <h2 class="text-3xl sm:text-4xl font-extrabold mt-3 mb-5">Diseñado para aprender desde cero</h2>
                 <p class="text-gray-400 leading-relaxed mb-6">
                     No necesitas experiencia previa. Empezamos desde cero con bases de datos y llegamos hasta
                     construir una aplicación web completa con panel de administración.
@@ -356,7 +354,7 @@
         <div class="flex items-center gap-2.5">
             <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center text-xs font-bold text-white">E</div>
             <span class="font-bold text-sm">{{ config('app.name', 'EduCode') }}</span>
-            <span class="mono text-xs text-gray-600">CEFIT-SENA</span>
+            <span class="mono text-xs text-gray-600">{{ now()->year }}</span>
         </div>
         <p class="mono text-xs text-gray-600">
             Construido con Laravel {{ app()->version() }} · PHP {{ PHP_MAJOR_VERSION }}.{{ PHP_MINOR_VERSION }}
