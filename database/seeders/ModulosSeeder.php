@@ -12,9 +12,6 @@ class ModulosSeeder extends Seeder
 {
     public function run(): void
     {
-        if (Modulo::count() > 0) {
-            return;
-        }
 
         $modulos = [
             [
@@ -279,21 +276,33 @@ class ModulosSeeder extends Seeder
             $lecciones = $moduloData['lecciones'] ?? [];
             unset($moduloData['lecciones']);
 
-            $modulo = Modulo::create($moduloData);
+            $modulo = Modulo::updateOrCreate(
+                ['orden' => $moduloData['orden']],
+                $moduloData
+            );
 
             foreach ($lecciones as $leccionData) {
-                $pasos = $leccionData['pasos'] ?? [];
+                $pasos     = $leccionData['pasos'] ?? [];
                 $ejercicios = $leccionData['ejercicios'] ?? [];
                 unset($leccionData['pasos'], $leccionData['ejercicios']);
 
-                $leccion = $modulo->lecciones()->create($leccionData);
+                $leccion = Leccion::updateOrCreate(
+                    ['modulo_id' => $modulo->id, 'orden' => $leccionData['orden']],
+                    [...$leccionData, 'modulo_id' => $modulo->id]
+                );
 
                 foreach ($pasos as $i => $paso) {
-                    $leccion->pasos()->create([...$paso, 'orden' => $i + 1]);
+                    Paso::updateOrCreate(
+                        ['leccion_id' => $leccion->id, 'orden' => $i + 1],
+                        [...$paso, 'leccion_id' => $leccion->id, 'orden' => $i + 1]
+                    );
                 }
 
                 foreach ($ejercicios as $i => $ejercicio) {
-                    $leccion->ejercicios()->create([...$ejercicio, 'orden' => $i + 1]);
+                    Ejercicio::updateOrCreate(
+                        ['leccion_id' => $leccion->id, 'orden' => $i + 1],
+                        [...$ejercicio, 'leccion_id' => $leccion->id, 'orden' => $i + 1]
+                    );
                 }
             }
         }
