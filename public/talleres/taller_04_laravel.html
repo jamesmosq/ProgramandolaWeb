@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taller 04 — Laravel | EduCode CEFIT</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0f1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --accent: #f97316;
+    --accent2: #ea580c;
+    --accent3: #10b981;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --code-bg: #0d1117;
+    --step-done: #10b981;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+  header { position: relative; padding: 60px 40px 50px; text-align: center; overflow: hidden; border-bottom: 1px solid var(--border); }
+  header::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(249,115,22,0.12), transparent),
+                radial-gradient(ellipse 60% 40% at 90% 110%, rgba(234,88,12,0.1), transparent);
+  }
+  header .module-tag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 3px; color: var(--accent); background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.25); padding: 4px 14px; border-radius: 20px; margin-bottom: 8px; text-transform: uppercase; }
+  header .taller-num { display: block; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); margin-bottom: 14px; letter-spacing: 2px; }
+  header h1 { font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 800; line-height: 1.15; position: relative; }
+  header h1 span { color: var(--accent); }
+  header p.subtitle { margin-top: 14px; font-size: 0.97rem; color: var(--text-dim); font-weight: 300; max-width: 560px; margin-inline: auto; line-height: 1.7; position: relative; }
+  header .objetivo { display: inline-flex; align-items: center; gap: 8px; margin-top: 22px; font-size: 0.82rem; color: var(--accent3); background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); padding: 8px 18px; border-radius: 30px; position: relative; }
+
+  .progress-wrap { padding: 18px 40px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 16px; }
+  .progress-label { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .progress-bar-outer { flex: 1; height: 6px; background: var(--border); border-radius: 10px; overflow: hidden; }
+  .progress-bar-inner { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 10px; transition: width 0.4s ease; }
+  .progress-count { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent); white-space: nowrap; }
+
+  .nav-pills { display: flex; gap: 8px; flex-wrap: wrap; padding: 16px 40px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .nav-pill { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 5px 13px; border-radius: 20px; background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; transition: all 0.2s; text-decoration: none; }
+  .nav-pill:hover, .nav-pill.active { background: rgba(249,115,22,0.1); border-color: var(--accent); color: var(--accent); }
+
+  main { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  .step-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 28px; overflow: hidden; transition: border-color 0.3s; scroll-margin-top: 100px; animation: fadeUp 0.4s ease both; }
+  .step-card.done { border-color: rgba(16,185,129,0.35); }
+  .step-header { display: flex; align-items: center; gap: 16px; padding: 20px 26px; cursor: pointer; user-select: none; background: var(--surface); transition: background 0.2s; }
+  .step-header:hover { background: var(--surface2); }
+  .step-num { width: 40px; height: 40px; border-radius: 12px; background: var(--surface2); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--text-muted); flex-shrink: 0; transition: all 0.3s; }
+  .step-card.done .step-num { background: rgba(16,185,129,0.15); border-color: var(--step-done); color: var(--step-done); }
+  .step-title-wrap { flex: 1; }
+  .step-title { font-size: 1rem; font-weight: 700; line-height: 1.3; }
+  .step-meta { font-size: 0.76rem; color: var(--text-muted); margin-top: 3px; font-family: 'JetBrains Mono', monospace; }
+  .step-toggle { font-size: 16px; color: var(--text-muted); transition: transform 0.3s; flex-shrink: 0; }
+  .step-card.open .step-toggle { transform: rotate(180deg); }
+  .step-body { display: none; padding: 0 26px 26px; border-top: 1px solid var(--border); }
+  .step-card.open .step-body { display: block; }
+  .step-body p, .step-body li { color: var(--text-dim); line-height: 1.8; font-size: 0.91rem; }
+  .step-body ul, .step-body ol { padding-left: 20px; margin: 10px 0; }
+  .step-body li { margin-bottom: 5px; }
+  .step-body h3 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin: 20px 0 10px; font-family: 'JetBrains Mono', monospace; }
+
+  .info-box { border-radius: 10px; padding: 13px 16px; margin: 14px 0; font-size: 0.87rem; line-height: 1.7; display: flex; gap: 12px; align-items: flex-start; }
+  .info-box .icon { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+  .info-box.tip { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); color: #6ee7b7; }
+  .info-box.warn { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); color: #fcd34d; }
+  .info-box.info { background: rgba(249,115,22,0.06); border: 1px solid rgba(249,115,22,0.18); color: #fdba74; }
+
+  .code-block { position: relative; margin: 16px 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+  .code-header { display: flex; align-items: center; justify-content: space-between; padding: 9px 16px; background: #161c2d; border-bottom: 1px solid var(--border); }
+  .code-lang { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; }
+  .copy-btn { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 3px 11px; border-radius: 6px; background: rgba(249,115,22,0.1); border: 1px solid rgba(249,115,22,0.3); color: var(--accent); cursor: pointer; transition: all 0.2s; }
+  .copy-btn:hover { background: rgba(249,115,22,0.2); }
+  .copy-btn.copied { color: var(--accent3); border-color: var(--accent3); }
+  pre { background: var(--code-bg); padding: 18px 20px; overflow-x: auto; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.7; color: #c9d1d9; }
+
+  .kw { color: #ff7b72; font-weight: 600; }
+  .fn { color: #d2a8ff; }
+  .str { color: #a5d6ff; }
+  .num { color: #79c0ff; }
+  .cm { color: #6e7681; font-style: italic; }
+  .var { color: #ffa657; }
+  .cls { color: #7ee787; }
+  .tag { color: #7ee787; }
+  .attr { color: #ffa657; }
+
+  .tu-turno { background: rgba(234,88,12,0.07); border: 1px solid rgba(234,88,12,0.25); border-radius: 12px; padding: 18px 20px; margin: 18px 0; }
+  .tu-turno-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .tu-turno-badge { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 2px; color: #fb923c; background: rgba(234,88,12,0.15); border: 1px solid rgba(234,88,12,0.3); padding: 3px 10px; border-radius: 20px; text-transform: uppercase; }
+  .tu-turno h4 { font-size: 0.92rem; font-weight: 700; color: #fed7aa; }
+  .tu-turno p { font-size: 0.87rem; color: #fb923c; line-height: 1.7; margin-bottom: 10px; }
+  .code-input { width: 100%; min-height: 100px; background: var(--code-bg); border: 1px solid rgba(234,88,12,0.3); border-radius: 8px; padding: 14px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #c9d1d9; resize: vertical; outline: none; transition: border-color 0.2s; }
+  .code-input:focus { border-color: var(--accent2); }
+  .code-input::placeholder { color: var(--text-muted); }
+
+  .checklist { list-style: none !important; padding-left: 0 !important; }
+  .checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; font-size: 0.88rem; color: var(--text-dim); border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li input[type="checkbox"] { margin-top: 3px; accent-color: var(--accent3); flex-shrink: 0; cursor: pointer; }
+
+  .check-btn { margin-top: 20px; display: inline-flex; align-items: center; gap: 8px; font-family: 'Sora', sans-serif; font-size: 0.84rem; font-weight: 600; padding: 9px 20px; border-radius: 10px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: var(--step-done); cursor: pointer; transition: all 0.2s; }
+  .check-btn:hover { background: rgba(16,185,129,0.2); }
+  .check-btn.checked { background: rgba(16,185,129,0.25); }
+
+  footer { text-align: center; padding: 36px; color: var(--text-muted); font-size: 0.78rem; border-top: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; }
+
+  @media(max-width:600px) {
+    header { padding: 36px 18px; }
+    .nav-pills, .progress-wrap { padding: 12px 14px; }
+    main { padding: 20px 12px 60px; }
+    .step-header { padding: 14px 14px; }
+    .step-body { padding: 0 14px 18px; }
+  }
+  @keyframes fadeUp { from { opacity:0; transform: translateY(14px); } to { opacity:1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="module-tag">Módulo 04</div>
+  <span class="taller-num">TALLER PRÁCTICO · CEFIT-SENA · EduCode</span>
+  <h1><span>Laravel 11</span><br>Construye el LMS completo</h1>
+  <p class="subtitle">Instalación, migraciones, modelos con relaciones, controladores, vistas Blade y autenticación con Breeze. Construyes la plataforma real.</p>
+  <div class="objetivo">🎯 Al final tendrás EduCode funcionando en tu localhost</div>
+</header>
+
+<div class="progress-wrap">
+  <span class="progress-label">PROGRESO</span>
+  <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+  <span class="progress-count" id="progressCount">0 / 10</span>
+</div>
+
+<div class="nav-pills">
+  <a class="nav-pill" href="#paso1">1. Instalación</a>
+  <a class="nav-pill" href="#paso2">2. .env</a>
+  <a class="nav-pill" href="#paso3">3. Migraciones</a>
+  <a class="nav-pill" href="#paso4">4. Modelos</a>
+  <a class="nav-pill" href="#paso5">5. Rutas</a>
+  <a class="nav-pill" href="#paso6">6. Controladores</a>
+  <a class="nav-pill" href="#paso7">7. Vistas Blade</a>
+  <a class="nav-pill" href="#paso8">8. Breeze Auth</a>
+  <a class="nav-pill" href="#paso9">9. Seeders</a>
+  <a class="nav-pill" href="#paso10">10. Deploy</a>
+</div>
+
+<main>
+
+<!-- PASO 1 -->
+<div class="step-card" id="paso1">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">01</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Instalación y configuración inicial</div>
+      <div class="step-meta">composer · laravel new · Herd · php artisan serve</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Usamos <strong>Laravel Herd</strong> para desarrollo local en Windows. Herd maneja PHP, Nginx y dominios locales automáticamente (.test). El proyecto ya está en <code>C:\Users\...\Herd\programando</code>.</p>
+
+    <div class="info-box info">
+      <span class="icon">📌</span>
+      <div>El proyecto <strong>ya existe</strong>. Estos comandos son para cuando crees uno nuevo. Si es tu primera vez, sigue estos pasos en una carpeta diferente para practicar.</div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># 1. Crear nuevo proyecto Laravel 11</span>
+composer create-project laravel/laravel mi-lms
+
+<span class="cm"># 2. Entrar al directorio</span>
+cd mi-lms
+
+<span class="cm"># 3. Verificar versión de Laravel</span>
+php artisan --version
+
+<span class="cm"># 4. Con Laravel Herd (en carpeta Herd/)</span>
+<span class="cm"># Herd detecta automáticamente el directorio y crea mi-lms.test</span>
+
+<span class="cm"># 5. Iniciar servidor manualmente (sin Herd)</span>
+php artisan serve
+<span class="cm"># → http://127.0.0.1:8000</span>
+
+<span class="cm"># 6. Iniciar también Vite (assets CSS/JS)</span>
+npm install
+npm run dev</pre>
+    </div>
+
+    <h3>Estructura de carpetas clave</h3>
+    <ul>
+      <li><strong>app/Models/</strong> — Clases Eloquent (User, Modulo, Leccion…)</li>
+      <li><strong>app/Http/Controllers/</strong> — Lógica de cada ruta</li>
+      <li><strong>database/migrations/</strong> — Scripts de BD versionados</li>
+      <li><strong>resources/views/</strong> — Plantillas Blade (.blade.php)</li>
+      <li><strong>routes/web.php</strong> — Definición de todas las rutas HTTP</li>
+    </ul>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Verifica la instalación</h4>
+      </div>
+      <p>Abre <code>http://programando.test</code> (o <code>http://127.0.0.1:8000</code>). ¿Qué ves? Describe la pantalla de bienvenida y escribe el comando para ver todas las rutas registradas:</p>
+      <textarea class="code-input" placeholder="# Comando para ver rutas:&#10;php artisan ...&#10;&#10;# ¿Qué rutas aparecen por defecto?&#10;&#10;# URL del proyecto en tu máquina:"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> El proyecto abre en el navegador sin errores</li>
+      <li><input type="checkbox"> Ejecuté php artisan --version y anoté la versión</li>
+      <li><input type="checkbox"> Ejecuté php artisan route:list para ver las rutas</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso1')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 2 -->
+<div class="step-card" id="paso2">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">02</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Configurar el archivo .env</div>
+      <div class="step-meta">DB_* · APP_NAME · APP_LOCALE · .env vs config/</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>El archivo <code>.env</code> guarda la configuración sensible del entorno (BD, mail, app key). <strong>Nunca se sube a Git</strong>. Laravel lo lee automáticamente.</p>
+
+    <div class="info-box warn">
+      <span class="icon">🔒</span>
+      <div><code>.env</code> está en <code>.gitignore</code> por defecto. Usa <code>.env.example</code> como plantilla para otros desarrolladores. Nunca pongas contraseñas reales en <code>.env.example</code>.</div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">ENV</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Configuración de la plataforma EduCode</span>
+APP_NAME="EduCode CEFIT"
+APP_ENV=local
+APP_KEY=base64:...  <span class="cm"># Generado con: php artisan key:generate</span>
+APP_DEBUG=true
+APP_URL=http://programando.test
+
+APP_LOCALE=es
+APP_FALLBACK_LOCALE=es
+APP_FAKER_LOCALE=es_Col
+
+<span class="cm"># Base de datos MySQL local (WAMP)</span>
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=programando
+DB_USERNAME=root
+DB_PASSWORD=base1234
+
+<span class="cm"># Sesiones y caché en BD (no requiere Redis)</span>
+SESSION_DRIVER=database
+CACHE_STORE=database
+QUEUE_CONNECTION=database
+
+<span class="cm"># Mail en desarrollo: solo guarda logs, no envía</span>
+MAIL_MAILER=log</pre>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Lee el .env del proyecto</h4>
+      </div>
+      <p>Abre el .env real del proyecto en PhpStorm. Responde: ¿Qué valor tiene APP_LOCALE? ¿Qué SESSION_DRIVER se usa? ¿Cómo acceder a estas variables desde PHP?</p>
+      <textarea class="code-input" placeholder="APP_LOCALE = ___&#10;SESSION_DRIVER = ___&#10;&#10;// Para leer APP_NAME desde PHP/Blade:&#10;config('app.name')  // o  env('APP_NAME')&#10;&#10;// ¿Cuál es la diferencia entre ambas formas?"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Abrí .env y revisé todos los valores configurados</li>
+      <li><input type="checkbox"> Entiendo que .env NO se sube a Git (está en .gitignore)</li>
+      <li><input type="checkbox"> Sé cómo leer variables con config() y env()</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso2')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 3 -->
+<div class="step-card" id="paso3">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">03</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Migraciones — versionando la BD</div>
+      <div class="step-meta">make:migration · up() · down() · migrate · foreignId · constrained</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Las migraciones en Laravel son el equivalente a scripts SQL versionados. En vez de ejecutar SQL manualmente, escribes PHP y Laravel se encarga del SQL.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Crear migraciones (orden padre → hijo)</span>
+php artisan make:migration create_modulos_table
+php artisan make:migration create_lecciones_table
+php artisan make:migration create_pasos_table
+php artisan make:migration create_ejercicios_table
+php artisan make:migration create_progresos_table</pre>
+    </div>
+
+    <h3>Migration de módulos</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// database/migrations/..._create_modulos_table.php</span>
+<span class="kw">public function</span> <span class="fn">up</span>(): <span class="kw">void</span>
+{
+    <span class="cls">Schema</span>::<span class="fn">create</span>(<span class="str">'modulos'</span>, <span class="kw">function</span> (<span class="cls">Blueprint</span> <span class="var">$table</span>) {
+        <span class="var">$table</span>-><span class="fn">id</span>();
+        <span class="var">$table</span>-><span class="fn">string</span>(<span class="str">'nombre'</span>, <span class="num">120</span>);
+        <span class="var">$table</span>-><span class="fn">text</span>(<span class="str">'descripcion'</span>)-><span class="fn">nullable</span>();
+        <span class="var">$table</span>-><span class="fn">string</span>(<span class="str">'icono'</span>, <span class="num">60</span>)-><span class="fn">nullable</span>();
+        <span class="var">$table</span>-><span class="fn">unsignedTinyInteger</span>(<span class="str">'orden'</span>)-><span class="fn">default</span>(<span class="num">0</span>);
+        <span class="var">$table</span>-><span class="fn">boolean</span>(<span class="str">'activo'</span>)-><span class="fn">default</span>(<span class="kw">true</span>);
+        <span class="var">$table</span>-><span class="fn">timestamps</span>();
+    });
+}
+
+<span class="kw">public function</span> <span class="fn">down</span>(): <span class="kw">void</span>
+{
+    <span class="cls">Schema</span>::<span class="fn">dropIfExists</span>(<span class="str">'modulos'</span>);
+}
+
+<span class="cm">// Migration de lecciones (con FK)</span>
+<span class="kw">public function</span> <span class="fn">up</span>(): <span class="kw">void</span>
+{
+    <span class="cls">Schema</span>::<span class="fn">create</span>(<span class="str">'lecciones'</span>, <span class="kw">function</span> (<span class="cls">Blueprint</span> <span class="var">$table</span>) {
+        <span class="var">$table</span>-><span class="fn">id</span>();
+        <span class="var">$table</span>-><span class="fn">foreignId</span>(<span class="str">'modulo_id'</span>)-><span class="fn">constrained</span>()-><span class="fn">cascadeOnDelete</span>();
+        <span class="var">$table</span>-><span class="fn">string</span>(<span class="str">'titulo'</span>, <span class="num">200</span>);
+        <span class="var">$table</span>-><span class="fn">text</span>(<span class="str">'descripcion'</span>)-><span class="fn">nullable</span>();
+        <span class="var">$table</span>-><span class="fn">unsignedTinyInteger</span>(<span class="str">'orden'</span>)-><span class="fn">default</span>(<span class="num">0</span>);
+        <span class="var">$table</span>-><span class="fn">boolean</span>(<span class="str">'activo'</span>)-><span class="fn">default</span>(<span class="kw">true</span>);
+        <span class="var">$table</span>-><span class="fn">timestamps</span>();
+    });
+}</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Ejecutar todas las migraciones</span>
+php artisan migrate
+
+<span class="cm"># Reiniciar desde cero (borra y recrea)</span>
+php artisan migrate:fresh
+
+<span class="cm"># Con datos de prueba</span>
+php artisan migrate:fresh --seed
+
+<span class="cm"># Ver estado de migraciones</span>
+php artisan migrate:status</pre>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Escribe las migraciones de pasos y ejercicios</h4>
+      </div>
+      <p>Escribe el método <code>up()</code> para la migración de <code>pasos</code>. Recuerda: leccion_id (FK), titulo, contenido (longText), tipo (enum), orden y timestamps.</p>
+      <textarea class="code-input" placeholder="Schema::create('pasos', function (Blueprint $table) {&#10;    $table->id();&#10;    $table->foreignId('leccion_id')->constrained()->cascadeOnDelete();&#10;    $table->string('titulo', 200);&#10;    $table->longText('contenido');&#10;    $table->enum('tipo', ['teoria', 'codigo', 'tip', 'advertencia'])->default('teoria');&#10;    $table->unsignedTinyInteger('orden')->default(0);&#10;    $table->timestamps();&#10;});"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Creé todas las migraciones con make:migration</li>
+      <li><input type="checkbox"> Usé foreignId()->constrained()->cascadeOnDelete() para FKs</li>
+      <li><input type="checkbox"> Ejecuté php artisan migrate sin errores</li>
+      <li><input type="checkbox"> Verifiqué las tablas en phpMyAdmin</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso3')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 4 -->
+<div class="step-card" id="paso4">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">04</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Modelos Eloquent con relaciones</div>
+      <div class="step-meta">make:model · $fillable · hasMany · belongsTo · $casts</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Eloquent es el ORM de Laravel. Cada modelo representa una tabla y cada instancia del modelo es una fila. Las <strong>relaciones</strong> conectan modelos entre sí.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Crear modelos</span>
+php artisan make:model Modulo
+php artisan make:model Leccion
+php artisan make:model Paso
+php artisan make:model Ejercicio
+php artisan make:model Progreso</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// app/Models/Modulo.php</span>
+<span class="kw">class</span> <span class="cls">Modulo</span> <span class="kw">extends</span> <span class="cls">Model</span>
+{
+    <span class="kw">protected</span> <span class="var">$fillable</span> = [
+        <span class="str">'nombre'</span>, <span class="str">'descripcion'</span>, <span class="str">'icono'</span>, <span class="str">'orden'</span>, <span class="str">'activo'</span>,
+    ];
+
+    <span class="kw">protected</span> <span class="kw">function</span> <span class="fn">casts</span>(): <span class="kw">array</span>
+    {
+        <span class="kw">return</span> [
+            <span class="str">'activo'</span> => <span class="str">'boolean'</span>,
+            <span class="str">'orden'</span>  => <span class="str">'integer'</span>,
+        ];
+    }
+
+    <span class="cm">// Relación: un módulo tiene muchas lecciones</span>
+    <span class="kw">public function</span> <span class="fn">lecciones</span>(): <span class="cls">HasMany</span>
+    {
+        <span class="kw">return</span> <span class="var">$this</span>-><span class="fn">hasMany</span>(<span class="cls">Leccion</span>::<span class="kw">class</span>)-><span class="fn">orderBy</span>(<span class="str">'orden'</span>);
+    }
+}
+
+<span class="cm">// app/Models/Leccion.php</span>
+<span class="kw">class</span> <span class="cls">Leccion</span> <span class="kw">extends</span> <span class="cls">Model</span>
+{
+    <span class="kw">protected</span> <span class="var">$fillable</span> = [
+        <span class="str">'modulo_id'</span>, <span class="str">'titulo'</span>, <span class="str">'descripcion'</span>, <span class="str">'orden'</span>, <span class="str">'activo'</span>,
+    ];
+
+    <span class="cm">// Una lección pertenece a un módulo</span>
+    <span class="kw">public function</span> <span class="fn">modulo</span>(): <span class="cls">BelongsTo</span>
+    {
+        <span class="kw">return</span> <span class="var">$this</span>-><span class="fn">belongsTo</span>(<span class="cls">Modulo</span>::<span class="kw">class</span>);
+    }
+
+    <span class="cm">// Una lección tiene muchos pasos y ejercicios</span>
+    <span class="kw">public function</span> <span class="fn">pasos</span>(): <span class="cls">HasMany</span>
+    {
+        <span class="kw">return</span> <span class="var">$this</span>-><span class="fn">hasMany</span>(<span class="cls">Paso</span>::<span class="kw">class</span>)-><span class="fn">orderBy</span>(<span class="str">'orden'</span>);
+    }
+
+    <span class="kw">public function</span> <span class="fn">ejercicios</span>(): <span class="cls">HasMany</span>
+    {
+        <span class="kw">return</span> <span class="var">$this</span>-><span class="fn">hasMany</span>(<span class="cls">Ejercicio</span>::<span class="kw">class</span>)-><span class="fn">orderBy</span>(<span class="str">'orden'</span>);
+    }
+}</pre>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Escribe el modelo Progreso</h4>
+      </div>
+      <p>Escribe el modelo <code>Progreso</code> con $fillable (user_id, leccion_id, completado_at) y dos relaciones: belongsTo User y belongsTo Leccion. Agrega un cast de 'completado_at' como 'datetime'.</p>
+      <textarea class="code-input" placeholder="class Progreso extends Model&#10;{&#10;    protected $fillable = ['user_id', 'leccion_id', 'completado_at'];&#10;&#10;    protected function casts(): array&#10;    {&#10;        return ['completado_at' => 'datetime'];&#10;    }&#10;&#10;    public function user(): BelongsTo { ... }&#10;    public function leccion(): BelongsTo { ... }&#10;}"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Creé los 5 modelos con make:model</li>
+      <li><input type="checkbox"> Definí $fillable explícitamente en cada modelo</li>
+      <li><input type="checkbox"> Agregué hasMany y belongsTo según las relaciones</li>
+      <li><input type="checkbox"> Probé las relaciones en Tinker: Modulo::first()->lecciones</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso4')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 5 -->
+<div class="step-card" id="paso5">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">05</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Rutas — web.php</div>
+      <div class="step-meta">Route::get · Route::resource · middleware auth · grouping</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Las rutas en Laravel mapean URLs a controladores. El middleware <code>auth</code> protege rutas: si no estás autenticado, Laravel te redirige al login.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// routes/web.php</span>
+<span class="kw">use</span> <span class="cls">App\Http\Controllers\ModuloController</span>;
+<span class="kw">use</span> <span class="cls">App\Http\Controllers\LeccionController</span>;
+<span class="kw">use</span> <span class="cls">App\Http\Controllers\ProgresoController</span>;
+
+<span class="cm">// Ruta pública: landing page</span>
+<span class="cls">Route</span>::<span class="fn">get</span>(<span class="str">'/'</span>, <span class="kw">function</span> () {
+    <span class="kw">return</span> <span class="fn">view</span>(<span class="str">'welcome'</span>);
+});
+
+<span class="cm">// Rutas protegidas: solo usuarios autenticados</span>
+<span class="cls">Route</span>::<span class="fn">middleware</span>(<span class="str">'auth'</span>)-><span class="fn">group</span>(<span class="kw">function</span> () {
+
+    <span class="cm">// Dashboard del estudiante</span>
+    <span class="cls">Route</span>::<span class="fn">get</span>(<span class="str">'/dashboard'</span>, <span class="kw">function</span> () {
+        <span class="kw">return</span> <span class="fn">view</span>(<span class="str">'dashboard'</span>);
+    })-><span class="fn">name</span>(<span class="str">'dashboard'</span>);
+
+    <span class="cm">// Módulos: index y show</span>
+    <span class="cls">Route</span>::<span class="fn">resource</span>(<span class="str">'modulos'</span>, <span class="cls">ModuloController</span>::<span class="kw">class</span>)
+        -><span class="fn">only</span>([<span class="str">'index'</span>, <span class="str">'show'</span>]);
+
+    <span class="cm">// Lecciones: solo show</span>
+    <span class="cls">Route</span>::<span class="fn">resource</span>(<span class="str">'lecciones'</span>, <span class="cls">LeccionController</span>::<span class="kw">class</span>)
+        -><span class="fn">only</span>([<span class="str">'show'</span>]);
+
+    <span class="cm">// Registrar progreso</span>
+    <span class="cls">Route</span>::<span class="fn">post</span>(<span class="str">'/progreso/{leccion}'</span>, [<span class="cls">ProgresoController</span>::<span class="kw">class</span>, <span class="str">'marcar'</span>])
+        -><span class="fn">name</span>(<span class="str">'progreso.marcar'</span>);
+});
+
+<span class="cm">// Rutas de autenticación (Breeze las genera)</span>
+<span class="fn">require</span> <span class="fn">__DIR__</span>.<span class="str">'/auth.php'</span>;</pre>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Verifica las rutas</h4>
+      </div>
+      <p>Ejecuta <code>php artisan route:list</code> y escribe las rutas generadas por <code>Route::resource('modulos')</code>. ¿Qué métodos HTTP y nombres genera? ¿Por qué usamos ->only(['index','show'])?</p>
+      <textarea class="code-input" placeholder="# Rutas de Route::resource('modulos', ...):&#10;GET    /modulos         → ModuloController@index   (name: modulos.index)&#10;GET    /modulos/{modulo} → ...&#10;POST   /modulos         → ...&#10;...&#10;&#10;¿Por qué usamos ->only(['index','show'])? ___"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Agregué todas las rutas al web.php</li>
+      <li><input type="checkbox"> Entiendo que middleware('auth') protege el grupo entero</li>
+      <li><input type="checkbox"> Ejecuté route:list y vi las rutas generadas</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso5')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 6 -->
+<div class="step-card" id="paso6">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">06</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Controladores</div>
+      <div class="step-meta">make:controller · index() · show() · Eloquent queries · with()</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Los controladores reciben la petición HTTP, consultan los modelos y pasan los datos a la vista. Son el puente entre la URL y el HTML.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>php artisan make:controller ModuloController
+php artisan make:controller LeccionController
+php artisan make:controller ProgresoController</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// app/Http/Controllers/ModuloController.php</span>
+<span class="kw">class</span> <span class="cls">ModuloController</span> <span class="kw">extends</span> <span class="cls">Controller</span>
+{
+    <span class="cm">// GET /modulos — lista de módulos activos</span>
+    <span class="kw">public function</span> <span class="fn">index</span>(): <span class="cls">View</span>
+    {
+        <span class="var">$modulos</span> = <span class="cls">Modulo</span>::<span class="fn">where</span>(<span class="str">'activo'</span>, <span class="kw">true</span>)
+            -><span class="fn">orderBy</span>(<span class="str">'orden'</span>)
+            -><span class="fn">withCount</span>(<span class="str">'lecciones'</span>)  <span class="cm">// agrega lecciones_count</span>
+            -><span class="fn">get</span>();
+
+        <span class="kw">return</span> <span class="fn">view</span>(<span class="str">'modulos.index'</span>, <span class="fn">compact</span>(<span class="str">'modulos'</span>));
+    }
+
+    <span class="cm">// GET /modulos/{modulo} — detalle con lecciones</span>
+    <span class="kw">public function</span> <span class="fn">show</span>(<span class="cls">Modulo</span> <span class="var">$modulo</span>): <span class="cls">View</span>
+    {
+        <span class="cm">// Eager loading: carga lecciones en una sola query</span>
+        <span class="var">$modulo</span>-><span class="fn">load</span>([<span class="str">'lecciones'</span> => <span class="kw">fn</span>(<span class="var">$q</span>) => <span class="var">$q</span>-><span class="fn">where</span>(<span class="str">'activo'</span>, <span class="kw">true</span>)]);
+
+        <span class="kw">return</span> <span class="fn">view</span>(<span class="str">'modulos.show'</span>, <span class="fn">compact</span>(<span class="str">'modulo'</span>));
+    }
+}
+
+<span class="cm">// app/Http/Controllers/ProgresoController.php</span>
+<span class="kw">class</span> <span class="cls">ProgresoController</span> <span class="kw">extends</span> <span class="cls">Controller</span>
+{
+    <span class="cm">// POST /progreso/{leccion}</span>
+    <span class="kw">public function</span> <span class="fn">marcar</span>(<span class="cls">Leccion</span> <span class="var">$leccion</span>): <span class="cls">RedirectResponse</span>
+    {
+        <span class="cls">Progreso</span>::<span class="fn">updateOrCreate</span>(
+            [<span class="str">'user_id'</span> => <span class="fn">auth</span>()-><span class="fn">id</span>(), <span class="str">'leccion_id'</span> => <span class="var">$leccion</span>-><span class="var">id</span>],
+            [<span class="str">'completado_at'</span> => <span class="fn">now</span>()]
+        );
+
+        <span class="kw">return</span> <span class="fn">back</span>()-><span class="fn">with</span>(<span class="str">'success'</span>, <span class="str">'¡Lección completada!'</span>);
+    }
+}</pre>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Escribe LeccionController@show</h4>
+      </div>
+      <p>Escribe el método <code>show(Leccion $leccion)</code> del LeccionController. Debe cargar la lección con sus pasos y ejercicios (eager loading), y pasar también si el usuario actual ya la completó.</p>
+      <textarea class="code-input" placeholder="public function show(Leccion $leccion): View&#10;{&#10;    $leccion->load(['pasos', 'ejercicios']);&#10;&#10;    $yaCompletada = Progreso::where([&#10;        'user_id' => auth()->id(),&#10;        'leccion_id' => $leccion->id,&#10;    ])->whereNotNull('completado_at')->exists();&#10;&#10;    return view('lecciones.show', compact('leccion', 'yaCompletada'));&#10;}"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Creé los 3 controladores con make:controller</li>
+      <li><input type="checkbox"> ModuloController@index usa withCount para el conteo</li>
+      <li><input type="checkbox"> ProgresoController@marcar usa updateOrCreate</li>
+      <li><input type="checkbox"> Entiendo la diferencia entre load() y with()</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso6')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 7 -->
+<div class="step-card" id="paso7">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">07</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Vistas Blade</div>
+      <div class="step-meta">@extends · @section · @foreach · @if · {{ }} · @csrf</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Blade es el motor de plantillas de Laravel. Las directivas como <code>@foreach</code> y <code>@if</code> hacen el PHP más legible. <code>{{ }}</code> escapa el HTML automáticamente (previene XSS).</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BLADE</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">{{-- resources/views/modulos/index.blade.php --}}</span>
+<span class="tag">@extends</span>(<span class="str">'layouts.app'</span>)
+
+<span class="tag">@section</span>(<span class="str">'header'</span>)
+    <span class="tag">&lt;h2</span> <span class="attr">class</span>=<span class="str">"font-bold text-xl text-gray-200"</span><span class="tag">&gt;</span>Mis Módulos<span class="tag">&lt;/h2&gt;</span>
+<span class="tag">@endsection</span>
+
+<span class="tag">@section</span>(<span class="str">'content'</span>)
+<span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="str">"max-w-5xl mx-auto py-12 px-4"</span><span class="tag">&gt;</span>
+
+    <span class="tag">@if</span> (<span class="fn">session</span>(<span class="str">'success'</span>))
+        <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="str">"mb-4 p-4 bg-green-900/50 text-green-300 rounded-xl"</span><span class="tag">&gt;</span>
+            {{ <span class="fn">session</span>(<span class="str">'success'</span>) }}
+        <span class="tag">&lt;/div&gt;</span>
+    <span class="tag">@endif</span>
+
+    <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="str">"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"</span><span class="tag">&gt;</span>
+        <span class="tag">@foreach</span> (<span class="var">$modulos</span> <span class="kw">as</span> <span class="var">$modulo</span>)
+        <span class="tag">&lt;a</span> <span class="attr">href</span>=<span class="str">"{{ route('modulos.show', $modulo) }}"</span>
+           <span class="attr">class</span>=<span class="str">"block bg-gray-900 border border-gray-800 rounded-2xl p-6
+             hover:border-orange-500/40 transition"</span><span class="tag">&gt;</span>
+            <span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="str">"text-4xl"</span><span class="tag">&gt;</span>{{ <span class="var">$modulo</span>-><span class="var">icono</span> }}<span class="tag">&lt;/span&gt;</span>
+            <span class="tag">&lt;h3</span> <span class="attr">class</span>=<span class="str">"mt-4 font-bold text-lg"</span><span class="tag">&gt;</span>{{ <span class="var">$modulo</span>-><span class="var">nombre</span> }}<span class="tag">&lt;/h3&gt;</span>
+            <span class="tag">&lt;p</span> <span class="attr">class</span>=<span class="str">"text-gray-400 text-sm mt-2"</span><span class="tag">&gt;</span>{{ <span class="var">$modulo</span>-><span class="var">descripcion</span> }}<span class="tag">&lt;/p&gt;</span>
+            <span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="str">"text-xs text-gray-500 mt-3 block"</span><span class="tag">&gt;</span>
+                {{ <span class="var">$modulo</span>-><span class="var">lecciones_count</span> }} lecciones
+            <span class="tag">&lt;/span&gt;</span>
+        <span class="tag">&lt;/a&gt;</span>
+        <span class="tag">@endforeach</span>
+    <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/div&gt;</span>
+<span class="tag">@endsection</span></pre>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Crea lecciones/show.blade.php</h4>
+      </div>
+      <p>Crea la vista <code>resources/views/lecciones/show.blade.php</code>. Muestra: título de la lección, los pasos con @foreach, los ejercicios y el formulario para marcar como completada (POST con @csrf).</p>
+      <textarea class="code-input" placeholder="@extends('layouts.app')&#10;@section('content')&#10;&lt;div class=&quot;max-w-3xl mx-auto py-12 px-4&quot;&gt;&#10;    &lt;h1&gt;{{ $leccion->titulo }}&lt;/h1&gt;&#10;&#10;    @foreach ($leccion->pasos as $paso)&#10;        &lt;div class=&quot;...&quot;&gt;{{ $paso->titulo }}&lt;/div&gt;&#10;    @endforeach&#10;&#10;    @if (!$yaCompletada)&#10;    &lt;form method=&quot;POST&quot; action=&quot;{{ route('progreso.marcar', $leccion) }}&quot;&gt;&#10;        @csrf&#10;        &lt;button&gt;Marcar como completada&lt;/button&gt;&#10;    &lt;/form&gt;&#10;    @endif&#10;&lt;/div&gt;&#10;@endsection"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Creé modulos/index.blade.php con @foreach de módulos</li>
+      <li><input type="checkbox"> Usé route() para generar URLs en Blade</li>
+      <li><input type="checkbox"> Creé lecciones/show.blade.php con el formulario</li>
+      <li><input type="checkbox"> Agregué @csrf dentro del formulario POST</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso7')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 8 -->
+<div class="step-card" id="paso8">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">08</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Laravel Breeze — Autenticación</div>
+      <div class="step-meta">breeze:install · login · register · auth() · @auth · @guest</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Breeze genera todo el sistema de autenticación: login, registro, recuperar contraseña, verificación de email. Ya está instalado en el proyecto, veamos cómo funciona.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Instalar Breeze (en un proyecto nuevo)</span>
+composer require laravel/breeze --dev
+php artisan breeze:install blade
+npm install && npm run dev
+php artisan migrate</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BLADE</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">{{-- En cualquier vista Blade --}}</span>
+
+<span class="cm">{{-- Usuario autenticado --}}</span>
+<span class="tag">@auth</span>
+    <span class="tag">&lt;p&gt;</span>Hola, {{ <span class="fn">auth</span>()-><span class="fn">user</span>()-><span class="var">name</span> }}!<span class="tag">&lt;/p&gt;</span>
+    <span class="tag">&lt;a</span> <span class="attr">href</span>=<span class="str">"{{ route('modulos.index') }}"</span><span class="tag">&gt;</span>Ver módulos<span class="tag">&lt;/a&gt;</span>
+<span class="tag">@endauth</span>
+
+<span class="cm">{{-- Usuario no autenticado --}}</span>
+<span class="tag">@guest</span>
+    <span class="tag">&lt;a</span> <span class="attr">href</span>=<span class="str">"{{ route('login') }}"</span><span class="tag">&gt;</span>Ingresar<span class="tag">&lt;/a&gt;</span>
+    <span class="tag">&lt;a</span> <span class="attr">href</span>=<span class="str">"{{ route('register') }}"</span><span class="tag">&gt;</span>Registrarse<span class="tag">&lt;/a&gt;</span>
+<span class="tag">@endguest</span>
+
+<span class="cm">{{-- En PHP (controller): --}}</span>
+<span class="cm">// Obtener usuario autenticado</span>
+<span class="var">$usuario</span> = <span class="fn">auth</span>()-><span class="fn">user</span>();
+<span class="var">$userId</span>  = <span class="fn">auth</span>()-><span class="fn">id</span>();
+
+<span class="cm">// Verificar si está autenticado</span>
+<span class="kw">if</span> (<span class="fn">auth</span>()-><span class="fn">check</span>()) { <span class="cm">/* ... */</span> }</pre>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Prueba el flujo completo</h4>
+      </div>
+      <p>Registra un usuario nuevo en la plataforma, inicia sesión y navega a /modulos. ¿Qué pasa si intentas ir a /modulos sin estar autenticado? Escribe el resultado:</p>
+      <textarea class="code-input" placeholder="1. Abrí /register y creé el usuario: ___&#10;&#10;2. Inicié sesión con ese usuario: ___&#10;&#10;3. Fui a /modulos autenticado y vi: ___&#10;&#10;4. Cerré sesión y fui a /modulos: me redirigió a ___"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Registré un usuario y pude iniciar sesión</li>
+      <li><input type="checkbox"> Sin sesión, /modulos redirige al login</li>
+      <li><input type="checkbox"> Usé @auth y @guest en la vista welcome.blade.php</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso8')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 9 -->
+<div class="step-card" id="paso9">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">09</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Seeders — datos de prueba reales</div>
+      <div class="step-meta">make:seeder · db:seed · DatabaseSeeder · Eloquent create()</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Los seeders llenan la BD con datos iniciales o de prueba. En EduCode usamos seeders para cargar los 5 módulos y sus lecciones sin tener que escribir SQL manualmente.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>php artisan make:seeder ModuloSeeder
+php artisan make:seeder LeccionSeeder</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// database/seeders/ModuloSeeder.php</span>
+<span class="kw">class</span> <span class="cls">ModuloSeeder</span> <span class="kw">extends</span> <span class="cls">Seeder</span>
+{
+    <span class="kw">public function</span> <span class="fn">run</span>(): <span class="kw">void</span>
+    {
+        <span class="var">$modulos</span> = [
+            [<span class="str">'nombre'</span> => <span class="str">'Bases de Datos'</span>, <span class="str">'icono'</span> => <span class="str">'🗄️'</span>, <span class="str">'orden'</span> => <span class="num">1</span>],
+            [<span class="str">'nombre'</span> => <span class="str">'PHP Puro'</span>,       <span class="str">'icono'</span> => <span class="str">'🐘'</span>, <span class="str">'orden'</span> => <span class="num">2</span>],
+            [<span class="str">'nombre'</span> => <span class="str">'HTML & CSS'</span>,     <span class="str">'icono'</span> => <span class="str">'🎨'</span>, <span class="str">'orden'</span> => <span class="num">3</span>],
+            [<span class="str">'nombre'</span> => <span class="str">'Laravel'</span>,        <span class="str">'icono'</span> => <span class="str">'⚡'</span>, <span class="str">'orden'</span> => <span class="num">4</span>],
+            [<span class="str">'nombre'</span> => <span class="str">'Laravel Moonshine'</span>, <span class="str">'icono'</span> => <span class="str">'🌙'</span>, <span class="str">'orden'</span> => <span class="num">5</span>],
+        ];
+
+        <span class="kw">foreach</span> (<span class="var">$modulos</span> <span class="kw">as</span> <span class="var">$data</span>) {
+            <span class="cls">Modulo</span>::<span class="fn">create</span>(<span class="var">$data</span> + [<span class="str">'activo'</span> => <span class="kw">true</span>]);
+        }
+    }
+}
+
+<span class="cm">// database/seeders/DatabaseSeeder.php</span>
+<span class="kw">public function</span> <span class="fn">run</span>(): <span class="kw">void</span>
+{
+    <span class="cm">// Usuario de prueba</span>
+    <span class="cls">User</span>::<span class="fn">factory</span>()-><span class="fn">create</span>([
+        <span class="str">'name'</span>  => <span class="str">'Estudiante Demo'</span>,
+        <span class="str">'email'</span> => <span class="str">'demo@cefit.edu.co'</span>,
+    ]);
+
+    <span class="cm">// Datos de la plataforma</span>
+    <span class="var">$this</span>-><span class="fn">call</span>([
+        <span class="cls">ModuloSeeder</span>::<span class="kw">class</span>,
+        <span class="cls">LeccionSeeder</span>::<span class="kw">class</span>,
+    ]);
+}</pre>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Escribe LeccionSeeder</h4>
+      </div>
+      <p>Escribe el LeccionSeeder que cree al menos 3 lecciones para el módulo 1 (Bases de Datos). Usa Modulo::where('nombre','Bases de Datos')->first()->id para obtener el modulo_id.</p>
+      <textarea class="code-input" placeholder="public function run(): void&#10;{&#10;    $moduloBD = Modulo::where('nombre', 'Bases de Datos')->first();&#10;&#10;    $lecciones = [&#10;        ['titulo' => 'Crear la base de datos', 'orden' => 1],&#10;        ['titulo' => 'Tablas y tipos de datos', 'orden' => 2],&#10;        ['titulo' => 'Claves foráneas', 'orden' => 3],&#10;    ];&#10;&#10;    foreach ($lecciones as $data) {&#10;        Leccion::create($data + [&#10;            'modulo_id' => $moduloBD->id,&#10;            'activo' => true,&#10;        ]);&#10;    }&#10;}"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Ejecuté php artisan migrate:fresh --seed sin errores</li>
+      <li><input type="checkbox"> Los 5 módulos aparecen en la tabla modulos</li>
+      <li><input type="checkbox"> Escribí el LeccionSeeder con lecciones reales</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso9')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 10 -->
+<div class="step-card" id="paso10">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">10</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Deploy en Railway</div>
+      <div class="step-meta">railway up · variables de entorno · migrate --force · producción</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Railway es la plataforma de deploy que usamos. El proyecto en Railway ya tiene su propia BD MySQL con credenciales diferentes al entorno local.</p>
+
+    <div class="info-box warn">
+      <span class="icon">⚠️</span>
+      <div>Railway tiene <strong>plan de pago</strong> activo. El deploy puede generar costos. No hagas deploys de prueba innecesarios. Coordina con el instructor antes de hacer <code>railway up</code>.</div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Instalar Railway CLI</span>
+npm install -g @railway/cli
+
+<span class="cm"># Autenticarse</span>
+railway login
+
+<span class="cm"># Deployar el proyecto</span>
+railway up
+
+<span class="cm"># Ejecutar migraciones en producción</span>
+railway run php artisan migrate --force
+
+<span class="cm"># Ejecutar seeders en producción</span>
+railway run php artisan db:seed --force
+
+<span class="cm"># Ver logs del deploy</span>
+railway logs</pre>
+    </div>
+
+    <h3>Variables de entorno en Railway</h3>
+    <p>Configura estas en el dashboard de Railway (Settings → Variables):</p>
+    <ul>
+      <li><code>APP_NAME</code> = "EduCode CEFIT"</li>
+      <li><code>APP_ENV</code> = production</li>
+      <li><code>APP_DEBUG</code> = false</li>
+      <li><code>DB_*</code> = credenciales MySQL de Railway</li>
+      <li><code>SESSION_DRIVER</code> = database</li>
+    </ul>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Lista las diferencias dev vs producción</h4>
+      </div>
+      <p>¿Qué cambia entre el .env local y el de Railway? Lista al menos 5 variables que son diferentes y explica por qué cada una cambia:</p>
+      <textarea class="code-input" placeholder="1. APP_ENV: local → production (activa optimizaciones, desactiva debug)&#10;2. APP_DEBUG: true → false (no exponer errores al público)&#10;3. DB_HOST: 127.0.0.1 → [Railway host] (diferente servidor de BD)&#10;4. APP_URL: http://programando.test → https://[...].up.railway.app&#10;5. MAIL_MAILER: log → smtp (en producción enviamos emails reales)"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Entiendo que APP_DEBUG=false en producción es obligatorio</li>
+      <li><input type="checkbox"> Sé que las variables de Railway se configuran en el dashboard</li>
+      <li><input type="checkbox"> Coordiné con el instructor antes de ejecutar railway up</li>
+      <li><input type="checkbox"> Sé usar railway run para ejecutar comandos en producción</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso10')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  EduCode CEFIT-SENA · Módulo 04 — Laravel 11 · PHP 8.3 &nbsp;·&nbsp; Taller práctico
+</footer>
+
+<script>
+  const TOTAL = 10;
+
+  function toggle(header) {
+    const card = header.closest('.step-card');
+    const isOpen = card.classList.contains('open');
+    document.querySelectorAll('.step-card.open').forEach(c => c.classList.remove('open'));
+    if (!isOpen) card.classList.add('open');
+  }
+
+  function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = '✓ Copiado';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function markDone(btn, stepId) {
+    const card = document.getElementById(stepId);
+    card.classList.toggle('done');
+    const isDone = card.classList.contains('done');
+    btn.classList.toggle('checked', isDone);
+    btn.textContent = isDone ? '✓  Completado' : '✓  Marcar como completado';
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const done = document.querySelectorAll('.step-card.done').length;
+    document.getElementById('progressBar').style.width = (done / TOTAL * 100) + '%';
+    document.getElementById('progressCount').textContent = done + ' / ' + TOTAL;
+  }
+
+  document.querySelector('.step-card .step-header').click();
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.id;
+        document.querySelectorAll('.nav-pill').forEach(p => {
+          p.classList.toggle('active', p.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { threshold: 0.4 });
+  document.querySelectorAll('.step-card').forEach(c => observer.observe(c));
+</script>
+</body>
+</html>

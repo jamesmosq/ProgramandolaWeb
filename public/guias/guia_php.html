@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PHP Puro — De cero a OOP</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0a1e;
+    --surface: #160f2a;
+    --surface2: #1e1535;
+    --border: #2a1f45;
+    --accent: #a855f7;
+    --accent2: #ec4899;
+    --accent3: #06b6d4;
+    --ok: #22d3ee;
+    --warn: #f59e0b;
+    --text: #e9d5ff;
+    --text-dim: #a78bfa;
+    --text-muted: #6b5a8a;
+    --code-bg: #09061a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+  header{position:relative;padding:64px 40px 52px;text-align:center;overflow:hidden;border-bottom:1px solid var(--border)}
+  header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 55% at 30% 0%,rgba(168,85,247,0.15),transparent),radial-gradient(ellipse 60% 50% at 80% 100%,rgba(236,72,153,0.1),transparent)}
+  header::after{content:'<?php';position:absolute;right:40px;top:30px;font-family:'JetBrains Mono',monospace;font-size:4rem;font-weight:700;color:rgba(168,85,247,0.06);pointer-events:none}
+  .badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--accent);background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);padding:5px 14px;border-radius:20px;margin-bottom:20px;text-transform:uppercase}
+  h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;line-height:1.1}
+  h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  header p{margin-top:14px;font-size:1rem;color:var(--text-dim);font-weight:300;max-width:540px;margin-inline:auto;line-height:1.7}
+
+  .progress-wrap{padding:18px 40px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:14px}
+  .progress-label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);white-space:nowrap}
+  .progress-bar-outer{flex:1;height:5px;background:var(--border);border-radius:10px;overflow:hidden}
+  .progress-bar-inner{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:10px;transition:width .4s ease}
+  .progress-count{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);white-space:nowrap}
+
+  .nav-pills{display:flex;gap:7px;flex-wrap:wrap;padding:16px 40px;background:var(--surface);border-bottom:1px solid var(--border)}
+  .nav-pill{font-family:'JetBrains Mono',monospace;font-size:11px;padding:5px 13px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);cursor:pointer;transition:all .2s;text-decoration:none}
+  .nav-pill:hover,.nav-pill.active{background:rgba(168,85,247,0.12);border-color:var(--accent);color:var(--accent)}
+
+  main{max-width:900px;margin:0 auto;padding:40px 24px 80px}
+
+  .step-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;margin-bottom:28px;overflow:hidden;transition:border-color .3s;scroll-margin-top:100px;animation:fadeUp .4s ease both}
+  .step-card.done{border-color:rgba(6,182,212,0.4)}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+  .step-header{display:flex;align-items:center;gap:14px;padding:20px 26px;cursor:pointer;user-select:none;transition:background .2s}
+  .step-header:hover{background:var(--surface2)}
+  .step-num{width:38px;height:38px;border-radius:10px;background:var(--surface2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--text-muted);flex-shrink:0;transition:all .3s}
+  .step-card.done .step-num{background:rgba(6,182,212,0.12);border-color:var(--ok);color:var(--ok)}
+  .step-title-wrap{flex:1}
+  .step-title{font-size:1rem;font-weight:700}
+  .step-meta{font-size:.75rem;color:var(--text-muted);margin-top:3px;font-family:'JetBrains Mono',monospace}
+  .step-toggle{font-size:16px;color:var(--text-muted);transition:transform .3s;flex-shrink:0}
+  .step-card.open .step-toggle{transform:rotate(180deg)}
+  .step-body{display:none;padding:0 26px 26px;border-top:1px solid var(--border)}
+  .step-card.open .step-body{display:block}
+  .step-body p,.step-body li{color:var(--text-dim);line-height:1.8;font-size:.92rem}
+  .step-body ul,.step-body ol{padding-left:20px;margin:10px 0}
+  .step-body li{margin-bottom:6px}
+  .step-body h3{font-size:.78rem;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);margin:20px 0 10px;font-family:'JetBrains Mono',monospace}
+
+  .info-box{border-radius:10px;padding:13px 17px;margin:14px 0;font-size:.87rem;line-height:1.7;display:flex;gap:11px;align-items:flex-start}
+  .info-box .icon{font-size:17px;flex-shrink:0;margin-top:1px}
+  .info-box.tip{background:rgba(6,182,212,0.07);border:1px solid rgba(6,182,212,0.2);color:#67e8f9}
+  .info-box.warn{background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);color:#fcd34d}
+  .info-box.info{background:rgba(168,85,247,0.07);border:1px solid rgba(168,85,247,0.2);color:#c4b5fd}
+
+  .code-block{position:relative;margin:16px 0;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:9px 17px;background:#110d20;border-bottom:1px solid var(--border)}
+  .code-lang{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:1px;text-transform:uppercase}
+  .copy-btn{font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 11px;border-radius:6px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);color:var(--accent);cursor:pointer;transition:all .2s}
+  .copy-btn:hover{background:rgba(168,85,247,0.2)}
+  .copy-btn.copied{color:var(--ok);border-color:var(--ok)}
+  pre{background:var(--code-bg);padding:20px 22px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:#c9d1d9}
+
+  /* PHP colors */
+  .kw{color:#f92672;font-weight:600}
+  .fn{color:#a6e22e}
+  .str{color:#e6db74}
+  .num{color:#ae81ff}
+  .cm{color:#75715e;font-style:italic}
+  .type{color:#66d9ef}
+  .var{color:#fd971f}
+  .op{color:#f8f8f2}
+  .cls{color:#a6e22e;font-weight:600}
+
+  .check-btn{margin-top:18px;display:inline-flex;align-items:center;gap:8px;font-family:'Outfit',sans-serif;font-size:.84rem;font-weight:600;padding:9px 20px;border-radius:10px;background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.25);color:var(--ok);cursor:pointer;transition:all .2s}
+  .check-btn:hover{background:rgba(6,182,212,0.16)}
+
+  .tabla{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:16px;margin:14px 0;overflow-x:auto}
+  .tabla table{border-collapse:collapse;width:100%;min-width:500px}
+  .tabla th{background:rgba(168,85,247,0.1);color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 14px;text-align:left;border:1px solid var(--border)}
+  .tabla td{font-family:'JetBrains Mono',monospace;font-size:12px;padding:7px 14px;border:1px solid var(--border);color:var(--text-dim)}
+  .tabla tr:nth-child(even) td{background:rgba(255,255,255,0.02)}
+  .hl{color:var(--accent);font-weight:600}
+
+  footer{text-align:center;padding:36px;color:var(--text-muted);font-size:.78rem;border-top:1px solid var(--border);font-family:'JetBrains Mono',monospace}
+
+  @media(max-width:600px){
+    header{padding:40px 18px}
+    .nav-pills,.progress-wrap{padding:12px 14px}
+    main{padding:20px 10px 60px}
+    .step-header{padding:14px}
+    .step-body{padding:0 14px 18px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">PHP · Nivel Técnico · SENA</div>
+  <h1>PHP Puro —<br><span>De variables a objetos</span></h1>
+  <p>Fundamentos completos de PHP: sintaxis, funciones, arrays, formularios y programación orientada a objetos desde cero.</p>
+</header>
+
+<div class="progress-wrap">
+  <span class="progress-label">PROGRESO</span>
+  <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+  <span class="progress-count" id="progressCount">0 / 9</span>
+</div>
+
+<div class="nav-pills">
+  <a class="nav-pill" href="#paso1">1. Sintaxis</a>
+  <a class="nav-pill" href="#paso2">2. Variables</a>
+  <a class="nav-pill" href="#paso3">3. Operadores</a>
+  <a class="nav-pill" href="#paso4">4. Condicionales</a>
+  <a class="nav-pill" href="#paso5">5. Bucles</a>
+  <a class="nav-pill" href="#paso6">6. Funciones</a>
+  <a class="nav-pill" href="#paso7">7. Arrays</a>
+  <a class="nav-pill" href="#paso8">8. Formularios</a>
+  <a class="nav-pill" href="#paso9">9. OOP</a>
+</div>
+
+<main>
+
+<!-- PASO 1 -->
+<div class="step-card" id="paso1">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">01</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Sintaxis básica y estructura</div>
+      <div class="step-meta">&lt;?php ?&gt; · echo · comentarios · include</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>PHP es un lenguaje de scripting del lado servidor. Todo código PHP vive entre las etiquetas <code>&lt;?php</code> y <code>?&gt;</code>. Las instrucciones terminan con <strong>punto y coma</strong>.</p>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// Archivo: index.php</span>
+<span class="kw">&lt;?php</span>
+
+<span class="cm">// Mostrar texto en pantalla</span>
+<span class="fn">echo</span> <span class="str">"Hola mundo"</span>;
+<span class="fn">echo</span> <span class="str">"&lt;br&gt;"</span>;          <span class="cm">// HTML dentro de PHP</span>
+
+<span class="cm">// print es similar pero retorna 1</span>
+<span class="fn">print</span>(<span class="str">"Hola de nuevo"</span>);
+
+<span class="cm">/* Comentario
+   multilínea */</span>
+
+<span class="cm">// Incluir otro archivo</span>
+<span class="kw">include</span> <span class="str">'config.php'</span>;   <span class="cm">// avisa si no existe</span>
+<span class="kw">require</span> <span class="str">'funciones.php'</span>; <span class="cm">// detiene si no existe</span>
+<span class="kw">include_once</span> <span class="str">'header.php'</span>;
+
+<span class="kw">?&gt;</span>
+<span class="cm">&lt;!-- HTML fuera de PHP --&gt;</span>
+&lt;h1&gt;Mi primera página PHP&lt;/h1&gt;</pre>
+    </div>
+    <div class="info-box info"><span class="icon">💡</span><div>En archivos que son <strong>solo PHP</strong> (sin HTML) se omite el cierre <code>?&gt;</code> al final. Es una buena práctica que evita errores de espacios en blanco.</div></div>
+    <button class="check-btn" onclick="markDone(this,'paso1')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 2 -->
+<div class="step-card" id="paso2">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">02</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Variables y tipos de datos</div>
+      <div class="step-meta">$ · string · int · float · bool · null · var_dump</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Las variables en PHP empiezan siempre con <strong>$</strong> y son de tipado dinámico (el tipo lo determina el valor asignado).</p>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">&lt;?php</span>
+
+<span class="cm">// Tipos de datos</span>
+<span class="var">$nombre</span>   = <span class="str">"Carlos"</span>;      <span class="cm">// string</span>
+<span class="var">$edad</span>     = <span class="num">25</span>;             <span class="cm">// integer</span>
+<span class="var">$precio</span>   = <span class="num">19.99</span>;          <span class="cm">// float</span>
+<span class="var">$activo</span>   = <span class="kw">true</span>;           <span class="cm">// boolean</span>
+<span class="var">$vacio</span>    = <span class="kw">null</span>;           <span class="cm">// null</span>
+
+<span class="cm">// Verificar tipo</span>
+<span class="fn">var_dump</span>(<span class="var">$edad</span>);    <span class="cm">// int(25)</span>
+<span class="fn">gettype</span>(<span class="var">$precio</span>);   <span class="cm">// "double"</span>
+
+<span class="cm">// Concatenación con punto (.)</span>
+<span class="var">$saludo</span> = <span class="str">"Hola, "</span> . <span class="var">$nombre</span> . <span class="str">". Tienes "</span> . <span class="var">$edad</span> . <span class="str">" años."</span>;
+<span class="fn">echo</span> <span class="var">$saludo</span>;
+
+<span class="cm">// Interpolación dentro de comillas dobles</span>
+<span class="fn">echo</span> <span class="str">"Bienvenido, <span class="var">$nombre</span>! Precio: <span class="var">$precio</span>"</span>;
+
+<span class="cm">// Constantes (sin $)</span>
+<span class="fn">define</span>(<span class="str">'VERSION'</span>, <span class="str">'1.0.0'</span>);
+<span class="kw">const</span> SITIO = <span class="str">'EduCode'</span>;
+<span class="fn">echo</span> VERSION . <span class="str">' - '</span> . SITIO;</pre>
+    </div>
+    <h3>Tipos de datos en PHP</h3>
+    <div class="tabla">
+      <table>
+        <tr><th>Tipo</th><th>Ejemplo</th><th>Notas</th></tr>
+        <tr><td class="hl">string</td><td>"texto" o 'texto'</td><td>Dobles permiten interpolación</td></tr>
+        <tr><td class="hl">int</td><td>42, -10, 0</td><td>Entero positivo o negativo</td></tr>
+        <tr><td class="hl">float</td><td>3.14, 19.99</td><td>También llamado double</td></tr>
+        <tr><td class="hl">bool</td><td>true / false</td><td>Case-insensitive</td></tr>
+        <tr><td class="hl">null</td><td>null</td><td>Variable sin valor</td></tr>
+        <tr><td class="hl">array</td><td>[1, 2, 3]</td><td>Se ve en paso 7</td></tr>
+        <tr><td class="hl">object</td><td>new Clase()</td><td>Se ve en paso 9</td></tr>
+      </table>
+    </div>
+    <button class="check-btn" onclick="markDone(this,'paso2')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 3 -->
+<div class="step-card" id="paso3">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">03</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Operadores</div>
+      <div class="step-meta">aritméticos · comparación · lógicos · ternario · null coalescing</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">&lt;?php</span>
+
+<span class="cm">// Aritméticos</span>
+<span class="fn">echo</span> <span class="num">10</span> + <span class="num">3</span>;   <span class="cm">// 13</span>
+<span class="fn">echo</span> <span class="num">10</span> - <span class="num">3</span>;   <span class="cm">// 7</span>
+<span class="fn">echo</span> <span class="num">10</span> * <span class="num">3</span>;   <span class="cm">// 30</span>
+<span class="fn">echo</span> <span class="num">10</span> / <span class="num">3</span>;   <span class="cm">// 3.333...</span>
+<span class="fn">echo</span> <span class="num">10</span> % <span class="num">3</span>;   <span class="cm">// 1 (módulo/resto)</span>
+<span class="fn">echo</span> <span class="num">2</span> ** <span class="num">8</span>;   <span class="cm">// 256 (potencia)</span>
+
+<span class="cm">// Comparación (¡doble == vs triple ===!)</span>
+<span class="var">$a</span> = <span class="str">"5"</span>; <span class="var">$b</span> = <span class="num">5</span>;
+<span class="var">$a</span> == <span class="var">$b</span>   <span class="cm">// true  → compara valor (convierte tipo)</span>
+<span class="var">$a</span> === <span class="var">$b</span>  <span class="cm">// false → compara valor Y tipo exacto</span>
+<span class="var">$a</span> != <span class="var">$b</span>   <span class="cm">// false</span>
+<span class="var">$a</span> !== <span class="var">$b</span>  <span class="cm">// true</span>
+
+<span class="cm">// Lógicos</span>
+<span class="kw">true</span> && <span class="kw">false</span>  <span class="cm">// false (AND)</span>
+<span class="kw">true</span> || <span class="kw">false</span>  <span class="cm">// true  (OR)</span>
+!<span class="kw">true</span>          <span class="cm">// false (NOT)</span>
+
+<span class="cm">// Ternario: condición ? si_true : si_false</span>
+<span class="var">$edad</span> = <span class="num">20</span>;
+<span class="var">$msg</span> = <span class="var">$edad</span> >= <span class="num">18</span> ? <span class="str">"Mayor de edad"</span> : <span class="str">"Menor de edad"</span>;
+
+<span class="cm">// Null coalescing (??) — PHP 7+</span>
+<span class="var">$nombre</span> = <span class="var">$_GET</span>[<span class="str">'nombre'</span>] ?? <span class="str">"Invitado"</span>;
+<span class="cm">// Si $_GET['nombre'] no existe → "Invitado"</span>
+
+<span class="cm">// Asignación compuesta</span>
+<span class="var">$total</span>  = <span class="num">100</span>;
+<span class="var">$total</span> += <span class="num">50</span>;  <span class="cm">// 150</span>
+<span class="var">$total</span> -= <span class="num">20</span>;  <span class="cm">// 130</span>
+<span class="var">$total</span> *= <span class="num">2</span>;   <span class="cm">// 260</span></pre>
+    </div>
+    <div class="info-box warn"><span class="icon">⚠️</span><div>Usa siempre <code>===</code> (triple igual) para comparaciones en PHP. El <code>==</code> hace conversiones de tipo automáticas que generan bugs difíciles de rastrear: <code>0 == "hola"</code> devuelve <code>true</code>.</div></div>
+    <button class="check-btn" onclick="markDone(this,'paso3')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 4 -->
+<div class="step-card" id="paso4">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">04</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Condicionales</div>
+      <div class="step-meta">if · elseif · else · switch · match</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">&lt;?php</span>
+
+<span class="var">$nota</span> = <span class="num">75</span>;
+
+<span class="cm">// if / elseif / else</span>
+<span class="kw">if</span> (<span class="var">$nota</span> >= <span class="num">90</span>) {
+    <span class="fn">echo</span> <span class="str">"Excelente"</span>;
+} <span class="kw">elseif</span> (<span class="var">$nota</span> >= <span class="num">70</span>) {
+    <span class="fn">echo</span> <span class="str">"Aprobado"</span>;
+} <span class="kw">elseif</span> (<span class="var">$nota</span> >= <span class="num">60</span>) {
+    <span class="fn">echo</span> <span class="str">"Recuperación"</span>;
+} <span class="kw">else</span> {
+    <span class="fn">echo</span> <span class="str">"Reprobado"</span>;
+}
+
+<span class="cm">// switch (usa == internamente)</span>
+<span class="var">$dia</span> = <span class="str">"lunes"</span>;
+<span class="kw">switch</span> (<span class="var">$dia</span>) {
+    <span class="kw">case</span> <span class="str">"lunes"</span>:
+    <span class="kw">case</span> <span class="str">"martes"</span>:
+        <span class="fn">echo</span> <span class="str">"Inicio de semana"</span>;
+        <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="str">"viernes"</span>:
+        <span class="fn">echo</span> <span class="str">"¡Fin de semana!"</span>;
+        <span class="kw">break</span>;
+    <span class="kw">default</span>:
+        <span class="fn">echo</span> <span class="str">"Día normal"</span>;
+}
+
+<span class="cm">// match — PHP 8+ (usa === y retorna valor)</span>
+<span class="var">$estado</span> = <span class="str">"activo"</span>;
+<span class="var">$color</span> = <span class="kw">match</span>(<span class="var">$estado</span>) {
+    <span class="str">"activo"</span>   => <span class="str">"green"</span>,
+    <span class="str">"inactivo"</span> => <span class="str">"gray"</span>,
+    <span class="str">"bloqueado"</span> => <span class="str">"red"</span>,
+    <span class="kw">default</span>    => <span class="str">"black"</span>,
+};
+<span class="fn">echo</span> <span class="var">$color</span>; <span class="cm">// green</span></pre>
+    </div>
+    <div class="info-box tip"><span class="icon">✅</span><div>Prefiere <code>match</code> sobre <code>switch</code> en PHP 8+. Es más seguro (usa <code>===</code>), más conciso y lanza excepción si ningún caso coincide (en vez de ignorarlo silenciosamente).</div></div>
+    <button class="check-btn" onclick="markDone(this,'paso4')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 5 -->
+<div class="step-card" id="paso5">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">05</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Bucles</div>
+      <div class="step-meta">while · do-while · for · foreach · break · continue</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">&lt;?php</span>
+
+<span class="cm">// while — mientras se cumpla la condición</span>
+<span class="var">$i</span> = <span class="num">1</span>;
+<span class="kw">while</span> (<span class="var">$i</span> <= <span class="num">5</span>) {
+    <span class="fn">echo</span> <span class="str">"Vuelta <span class="var">$i</span>&lt;br&gt;"</span>;
+    <span class="var">$i</span>++;
+}
+
+<span class="cm">// do-while — ejecuta al menos una vez</span>
+<span class="var">$x</span> = <span class="num">10</span>;
+<span class="kw">do</span> {
+    <span class="fn">echo</span> <span class="var">$x</span>;
+    <span class="var">$x</span>--;
+} <span class="kw">while</span> (<span class="var">$x</span> > <span class="num">0</span>);
+
+<span class="cm">// for — cuando conoces el número de iteraciones</span>
+<span class="kw">for</span> (<span class="var">$j</span> = <span class="num">0</span>; <span class="var">$j</span> < <span class="num">5</span>; <span class="var">$j</span>++) {
+    <span class="fn">echo</span> <span class="str">"Elemento <span class="var">$j</span>&lt;br&gt;"</span>;
+}
+
+<span class="cm">// foreach — para recorrer arrays (el más usado en PHP)</span>
+<span class="var">$frutas</span> = [<span class="str">"mango"</span>, <span class="str">"guayaba"</span>, <span class="str">"lulo"</span>];
+<span class="kw">foreach</span> (<span class="var">$frutas</span> <span class="kw">as</span> <span class="var">$fruta</span>) {
+    <span class="fn">echo</span> <span class="var">$fruta</span> . <span class="str">"&lt;br&gt;"</span>;
+}
+
+<span class="cm">// foreach con clave => valor</span>
+<span class="var">$persona</span> = [<span class="str">"nombre"</span> => <span class="str">"Ana"</span>, <span class="str">"edad"</span> => <span class="num">28</span>];
+<span class="kw">foreach</span> (<span class="var">$persona</span> <span class="kw">as</span> <span class="var">$clave</span> => <span class="var">$valor</span>) {
+    <span class="fn">echo</span> <span class="str">"<span class="var">$clave</span>: <span class="var">$valor</span>&lt;br&gt;"</span>;
+}
+
+<span class="cm">// break y continue</span>
+<span class="kw">for</span> (<span class="var">$n</span> = <span class="num">1</span>; <span class="var">$n</span> <= <span class="num">10</span>; <span class="var">$n</span>++) {
+    <span class="kw">if</span> (<span class="var">$n</span> === <span class="num">5</span>) <span class="kw">continue</span>; <span class="cm">// salta el 5</span>
+    <span class="kw">if</span> (<span class="var">$n</span> === <span class="num">8</span>) <span class="kw">break</span>;    <span class="cm">// para en 8</span>
+    <span class="fn">echo</span> <span class="var">$n</span> . <span class="str">" "</span>;           <span class="cm">// 1 2 3 4 6 7</span>
+}</pre>
+    </div>
+    <button class="check-btn" onclick="markDone(this,'paso5')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 6 -->
+<div class="step-card" id="paso6">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">06</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Funciones</div>
+      <div class="step-meta">function · parámetros · return · tipado · arrow functions</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">&lt;?php</span>
+
+<span class="cm">// Función básica</span>
+<span class="kw">function</span> <span class="fn">saludar</span>(<span class="var">$nombre</span>) {
+    <span class="kw">return</span> <span class="str">"Hola, <span class="var">$nombre</span>!"</span>;
+}
+<span class="fn">echo</span> <span class="fn">saludar</span>(<span class="str">"Carlos"</span>);
+
+<span class="cm">// Parámetros con valor por defecto</span>
+<span class="kw">function</span> <span class="fn">calcularDescuento</span>(<span class="var">$precio</span>, <span class="var">$descuento</span> = <span class="num">10</span>) {
+    <span class="kw">return</span> <span class="var">$precio</span> - (<span class="var">$precio</span> * <span class="var">$descuento</span> / <span class="num">100</span>);
+}
+<span class="fn">echo</span> <span class="fn">calcularDescuento</span>(<span class="num">50000</span>);        <span class="cm">// 45000</span>
+<span class="fn">echo</span> <span class="fn">calcularDescuento</span>(<span class="num">50000</span>, <span class="num">20</span>);   <span class="cm">// 40000</span>
+
+<span class="cm">// Tipado estricto — PHP 7+ (recomendado)</span>
+<span class="kw">declare</span>(strict_types=<span class="num">1</span>);
+
+<span class="kw">function</span> <span class="fn">sumar</span>(<span class="type">int</span> <span class="var">$a</span>, <span class="type">int</span> <span class="var">$b</span>): <span class="type">int</span> {
+    <span class="kw">return</span> <span class="var">$a</span> + <span class="var">$b</span>;
+}
+
+<span class="kw">function</span> <span class="fn">obtenerNombre</span>(): <span class="type">?string</span> { <span class="cm">// ? = puede ser null</span>
+    <span class="kw">return</span> <span class="kw">null</span>;
+}
+
+<span class="cm">// Funciones anónimas (closures)</span>
+<span class="var">$multiplicar</span> = <span class="kw">function</span>(<span class="var">$a</span>, <span class="var">$b</span>) {
+    <span class="kw">return</span> <span class="var">$a</span> * <span class="var">$b</span>;
+};
+<span class="fn">echo</span> <span class="var">$multiplicar</span>(<span class="num">4</span>, <span class="num">5</span>); <span class="cm">// 20</span>
+
+<span class="cm">// Arrow functions — PHP 7.4+</span>
+<span class="var">$doble</span> = <span class="kw">fn</span>(<span class="var">$n</span>) => <span class="var">$n</span> * <span class="num">2</span>;
+<span class="fn">echo</span> <span class="var">$doble</span>(<span class="num">7</span>); <span class="cm">// 14</span>
+
+<span class="cm">// Funciones útiles de string</span>
+<span class="fn">strlen</span>(<span class="str">"hola"</span>);                    <span class="cm">// 4</span>
+<span class="fn">strtoupper</span>(<span class="str">"hola"</span>);               <span class="cm">// HOLA</span>
+<span class="fn">str_replace</span>(<span class="str">"a"</span>, <span class="str">"@"</span>, <span class="str">"hola"</span>);   <span class="cm">// hol@</span>
+<span class="fn">trim</span>(<span class="str">"  texto  "</span>);               <span class="cm">// "texto"</span>
+<span class="fn">explode</span>(<span class="str">","</span>, <span class="str">"a,b,c"</span>);           <span class="cm">// ["a","b","c"]</span></pre>
+    </div>
+    <button class="check-btn" onclick="markDone(this,'paso6')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 7 -->
+<div class="step-card" id="paso7">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">07</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Arrays</div>
+      <div class="step-meta">indexados · asociativos · multidimensionales · array_map · array_filter</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">&lt;?php</span>
+
+<span class="cm">// Array indexado</span>
+<span class="var">$colores</span> = [<span class="str">"rojo"</span>, <span class="str">"verde"</span>, <span class="str">"azul"</span>];
+<span class="fn">echo</span> <span class="var">$colores</span>[<span class="num">0</span>];   <span class="cm">// rojo</span>
+<span class="fn">echo</span> <span class="fn">count</span>(<span class="var">$colores</span>); <span class="cm">// 3</span>
+
+<span class="cm">// Array asociativo (clave → valor)</span>
+<span class="var">$estudiante</span> = [
+    <span class="str">"nombre"</span>   => <span class="str">"Laura"</span>,
+    <span class="str">"ficha"</span>    => <span class="str">"2876543"</span>,
+    <span class="str">"programa"</span> => <span class="str">"Análisis de Sistemas"</span>,
+    <span class="str">"nota"</span>     => <span class="num">4.5</span>,
+];
+<span class="fn">echo</span> <span class="var">$estudiante</span>[<span class="str">"nombre"</span>]; <span class="cm">// Laura</span>
+
+<span class="cm">// Array multidimensional</span>
+<span class="var">$cursos</span> = [
+    [<span class="str">"nombre"</span> => <span class="str">"Bases de Datos"</span>, <span class="str">"horas"</span> => <span class="num">40</span>],
+    [<span class="str">"nombre"</span> => <span class="str">"PHP"</span>,             <span class="str">"horas"</span> => <span class="num">36</span>],
+    [<span class="str">"nombre"</span> => <span class="str">"Laravel"</span>,         <span class="str">"horas"</span> => <span class="num">48</span>],
+];
+<span class="kw">foreach</span> (<span class="var">$cursos</span> <span class="kw">as</span> <span class="var">$curso</span>) {
+    <span class="fn">echo</span> <span class="var">$curso</span>[<span class="str">"nombre"</span>] . <span class="str">": "</span> . <span class="var">$curso</span>[<span class="str">"horas"</span>] . <span class="str">"h&lt;br&gt;"</span>;
+}
+
+<span class="cm">// Funciones esenciales de arrays</span>
+<span class="fn">array_push</span>(<span class="var">$colores</span>, <span class="str">"amarillo"</span>);     <span class="cm">// agrega al final</span>
+<span class="fn">array_pop</span>(<span class="var">$colores</span>);                   <span class="cm">// elimina el último</span>
+<span class="fn">in_array</span>(<span class="str">"rojo"</span>, <span class="var">$colores</span>);           <span class="cm">// true/false</span>
+<span class="fn">array_keys</span>(<span class="var">$estudiante</span>);              <span class="cm">// ["nombre","ficha"...]</span>
+<span class="fn">array_values</span>(<span class="var">$estudiante</span>);            <span class="cm">// ["Laura","2876543"...]</span>
+<span class="fn">sort</span>(<span class="var">$colores</span>);                        <span class="cm">// ordena indexado</span>
+<span class="fn">ksort</span>(<span class="var">$estudiante</span>);                   <span class="cm">// ordena por clave</span>
+
+<span class="cm">// array_map — transforma cada elemento</span>
+<span class="var">$notas</span>  = [<span class="num">3.5</span>, <span class="num">4.0</span>, <span class="num">2.8</span>, <span class="num">4.9</span>];
+<span class="var">$dobles</span> = <span class="fn">array_map</span>(<span class="kw">fn</span>(<span class="var">$n</span>) => <span class="var">$n</span> * <span class="num">2</span>, <span class="var">$notas</span>);
+
+<span class="cm">// array_filter — filtra elementos</span>
+<span class="var">$aprobados</span> = <span class="fn">array_filter</span>(<span class="var">$notas</span>, <span class="kw">fn</span>(<span class="var">$n</span>) => <span class="var">$n</span> >= <span class="num">3.0</span>);
+
+<span class="cm">// array_reduce — reduce a un valor</span>
+<span class="var">$total</span> = <span class="fn">array_reduce</span>(<span class="var">$notas</span>, <span class="kw">fn</span>(<span class="var">$carry</span>, <span class="var">$item</span>) => <span class="var">$carry</span> + <span class="var">$item</span>, <span class="num">0</span>);
+<span class="var">$promedio</span> = <span class="var">$total</span> / <span class="fn">count</span>(<span class="var">$notas</span>); <span class="cm">// 3.8</span></pre>
+    </div>
+    <button class="check-btn" onclick="markDone(this,'paso7')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 8 -->
+<div class="step-card" id="paso8">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">08</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Formularios y superglobales</div>
+      <div class="step-meta">$_GET · $_POST · $_SESSION · validación · sanitización</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">&lt;!-- formulario.html --&gt;</span>
+&lt;form action=<span class="str">"procesar.php"</span> method=<span class="str">"POST"</span>&gt;
+    &lt;input type=<span class="str">"text"</span>  name=<span class="str">"nombre"</span> required&gt;
+    &lt;input type=<span class="str">"email"</span> name=<span class="str">"correo"</span> required&gt;
+    &lt;input type=<span class="str">"number"</span> name=<span class="str">"edad"</span>&gt;
+    &lt;button type=<span class="str">"submit"</span>&gt;Enviar&lt;/button&gt;
+&lt;/form&gt;</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — procesar.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">&lt;?php</span>
+
+<span class="cm">// Solo procesar si es POST</span>
+<span class="kw">if</span> (<span class="var">$_SERVER</span>[<span class="str">'REQUEST_METHOD'</span>] === <span class="str">'POST'</span>) {
+
+    <span class="cm">// 1. Recibir datos</span>
+    <span class="var">$nombre</span> = <span class="var">$_POST</span>[<span class="str">'nombre'</span>] ?? <span class="str">''</span>;
+    <span class="var">$correo</span> = <span class="var">$_POST</span>[<span class="str">'correo'</span>] ?? <span class="str">''</span>;
+    <span class="var">$edad</span>   = <span class="var">$_POST</span>[<span class="str">'edad'</span>]   ?? <span class="num">0</span>;
+
+    <span class="cm">// 2. Sanitizar (limpiar)</span>
+    <span class="var">$nombre</span> = <span class="fn">htmlspecialchars</span>(<span class="fn">trim</span>(<span class="var">$nombre</span>));
+    <span class="var">$correo</span> = <span class="fn">filter_var</span>(<span class="var">$correo</span>, FILTER_SANITIZE_EMAIL);
+    <span class="var">$edad</span>   = (<span class="type">int</span>) <span class="var">$edad</span>;
+
+    <span class="cm">// 3. Validar</span>
+    <span class="var">$errores</span> = [];
+    <span class="kw">if</span> (<span class="fn">empty</span>(<span class="var">$nombre</span>)) {
+        <span class="var">$errores</span>[] = <span class="str">"El nombre es obligatorio"</span>;
+    }
+    <span class="kw">if</span> (!<span class="fn">filter_var</span>(<span class="var">$correo</span>, FILTER_VALIDATE_EMAIL)) {
+        <span class="var">$errores</span>[] = <span class="str">"El correo no es válido"</span>;
+    }
+    <span class="kw">if</span> (<span class="var">$edad</span> < <span class="num">15</span> || <span class="var">$edad</span> > <span class="num">80</span>) {
+        <span class="var">$errores</span>[] = <span class="str">"Edad fuera de rango"</span>;
+    }
+
+    <span class="cm">// 4. Procesar o mostrar errores</span>
+    <span class="kw">if</span> (<span class="fn">empty</span>(<span class="var">$errores</span>)) {
+        <span class="fn">echo</span> <span class="str">"Registro exitoso para <span class="var">$nombre</span>"</span>;
+    } <span class="kw">else</span> {
+        <span class="kw">foreach</span> (<span class="var">$errores</span> <span class="kw">as</span> <span class="var">$error</span>) {
+            <span class="fn">echo</span> <span class="str">"&lt;p style='color:red'&gt;<span class="var">$error</span>&lt;/p&gt;"</span>;
+        }
+    }
+}
+
+<span class="cm">// $_GET — datos en la URL (?id=5)</span>
+<span class="var">$id</span> = <span class="fn">filter_input</span>(INPUT_GET, <span class="str">'id'</span>, FILTER_VALIDATE_INT);
+
+<span class="cm">// $_SESSION</span>
+<span class="fn">session_start</span>();
+<span class="var">$_SESSION</span>[<span class="str">'usuario'</span>] = <span class="var">$nombre</span>;
+<span class="fn">echo</span> <span class="var">$_SESSION</span>[<span class="str">'usuario'</span>];
+<span class="fn">session_destroy</span>(); <span class="cm">// cerrar sesión</span></pre>
+    </div>
+    <div class="info-box warn"><span class="icon">⚠️</span><div>Nunca uses datos de <code>$_POST</code> o <code>$_GET</code> directamente en SQL o HTML. Siempre <strong>sanitiza</strong> primero con <code>htmlspecialchars()</code> y luego <strong>valida</strong> antes de procesar.</div></div>
+    <button class="check-btn" onclick="markDone(this,'paso8')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 9 -->
+<div class="step-card" id="paso9">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">09</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Programación Orientada a Objetos (OOP)</div>
+      <div class="step-meta">class · constructor · herencia · interfaces · visibilidad</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — OOP completo</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">&lt;?php</span>
+
+<span class="cm">// Clase base</span>
+<span class="kw">class</span> <span class="cls">Persona</span> {
+    <span class="cm">// Propiedades con visibilidad</span>
+    <span class="kw">public</span>    <span class="type">string</span> <span class="var">$nombre</span>;
+    <span class="kw">protected</span> <span class="type">int</span>    <span class="var">$edad</span>;
+    <span class="kw">private</span>   <span class="type">string</span> <span class="var">$dni</span>;
+
+    <span class="cm">// Constructor</span>
+    <span class="kw">public function</span> <span class="fn">__construct</span>(
+        <span class="type">string</span> <span class="var">$nombre</span>,
+        <span class="type">int</span>    <span class="var">$edad</span>,
+        <span class="type">string</span> <span class="var">$dni</span>
+    ) {
+        <span class="var">$this</span>->nombre = <span class="var">$nombre</span>;
+        <span class="var">$this</span>->edad   = <span class="var">$edad</span>;
+        <span class="var">$this</span>->dni    = <span class="var">$dni</span>;
+    }
+
+    <span class="kw">public function</span> <span class="fn">presentarse</span>(): <span class="type">string</span> {
+        <span class="kw">return</span> <span class="str">"Soy <span class="var">{$this->nombre}</span>, tengo <span class="var">{$this->edad}</span> años."</span>;
+    }
+
+    <span class="cm">// Getter para propiedad privada</span>
+    <span class="kw">public function</span> <span class="fn">getDni</span>(): <span class="type">string</span> {
+        <span class="kw">return</span> <span class="var">$this</span>->dni;
+    }
+}
+
+<span class="cm">// Herencia</span>
+<span class="kw">class</span> <span class="cls">Estudiante</span> <span class="kw">extends</span> <span class="cls">Persona</span> {
+    <span class="kw">public</span> <span class="type">string</span> <span class="var">$ficha</span>;
+    <span class="kw">public</span> <span class="type">string</span> <span class="var">$programa</span>;
+
+    <span class="kw">public function</span> <span class="fn">__construct</span>(
+        <span class="type">string</span> <span class="var">$nombre</span>, <span class="type">int</span> <span class="var">$edad</span>, <span class="type">string</span> <span class="var">$dni</span>,
+        <span class="type">string</span> <span class="var">$ficha</span>,  <span class="type">string</span> <span class="var">$programa</span>
+    ) {
+        <span class="kw">parent</span>::<span class="fn">__construct</span>(<span class="var">$nombre</span>, <span class="var">$edad</span>, <span class="var">$dni</span>);
+        <span class="var">$this</span>->ficha   = <span class="var">$ficha</span>;
+        <span class="var">$this</span>->programa = <span class="var">$programa</span>;
+    }
+
+    <span class="cm">// Sobreescribir método</span>
+    <span class="kw">public function</span> <span class="fn">presentarse</span>(): <span class="type">string</span> {
+        <span class="kw">return</span> <span class="kw">parent</span>::<span class="fn">presentarse</span>() . <span class="str">" Ficha: <span class="var">{$this->ficha}</span>"</span>;
+    }
+}
+
+<span class="cm">// Interface</span>
+<span class="kw">interface</span> <span class="cls">Calificable</span> {
+    <span class="kw">public function</span> <span class="fn">calcularPromedio</span>(): <span class="type">float</span>;
+    <span class="kw">public function</span> <span class="fn">aprobo</span>(): <span class="type">bool</span>;
+}
+
+<span class="cm">// Clase que implementa interface</span>
+<span class="kw">class</span> <span class="cls">EstudianteConNotas</span> <span class="kw">extends</span> <span class="cls">Estudiante</span> <span class="kw">implements</span> <span class="cls">Calificable</span> {
+    <span class="kw">private</span> <span class="type">array</span> <span class="var">$notas</span>;
+
+    <span class="kw">public function</span> <span class="fn">calcularPromedio</span>(): <span class="type">float</span> {
+        <span class="kw">return</span> <span class="fn">array_sum</span>(<span class="var">$this</span>->notas) / <span class="fn">count</span>(<span class="var">$this</span>->notas);
+    }
+
+    <span class="kw">public function</span> <span class="fn">aprobo</span>(): <span class="type">bool</span> {
+        <span class="kw">return</span> <span class="var">$this</span>-><span class="fn">calcularPromedio</span>() >= <span class="num">3.0</span>;
+    }
+}
+
+<span class="cm">// Uso</span>
+<span class="var">$est</span> = <span class="kw">new</span> <span class="cls">Estudiante</span>(<span class="str">"Laura"</span>, <span class="num">22</span>, <span class="str">"12345678"</span>, <span class="str">"2876543"</span>, <span class="str">"Análisis"</span>);
+<span class="fn">echo</span> <span class="var">$est</span>-><span class="fn">presentarse</span>();</pre>
+    </div>
+    <div class="info-box tip"><span class="icon">✅</span><div>La OOP en PHP es la base directa de Laravel. Todo lo que aprendas aquí (clases, herencia, interfaces, visibilidad) lo verás nuevamente en Eloquent Models, Controllers y Service Providers.</div></div>
+    <button class="check-btn" onclick="markDone(this,'paso9')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+</main>
+<footer>CEFIT-SENA · PHP Puro · Guía educativa paso a paso</footer>
+
+<script>
+const TOTAL=9;
+function toggle(h){const c=h.closest('.step-card');const o=c.classList.contains('open');document.querySelectorAll('.step-card.open').forEach(x=>x.classList.remove('open'));if(!o)c.classList.add('open')}
+function copyCode(btn){const pre=btn.closest('.code-block').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='✓ Copiado';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copiar';btn.classList.remove('copied')},2000)})}
+function markDone(btn,id){const c=document.getElementById(id);c.classList.toggle('done');const d=c.classList.contains('done');btn.classList.toggle('checked',d);btn.textContent=d?'✓  Completado':'✓  Marcar como completado';update()}
+function update(){const d=document.querySelectorAll('.step-card.done').length;document.getElementById('progressBar').style.width=(d/TOTAL*100)+'%';document.getElementById('progressCount').textContent=d+' / '+TOTAL}
+document.querySelector('.step-card .step-header').click();
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const id=e.target.id;document.querySelectorAll('.nav-pill').forEach(p=>p.classList.toggle('active',p.getAttribute('href')==='#'+id))}}),{threshold:.4});
+document.querySelectorAll('.step-card').forEach(c=>obs.observe(c));
+</script>
+</body>
+</html>

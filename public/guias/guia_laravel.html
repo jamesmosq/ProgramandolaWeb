@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laravel 11 — De cero a producción</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a1628;--surface:#0f1f38;--surface2:#152540;--border:#1a3050;
+    --accent:#f97316;--accent2:#fb923c;--accent3:#34d399;
+    --ok:#34d399;--warn:#fbbf24;--danger:#f87171;
+    --text:#fef3e8;--text-dim:#94a3b8;--text-muted:#3d5a7a;
+    --code-bg:#070e1a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+  header{position:relative;padding:60px 40px 50px;text-align:center;overflow:hidden;border-bottom:1px solid var(--border)}
+  header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(249,115,22,0.13),transparent),radial-gradient(ellipse 40% 60% at 100% 80%,rgba(52,211,153,0.07),transparent)}
+  header::after{content:'L';position:absolute;right:-10px;top:-20px;font-size:18rem;font-weight:800;color:rgba(249,115,22,0.04);pointer-events:none;line-height:1}
+  .badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--accent);background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);padding:5px 14px;border-radius:20px;margin-bottom:20px;text-transform:uppercase}
+  h1{font-size:clamp(2rem,5vw,3.3rem);font-weight:800;line-height:1.1}
+  h1 span{color:var(--accent)}
+  header p{margin-top:14px;font-size:1rem;color:var(--text-dim);font-weight:300;max-width:540px;margin-inline:auto;line-height:1.7}
+
+  .progress-wrap{padding:18px 40px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:14px}
+  .progress-label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);white-space:nowrap}
+  .progress-bar-outer{flex:1;height:5px;background:var(--border);border-radius:10px;overflow:hidden}
+  .progress-bar-inner{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--ok));border-radius:10px;transition:width .4s ease}
+  .progress-count{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);white-space:nowrap}
+
+  .nav-pills{display:flex;gap:7px;flex-wrap:wrap;padding:16px 40px;background:var(--surface);border-bottom:1px solid var(--border)}
+  .nav-pill{font-family:'JetBrains Mono',monospace;font-size:11px;padding:5px 13px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);cursor:pointer;transition:all .2s;text-decoration:none}
+  .nav-pill:hover,.nav-pill.active{background:rgba(249,115,22,0.12);border-color:var(--accent);color:var(--accent)}
+
+  main{max-width:900px;margin:0 auto;padding:40px 24px 80px}
+
+  .step-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;margin-bottom:28px;overflow:hidden;transition:border-color .3s;scroll-margin-top:100px;animation:fadeUp .4s ease both}
+  .step-card.done{border-color:rgba(52,211,153,0.4)}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  .step-header{display:flex;align-items:center;gap:14px;padding:20px 26px;cursor:pointer;user-select:none;transition:background .2s}
+  .step-header:hover{background:var(--surface2)}
+  .step-num{width:38px;height:38px;border-radius:10px;background:var(--surface2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--text-muted);flex-shrink:0;transition:all .3s}
+  .step-card.done .step-num{background:rgba(52,211,153,0.12);border-color:var(--ok);color:var(--ok)}
+  .step-title-wrap{flex:1}
+  .step-title{font-size:1rem;font-weight:700}
+  .step-meta{font-size:.75rem;color:var(--text-muted);margin-top:3px;font-family:'JetBrains Mono',monospace}
+  .step-toggle{font-size:16px;color:var(--text-muted);transition:transform .3s;flex-shrink:0}
+  .step-card.open .step-toggle{transform:rotate(180deg)}
+  .step-body{display:none;padding:0 26px 26px;border-top:1px solid var(--border)}
+  .step-card.open .step-body{display:block}
+  .step-body p,.step-body li{color:var(--text-dim);line-height:1.8;font-size:.92rem}
+  .step-body ul,.step-body ol{padding-left:20px;margin:10px 0}
+  .step-body li{margin-bottom:6px}
+  .step-body h3{font-size:.78rem;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);margin:20px 0 10px;font-family:'JetBrains Mono',monospace}
+
+  .info-box{border-radius:10px;padding:13px 17px;margin:14px 0;font-size:.87rem;line-height:1.7;display:flex;gap:11px;align-items:flex-start}
+  .info-box .icon{font-size:17px;flex-shrink:0;margin-top:1px}
+  .info-box.tip{background:rgba(52,211,153,0.07);border:1px solid rgba(52,211,153,0.2);color:#6ee7b7}
+  .info-box.warn{background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.2);color:#fcd34d}
+  .info-box.info{background:rgba(249,115,22,0.07);border:1px solid rgba(249,115,22,0.2);color:#fed7aa}
+
+  .code-block{position:relative;margin:16px 0;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:9px 17px;background:#0b1627;border-bottom:1px solid var(--border)}
+  .code-lang{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:1px;text-transform:uppercase}
+  .copy-btn{font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 11px;border-radius:6px;background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);color:var(--accent);cursor:pointer;transition:all .2s}
+  .copy-btn:hover{background:rgba(249,115,22,0.2)}
+  .copy-btn.copied{color:var(--ok);border-color:var(--ok)}
+  pre{background:var(--code-bg);padding:20px 22px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:#c9d1d9}
+
+  .kw{color:#f97316;font-weight:600}
+  .fn{color:#34d399}
+  .str{color:#fbbf24}
+  .num{color:#60a5fa}
+  .cm{color:#374f6b;font-style:italic}
+  .type{color:#a78bfa}
+  .var{color:#fb7185}
+  .cls{color:#34d399;font-weight:600}
+  .dir{color:#94a3b8}
+
+  .check-btn{margin-top:18px;display:inline-flex;align-items:center;gap:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.84rem;font-weight:600;padding:9px 20px;border-radius:10px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25);color:var(--ok);cursor:pointer;transition:all .2s}
+  .check-btn:hover{background:rgba(52,211,153,0.16)}
+
+  .tabla{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:16px;margin:14px 0;overflow-x:auto}
+  .tabla table{border-collapse:collapse;width:100%;min-width:500px}
+  .tabla th{background:rgba(249,115,22,0.1);color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 14px;text-align:left;border:1px solid var(--border)}
+  .tabla td{font-family:'JetBrains Mono',monospace;font-size:12px;padding:7px 14px;border:1px solid var(--border);color:var(--text-dim)}
+  .tabla tr:nth-child(even) td{background:rgba(255,255,255,0.02)}
+  .hl{color:var(--accent);font-weight:600}
+
+  footer{text-align:center;padding:36px;color:var(--text-muted);font-size:.78rem;border-top:1px solid var(--border);font-family:'JetBrains Mono',monospace}
+  @media(max-width:600px){header{padding:40px 18px}.nav-pills,.progress-wrap{padding:12px 14px}main{padding:20px 10px 60px}.step-header{padding:14px}.step-body{padding:0 14px 18px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Laravel 11 · SENA · Colombia</div>
+  <h1>Laravel 11 —<br><span>El framework del artesano</span></h1>
+  <p>Aprende Laravel desde cero: instalación, MVC, rutas, Eloquent, Blade, Breeze y despliegue en Railway.</p>
+</header>
+
+<div class="progress-wrap">
+  <span class="progress-label">PROGRESO</span>
+  <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+  <span class="progress-count" id="progressCount">0 / 10</span>
+</div>
+
+<div class="nav-pills">
+  <a class="nav-pill" href="#paso1">1. Instalación</a>
+  <a class="nav-pill" href="#paso2">2. Estructura</a>
+  <a class="nav-pill" href="#paso3">3. Rutas</a>
+  <a class="nav-pill" href="#paso4">4. Controladores</a>
+  <a class="nav-pill" href="#paso5">5. Blade</a>
+  <a class="nav-pill" href="#paso6">6. Migraciones</a>
+  <a class="nav-pill" href="#paso7">7. Eloquent</a>
+  <a class="nav-pill" href="#paso8">8. Breeze</a>
+  <a class="nav-pill" href="#paso9">9. Relaciones</a>
+  <a class="nav-pill" href="#paso10">10. Railway</a>
+</div>
+
+<main>
+
+<!-- PASO 1 -->
+<div class="step-card" id="paso1">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">01</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Instalación y primer proyecto</div>
+      <div class="step-meta">composer · laravel new · Herd · artisan serve</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Laravel 11 requiere PHP 8.2+ y Composer. Con Laravel Herd en Windows el proceso es automático.</p>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Verificar versiones</span>
+php --version       <span class="cm"># PHP 8.2+</span>
+composer --version
+
+<span class="cm"># Crear nuevo proyecto Laravel 11</span>
+composer create-project laravel/laravel mi-proyecto
+<span class="cm"># O con el instalador de Laravel</span>
+laravel new mi-proyecto
+
+<span class="cm"># Entrar al proyecto</span>
+cd mi-proyecto
+
+<span class="cm"># Iniciar servidor de desarrollo</span>
+php artisan serve
+<span class="cm"># Acceder en: http://127.0.0.1:8000</span>
+
+<span class="cm"># Ver todos los comandos disponibles</span>
+php artisan list
+
+<span class="cm"># Ver versión de Laravel</span>
+php artisan --version</pre>
+    </div>
+    <div class="info-box info"><span class="icon">🛠️</span><div>Con <strong>Laravel Herd</strong> en Windows basta con crear el proyecto en la carpeta <code>~/Herd</code> y ya queda disponible en <code>http://mi-proyecto.test</code> automáticamente, sin <code>artisan serve</code>.</div></div>
+    <h3>Archivo .env — configuración local</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">.env</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>APP_NAME="Mi Proyecto"
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=mi_proyecto_db
+DB_USERNAME=root
+DB_PASSWORD=</pre>
+    </div>
+    <button class="check-btn" onclick="markDone(this,'paso1')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 2 -->
+<div class="step-card" id="paso2">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">02</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Estructura del proyecto</div>
+      <div class="step-meta">app/ · routes/ · resources/ · database/ · public/</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="tabla">
+      <table>
+        <tr><th>Carpeta / Archivo</th><th>Qué contiene</th></tr>
+        <tr><td class="hl">app/Models/</td><td>Clases Eloquent — representan las tablas de BD</td></tr>
+        <tr><td class="hl">app/Http/Controllers/</td><td>Lógica de negocio y manejo de requests</td></tr>
+        <tr><td class="hl">app/Http/Middleware/</td><td>Filtros que interceptan requests (auth, cors…)</td></tr>
+        <tr><td class="hl">routes/web.php</td><td>Rutas del navegador (HTML, sesiones)</td></tr>
+        <tr><td class="hl">routes/api.php</td><td>Rutas de API (sin sesiones, responden JSON)</td></tr>
+        <tr><td class="hl">resources/views/</td><td>Plantillas Blade (.blade.php)</td></tr>
+        <tr><td class="hl">database/migrations/</td><td>Scripts de creación y modificación de tablas</td></tr>
+        <tr><td class="hl">database/seeders/</td><td>Datos de prueba para popular la BD</td></tr>
+        <tr><td class="hl">public/</td><td>Único directorio accesible desde el navegador</td></tr>
+        <tr><td class="hl">config/</td><td>Configuración de la app (mail, database, cache…)</td></tr>
+        <tr><td class="hl">.env</td><td>Variables de entorno locales (NO subir a Git)</td></tr>
+        <tr><td class="hl">artisan</td><td>CLI de Laravel para generar código y ejecutar tareas</td></tr>
+      </table>
+    </div>
+    <div class="info-box tip"><span class="icon">✅</span><div>En Laravel 11 el archivo <code>bootstrap/app.php</code> reemplaza a <code>Kernel.php</code> para registrar middlewares y providers. La estructura es más limpia que en versiones anteriores.</div></div>
+    <button class="check-btn" onclick="markDone(this,'paso2')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 3 -->
+<div class="step-card" id="paso3">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">03</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Rutas (Routes)</div>
+      <div class="step-meta">web.php · Route::get · parámetros · Route::resource · middleware</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — routes/web.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">&lt;?php</span>
+<span class="kw">use</span> <span class="cls">Illuminate\Support\Facades\Route</span>;
+<span class="kw">use</span> <span class="cls">App\Http\Controllers\ProductoController</span>;
+
+<span class="cm">// Ruta simple → closure</span>
+<span class="cls">Route</span>::<span class="fn">get</span>(<span class="str">'/'</span>, <span class="kw">function</span> () {
+    <span class="kw">return</span> <span class="fn">view</span>(<span class="str">'welcome'</span>);
+});
+
+<span class="cm">// Ruta → Controller@método</span>
+<span class="cls">Route</span>::<span class="fn">get</span>(<span class="str">'/productos'</span>, [<span class="cls">ProductoController</span>::class, <span class="str">'index'</span>]);
+<span class="cls">Route</span>::<span class="fn">post</span>(<span class="str">'/productos'</span>, [<span class="cls">ProductoController</span>::class, <span class="str">'store'</span>]);
+
+<span class="cm">// Parámetro en la URL</span>
+<span class="cls">Route</span>::<span class="fn">get</span>(<span class="str">'/productos/{id}'</span>, [<span class="cls">ProductoController</span>::class, <span class="str">'show'</span>]);
+
+<span class="cm">// Parámetro opcional</span>
+<span class="cls">Route</span>::<span class="fn">get</span>(<span class="str">'/buscar/{termino?}'</span>, <span class="kw">function</span>(<span class="var">$termino</span> = <span class="str">'todo'</span>) {
+    <span class="kw">return</span> <span class="str">"Buscando: <span class="var">$termino</span>"</span>;
+});
+
+<span class="cm">// Resource routes — genera 7 rutas CRUD automáticamente</span>
+<span class="cls">Route</span>::<span class="fn">resource</span>(<span class="str">'productos'</span>, <span class="cls">ProductoController</span>::class);
+
+<span class="cm">// Solo algunas acciones</span>
+<span class="cls">Route</span>::<span class="fn">resource</span>(<span class="str">'categorias'</span>, <span class="cls">CategoriaController</span>::class)
+    -><span class="fn">only</span>([<span class="str">'index'</span>, <span class="str">'show'</span>]);
+
+<span class="cm">// Rutas protegidas por auth</span>
+<span class="cls">Route</span>::<span class="fn">middleware</span>(<span class="str">'auth'</span>)-><span class="fn">group</span>(<span class="kw">function</span> () {
+    <span class="cls">Route</span>::<span class="fn">resource</span>(<span class="str">'pedidos'</span>, <span class="cls">PedidoController</span>::class);
+    <span class="cls">Route</span>::<span class="fn">get</span>(<span class="str">'/perfil'</span>, [<span class="cls">PerfilController</span>::class, <span class="str">'index'</span>]);
+});
+
+<span class="cm">// Ver todas las rutas registradas</span>
+<span class="cm">// php artisan route:list</span></pre>
+    </div>
+    <h3>Las 7 rutas que genera Route::resource</h3>
+    <div class="tabla">
+      <table>
+        <tr><th>Método</th><th>URI</th><th>Acción</th><th>Nombre</th></tr>
+        <tr><td class="hl">GET</td><td>/productos</td><td>index</td><td>productos.index</td></tr>
+        <tr><td class="hl">GET</td><td>/productos/create</td><td>create</td><td>productos.create</td></tr>
+        <tr><td class="hl">POST</td><td>/productos</td><td>store</td><td>productos.store</td></tr>
+        <tr><td class="hl">GET</td><td>/productos/{id}</td><td>show</td><td>productos.show</td></tr>
+        <tr><td class="hl">GET</td><td>/productos/{id}/edit</td><td>edit</td><td>productos.edit</td></tr>
+        <tr><td class="hl">PUT/PATCH</td><td>/productos/{id}</td><td>update</td><td>productos.update</td></tr>
+        <tr><td class="hl">DELETE</td><td>/productos/{id}</td><td>destroy</td><td>productos.destroy</td></tr>
+      </table>
+    </div>
+    <button class="check-btn" onclick="markDone(this,'paso3')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 4 -->
+<div class="step-card" id="paso4">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">04</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Controladores</div>
+      <div class="step-meta">make:controller · Request · Response · Form Request</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Crear controlador básico</span>
+php artisan make:controller ProductoController
+
+<span class="cm"># Controlador resource (con todos los métodos CRUD)</span>
+php artisan make:controller ProductoController --resource
+
+<span class="cm"># Con Model asociado</span>
+php artisan make:controller ProductoController --resource --model=Producto
+
+<span class="cm"># Form Request para validación</span>
+php artisan make:request StoreProductoRequest</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — ProductoController.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">&lt;?php</span>
+<span class="kw">namespace</span> <span class="cls">App\Http\Controllers</span>;
+
+<span class="kw">use</span> <span class="cls">App\Models\Producto</span>;
+<span class="kw">use</span> <span class="cls">Illuminate\Http\Request</span>;
+
+<span class="kw">class</span> <span class="cls">ProductoController</span> <span class="kw">extends</span> <span class="cls">Controller</span> {
+
+    <span class="cm">// GET /productos — lista todos</span>
+    <span class="kw">public function</span> <span class="fn">index</span>() {
+        <span class="var">$productos</span> = <span class="cls">Producto</span>::<span class="fn">orderBy</span>(<span class="str">'nombre'</span>)-><span class="fn">paginate</span>(<span class="num">10</span>);
+        <span class="kw">return</span> <span class="fn">view</span>(<span class="str">'productos.index'</span>, <span class="fn">compact</span>(<span class="str">'productos'</span>));
+    }
+
+    <span class="cm">// GET /productos/{id} — muestra uno</span>
+    <span class="kw">public function</span> <span class="fn">show</span>(<span class="cls">Producto</span> <span class="var">$producto</span>) {
+        <span class="cm">// Route Model Binding: Laravel busca el Producto automáticamente</span>
+        <span class="kw">return</span> <span class="fn">view</span>(<span class="str">'productos.show'</span>, <span class="fn">compact</span>(<span class="str">'producto'</span>));
+    }
+
+    <span class="cm">// POST /productos — guarda nuevo</span>
+    <span class="kw">public function</span> <span class="fn">store</span>(<span class="cls">Request</span> <span class="var">$request</span>) {
+        <span class="var">$validado</span> = <span class="var">$request</span>-><span class="fn">validate</span>([
+            <span class="str">'nombre'</span> => <span class="str">'required|string|max:100'</span>,
+            <span class="str">'precio'</span> => <span class="str">'required|numeric|min:0'</span>,
+            <span class="str">'stock'</span>  => <span class="str">'required|integer|min:0'</span>,
+        ]);
+
+        <span class="cls">Producto</span>::<span class="fn">create</span>(<span class="var">$validado</span>);
+        <span class="kw">return</span> <span class="fn">redirect</span>()-><span class="fn">route</span>(<span class="str">'productos.index'</span>)
+                        -><span class="fn">with</span>(<span class="str">'success'</span>, <span class="str">'Producto creado.'</span>);
+    }
+
+    <span class="cm">// DELETE /productos/{id}</span>
+    <span class="kw">public function</span> <span class="fn">destroy</span>(<span class="cls">Producto</span> <span class="var">$producto</span>) {
+        <span class="var">$producto</span>-><span class="fn">delete</span>();
+        <span class="kw">return</span> <span class="fn">back</span>()-><span class="fn">with</span>(<span class="str">'success'</span>, <span class="str">'Eliminado correctamente.'</span>);
+    }
+}</pre>
+    </div>
+    <button class="check-btn" onclick="markDone(this,'paso4')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 5 -->
+<div class="step-card" id="paso5">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">05</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Vistas con Blade</div>
+      <div class="step-meta">layouts · @extends · @section · @foreach · componentes · @if</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Blade — layouts/app.blade.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>&lt;!DOCTYPE html&gt;
+&lt;html lang=<span class="str">"es"</span>&gt;
+&lt;head&gt;
+    &lt;meta charset=<span class="str">"UTF-8"</span>&gt;
+    &lt;title&gt;<span class="kw">@yield</span>(<span class="str">'titulo'</span>, config(<span class="str">'app.name'</span>))&lt;/title&gt;
+    <span class="kw">@vite</span>([<span class="str">'resources/css/app.css'</span>, <span class="str">'resources/js/app.js'</span>])
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;nav&gt;...&lt;/nav&gt;
+
+    &lt;main&gt;
+        <span class="kw">@if</span> (session(<span class="str">'success'</span>))
+            &lt;div class=<span class="str">"alerta-ok"</span>&gt;{{ session(<span class="str">'success'</span>) }}&lt;/div&gt;
+        <span class="kw">@endif</span>
+
+        <span class="kw">@yield</span>(<span class="str">'contenido'</span>)
+    &lt;/main&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Blade — productos/index.blade.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">@extends</span>(<span class="str">'layouts.app'</span>)
+
+<span class="kw">@section</span>(<span class="str">'titulo'</span>, <span class="str">'Productos'</span>)
+
+<span class="kw">@section</span>(<span class="str">'contenido'</span>)
+    &lt;h1&gt;Lista de Productos&lt;/h1&gt;
+
+    <span class="kw">@forelse</span> (<span class="var">$productos</span> <span class="kw">as</span> <span class="var">$producto</span>)
+        &lt;div&gt;
+            &lt;h3&gt;{{ <span class="var">$producto</span>->nombre }}&lt;/h3&gt;
+            &lt;p&gt;$ {{ <span class="fn">number_format</span>(<span class="var">$producto</span>->precio, <span class="num">0</span>, <span class="str">','</span>, <span class="str">'.'</span>) }}&lt;/p&gt;
+
+            <span class="cm">{{-- Formulario DELETE con method spoofing --}}</span>
+            &lt;form action=<span class="str">"{{ route('productos.destroy', $producto) }}"</span>
+                  method=<span class="str">"POST"</span>&gt;
+                <span class="kw">@csrf</span>
+                <span class="kw">@method</span>(<span class="str">'DELETE'</span>)
+                &lt;button type=<span class="str">"submit"</span>&gt;Eliminar&lt;/button&gt;
+            &lt;/form&gt;
+        &lt;/div&gt;
+    <span class="kw">@empty</span>
+        &lt;p&gt;No hay productos registrados.&lt;/p&gt;
+    <span class="kw">@endforelse</span>
+
+    <span class="cm">{{-- Paginación --}}</span>
+    {{ <span class="var">$productos</span>->links() }}
+<span class="kw">@endsection</span></pre>
+    </div>
+    <div class="info-box warn"><span class="icon">⚠️</span><div><code>{{ }}</code> escapa HTML automáticamente (seguro). <code>{!! !!}</code> muestra HTML sin escapar — úsalo solo cuando confíes en el contenido.</div></div>
+    <button class="check-btn" onclick="markDone(this,'paso5')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 6 -->
+<div class="step-card" id="paso6">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">06</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Migraciones y base de datos</div>
+      <div class="step-meta">make:migration · Schema · migrate · rollback · seeder</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Crear migración</span>
+php artisan make:migration create_productos_table
+php artisan make:migration add_stock_to_productos_table
+
+<span class="cm"># Ejecutar migraciones pendientes</span>
+php artisan migrate
+
+<span class="cm"># Revertir última migración</span>
+php artisan migrate:rollback
+
+<span class="cm"># Borrar todo y migrar de nuevo (¡borra datos!)</span>
+php artisan migrate:fresh
+
+<span class="cm"># Con seeders</span>
+php artisan migrate:fresh --seed</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — create_productos_table.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">public function</span> <span class="fn">up</span>(): <span class="type">void</span>
+{
+    <span class="cls">Schema</span>::<span class="fn">create</span>(<span class="str">'productos'</span>, <span class="kw">function</span> (<span class="cls">Blueprint</span> <span class="var">$table</span>) {
+        <span class="var">$table</span>-><span class="fn">id</span>();                                     <span class="cm">// id BIGINT AUTO_INCREMENT PK</span>
+        <span class="var">$table</span>-><span class="fn">string</span>(<span class="str">'nombre'</span>, <span class="num">100</span>);
+        <span class="var">$table</span>-><span class="fn">decimal</span>(<span class="str">'precio'</span>, <span class="num">10</span>, <span class="num">2</span>);
+        <span class="var">$table</span>-><span class="fn">unsignedInteger</span>(<span class="str">'stock'</span>)-><span class="fn">default</span>(<span class="num">0</span>);
+        <span class="var">$table</span>-><span class="fn">boolean</span>(<span class="str">'activo'</span>)-><span class="fn">default</span>(<span class="kw">true</span>);
+        <span class="var">$table</span>-><span class="fn">timestamps</span>();                             <span class="cm">// created_at, updated_at</span>
+    });
+}
+
+<span class="cm">// Migración con FK</span>
+<span class="cls">Schema</span>::<span class="fn">create</span>(<span class="str">'pedidos'</span>, <span class="kw">function</span> (<span class="cls">Blueprint</span> <span class="var">$table</span>) {
+    <span class="var">$table</span>-><span class="fn">id</span>();
+    <span class="var">$table</span>-><span class="fn">foreignId</span>(<span class="str">'cliente_id'</span>)
+           -><span class="fn">constrained</span>(<span class="str">'clientes'</span>)
+           -><span class="fn">cascadeOnDelete</span>();     <span class="cm">// ON DELETE CASCADE</span>
+    <span class="var">$table</span>-><span class="fn">foreignId</span>(<span class="str">'producto_id'</span>)
+           -><span class="fn">nullable</span>()
+           -><span class="fn">constrained</span>(<span class="str">'productos'</span>)
+           -><span class="fn">nullOnDelete</span>();        <span class="cm">// ON DELETE SET NULL</span>
+    <span class="var">$table</span>-><span class="fn">unsignedInteger</span>(<span class="str">'cantidad'</span>)-><span class="fn">default</span>(<span class="num">1</span>);
+    <span class="var">$table</span>-><span class="fn">enum</span>(<span class="str">'estado'</span>, [<span class="str">'pendiente'</span>,<span class="str">'enviado'</span>,<span class="str">'entregado'</span>,<span class="str">'cancelado'</span>])
+           -><span class="fn">default</span>(<span class="str">'pendiente'</span>);
+    <span class="var">$table</span>-><span class="fn">timestamps</span>();
+});</pre>
+    </div>
+    <button class="check-btn" onclick="markDone(this,'paso6')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 7 -->
+<div class="step-card" id="paso7">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">07</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Eloquent ORM</div>
+      <div class="step-meta">Model · $fillable · where · create · update · delete · scopes</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>php artisan make:model Producto
+php artisan make:model Producto -m   <span class="cm"># con migración</span>
+php artisan make:model Producto -mcr <span class="cm"># + migración + controller resource</span></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — Producto.php (Model)</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">class</span> <span class="cls">Producto</span> <span class="kw">extends</span> <span class="cls">Model</span> {
+    <span class="kw">protected</span> <span class="var">$fillable</span> = [<span class="str">'nombre'</span>, <span class="str">'precio'</span>, <span class="str">'stock'</span>, <span class="str">'activo'</span>];
+
+    <span class="kw">protected</span> <span class="kw">function</span> <span class="fn">casts</span>(): <span class="type">array</span> {
+        <span class="kw">return</span> [<span class="str">'activo'</span> => <span class="str">'boolean'</span>, <span class="str">'precio'</span> => <span class="str">'decimal:2'</span>];
+    }
+
+    <span class="cm">// Relación: un producto tiene muchos pedidos</span>
+    <span class="kw">public function</span> <span class="fn">pedidos</span>() {
+        <span class="kw">return</span> <span class="var">$this</span>-><span class="fn">hasMany</span>(<span class="cls">Pedido</span>::class);
+    }
+
+    <span class="cm">// Scope local: solo productos activos</span>
+    <span class="kw">public function</span> <span class="fn">scopeActivo</span>(<span class="var">$query</span>) {
+        <span class="kw">return</span> <span class="var">$query</span>-><span class="fn">where</span>(<span class="str">'activo'</span>, <span class="kw">true</span>);
+    }
+}</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — Consultas Eloquent</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// Obtener todos</span>
+<span class="var">$productos</span> = <span class="cls">Producto</span>::<span class="fn">all</span>();
+
+<span class="cm">// Con condiciones</span>
+<span class="var">$caros</span> = <span class="cls">Producto</span>::<span class="fn">where</span>(<span class="str">'precio'</span>, <span class="str">'>'</span>, <span class="num">50000</span>)
+                  -><span class="fn">orderBy</span>(<span class="str">'nombre'</span>)
+                  -><span class="fn">paginate</span>(<span class="num">10</span>);
+
+<span class="cm">// Usando scope</span>
+<span class="var">$activos</span> = <span class="cls">Producto</span>::<span class="fn">activo</span>()-><span class="fn">get</span>();
+
+<span class="cm">// Buscar por PK (lanza 404 si no existe)</span>
+<span class="var">$p</span> = <span class="cls">Producto</span>::<span class="fn">findOrFail</span>(<span class="num">5</span>);
+
+<span class="cm">// Crear</span>
+<span class="var">$nuevo</span> = <span class="cls">Producto</span>::<span class="fn">create</span>([
+    <span class="str">'nombre'</span> => <span class="str">'Mochila'</span>,
+    <span class="str">'precio'</span> => <span class="num">85000</span>,
+    <span class="str">'stock'</span>  => <span class="num">15</span>,
+]);
+
+<span class="cm">// Actualizar</span>
+<span class="var">$p</span>-><span class="fn">update</span>([<span class="str">'precio'</span> => <span class="num">90000</span>]);
+
+<span class="cm">// Eliminar (soft delete si usa SoftDeletes)</span>
+<span class="var">$p</span>-><span class="fn">delete</span>();
+
+<span class="cm">// firstOrCreate: busca o crea</span>
+<span class="cls">Producto</span>::<span class="fn">firstOrCreate</span>(
+    [<span class="str">'nombre'</span> => <span class="str">'Lapicero'</span>],
+    [<span class="str">'precio'</span> => <span class="num">1200</span>, <span class="str">'stock'</span> => <span class="num">200</span>]
+);</pre>
+    </div>
+    <button class="check-btn" onclick="markDone(this,'paso7')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 8 -->
+<div class="step-card" id="paso8">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">08</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Autenticación con Breeze</div>
+      <div class="step-meta">login · register · reset password · middleware auth</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal — Instalar Breeze</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># 1. Instalar el paquete</span>
+composer require laravel/breeze --dev
+
+<span class="cm"># 2. Publicar scaffolding (Blade + Tailwind + Alpine.js)</span>
+php artisan breeze:install blade
+
+<span class="cm"># 3. Instalar dependencias de Node</span>
+npm install
+npm run dev
+
+<span class="cm"># 4. Migrar (crea tabla users y password_reset_tokens)</span>
+php artisan migrate</pre>
+    </div>
+    <p style="margin-top:14px">Breeze genera automáticamente:</p>
+    <ul style="margin-top:8px">
+      <li>Rutas: <code>/login</code>, <code>/register</code>, <code>/forgot-password</code>, <code>/reset-password</code></li>
+      <li>Vistas Blade en <code>resources/views/auth/</code></li>
+      <li>Controllers en <code>app/Http/Controllers/Auth/</code></li>
+      <li>Middleware <code>auth</code> listo para proteger rutas</li>
+    </ul>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">.env — configurar correo para reset password</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=contaeducolombia@gmail.com
+MAIL_PASSWORD=xxxx xxxx xxxx xxxx
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=contaeducolombia@gmail.com
+MAIL_FROM_NAME="${APP_NAME}"</pre>
+    </div>
+    <div class="info-box tip"><span class="icon">✅</span><div>Con estas variables configuradas, el formulario de <em>Forgot Password</em> de Breeze enviará automáticamente el email de restablecimiento. No requiere código adicional.</div></div>
+    <button class="check-btn" onclick="markDone(this,'paso8')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 9 -->
+<div class="step-card" id="paso9">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">09</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Relaciones Eloquent</div>
+      <div class="step-meta">hasMany · belongsTo · belongsToMany · with (eager loading)</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — Relaciones en modelos</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// Cliente hasMany Pedidos</span>
+<span class="kw">class</span> <span class="cls">Cliente</span> <span class="kw">extends</span> <span class="cls">Model</span> {
+    <span class="kw">public function</span> <span class="fn">pedidos</span>() {
+        <span class="kw">return</span> <span class="var">$this</span>-><span class="fn">hasMany</span>(<span class="cls">Pedido</span>::class);
+    }
+}
+
+<span class="cm">// Pedido belongsTo Cliente</span>
+<span class="kw">class</span> <span class="cls">Pedido</span> <span class="kw">extends</span> <span class="cls">Model</span> {
+    <span class="kw">public function</span> <span class="fn">cliente</span>() {
+        <span class="kw">return</span> <span class="var">$this</span>-><span class="fn">belongsTo</span>(<span class="cls">Cliente</span>::class);
+    }
+    <span class="kw">public function</span> <span class="fn">producto</span>() {
+        <span class="kw">return</span> <span class="var">$this</span>-><span class="fn">belongsTo</span>(<span class="cls">Producto</span>::class);
+    }
+}
+
+<span class="cm">// Relación muchos a muchos (tabla pivot)</span>
+<span class="kw">class</span> <span class="cls">Estudiante</span> <span class="kw">extends</span> <span class="cls">Model</span> {
+    <span class="kw">public function</span> <span class="fn">cursos</span>() {
+        <span class="kw">return</span> <span class="var">$this</span>-><span class="fn">belongsToMany</span>(<span class="cls">Curso</span>::class)
+                      -><span class="fn">withPivot</span>(<span class="str">'nota'</span>, <span class="str">'estado'</span>)
+                      -><span class="fn">withTimestamps</span>();
+    }
+}</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — Uso de relaciones</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// Eager loading — evita N+1 queries</span>
+<span class="var">$pedidos</span> = <span class="cls">Pedido</span>::<span class="fn">with</span>([<span class="str">'cliente'</span>, <span class="str">'producto'</span>])-><span class="fn">get</span>();
+
+<span class="cm">// Usar la relación en Blade</span>
+<span class="kw">@foreach</span> (<span class="var">$pedidos</span> <span class="kw">as</span> <span class="var">$pedido</span>)
+    {{ <span class="var">$pedido</span>->cliente->nombre }}
+    {{ <span class="var">$pedido</span>->producto->nombre ?? <span class="str">'Sin producto'</span> }}
+<span class="kw">@endforeach</span>
+
+<span class="cm">// Contar relaciones</span>
+<span class="var">$clientes</span> = <span class="cls">Cliente</span>::<span class="fn">withCount</span>(<span class="str">'pedidos'</span>)-><span class="fn">get</span>();
+<span class="cm">// $cliente->pedidos_count</span>
+
+<span class="cm">// Crear registro hijo desde el padre</span>
+<span class="var">$cliente</span>-><span class="fn">pedidos</span>()-><span class="fn">create</span>([
+    <span class="str">'producto_id'</span> => <span class="num">2</span>,
+    <span class="str">'cantidad'</span>    => <span class="num">3</span>,
+]);</pre>
+    </div>
+    <button class="check-btn" onclick="markDone(this,'paso9')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 10 -->
+<div class="step-card" id="paso10">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">10</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Deploy en Railway</div>
+      <div class="step-meta">railway CLI · variables de entorno · migrate · dominio</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal — Deploy paso a paso</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># 1. Instalar Railway CLI</span>
+npm install -g @railway/cli
+
+<span class="cm"># 2. Iniciar sesión</span>
+railway login
+
+<span class="cm"># 3. Vincular proyecto existente o crear nuevo</span>
+railway link
+<span class="cm"># o</span>
+railway init
+
+<span class="cm"># 4. Subir el código</span>
+railway up
+
+<span class="cm"># 5. Ejecutar migraciones en producción</span>
+railway run php artisan migrate --force
+
+<span class="cm"># 6. Seeders si es necesario</span>
+railway run php artisan db:seed --force
+
+<span class="cm"># 7. Optimizar para producción</span>
+railway run php artisan config:cache
+railway run php artisan route:cache
+railway run php artisan view:cache</pre>
+    </div>
+    <h3>Variables de entorno en Railway (panel web)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">ENV — Railway Variables</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>APP_ENV=production
+APP_DEBUG=false
+APP_KEY=           <span class="cm"># railway run php artisan key:generate --show</span>
+APP_URL=https://tu-proyecto.up.railway.app
+
+DB_CONNECTION=mysql
+DB_HOST=           <span class="cm"># host interno de Railway MySQL</span>
+DB_PORT=3306
+DB_DATABASE=railway
+DB_USERNAME=root
+DB_PASSWORD=       <span class="cm"># contraseña generada por Railway</span>
+
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=contaeducolombia@gmail.com
+MAIL_PASSWORD=     <span class="cm"># App Password de Gmail (16 chars)</span>
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=contaeducolombia@gmail.com
+MAIL_FROM_NAME="EduCode CEFIT"</pre>
+    </div>
+    <div class="info-box warn"><span class="icon">⚠️</span><div>Nunca subas el archivo <code>.env</code> a Git. Agrega <code>.env</code> al <code>.gitignore</code> (ya viene incluido por defecto en Laravel). Las variables van directamente en el panel de Railway.</div></div>
+    <button class="check-btn" onclick="markDone(this,'paso10')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+</main>
+<footer>CEFIT-SENA · Laravel 11 · Guía educativa paso a paso</footer>
+
+<script>
+const TOTAL=10;
+function toggle(h){const c=h.closest('.step-card');const o=c.classList.contains('open');document.querySelectorAll('.step-card.open').forEach(x=>x.classList.remove('open'));if(!o)c.classList.add('open')}
+function copyCode(btn){const pre=btn.closest('.code-block').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='✓ Copiado';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copiar';btn.classList.remove('copied')},2000)})}
+function markDone(btn,id){const c=document.getElementById(id);c.classList.toggle('done');const d=c.classList.contains('done');btn.classList.toggle('checked',d);btn.textContent=d?'✓  Completado':'✓  Marcar como completado';update()}
+function update(){const d=document.querySelectorAll('.step-card.done').length;document.getElementById('progressBar').style.width=(d/TOTAL*100)+'%';document.getElementById('progressCount').textContent=d+' / '+TOTAL}
+document.querySelector('.step-card .step-header').click();
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const id=e.target.id;document.querySelectorAll('.nav-pill').forEach(p=>p.classList.toggle('active',p.getAttribute('href')==='#'+id))}}),{threshold:.4});
+document.querySelectorAll('.step-card').forEach(c=>obs.observe(c));
+</script>
+</body>
+</html>

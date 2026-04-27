@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laravel Moonshine — Panel Admin desde cero</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Raleway:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#080c14;--surface:#0d1220;--surface2:#121929;--border:#1b2438;
+    --accent:#38bdf8;--accent2:#818cf8;--accent3:#fb7185;
+    --ok:#4ade80;--warn:#fbbf24;
+    --text:#e0f2fe;--text-dim:#7ea8c4;--text-muted:#2a3f58;
+    --code-bg:#05080f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Raleway',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+  header{position:relative;padding:60px 40px 50px;text-align:center;overflow:hidden;border-bottom:1px solid var(--border)}
+  header::before{content:'';position:absolute;inset:0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 0%,rgba(56,189,248,0.1),transparent),
+      radial-gradient(ellipse 50% 40% at 85% 110%,rgba(129,140,248,0.1),transparent),
+      repeating-linear-gradient(45deg,rgba(56,189,248,0.015) 0,rgba(56,189,248,0.015) 1px,transparent 1px,transparent 30px)}
+  .badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--accent);background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.25);padding:5px 14px;border-radius:20px;margin-bottom:20px;text-transform:uppercase}
+  h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:900;line-height:1.1;letter-spacing:-1px}
+  h1 em{font-style:normal;color:var(--accent)}
+  h1 span{color:var(--accent2)}
+  header p{margin-top:14px;font-size:1rem;color:var(--text-dim);font-weight:300;max-width:540px;margin-inline:auto;line-height:1.7}
+
+  .progress-wrap{padding:18px 40px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:14px}
+  .progress-label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);white-space:nowrap}
+  .progress-bar-outer{flex:1;height:5px;background:var(--border);border-radius:10px;overflow:hidden}
+  .progress-bar-inner{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:10px;transition:width .4s ease}
+  .progress-count{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);white-space:nowrap}
+
+  .nav-pills{display:flex;gap:7px;flex-wrap:wrap;padding:16px 40px;background:var(--surface);border-bottom:1px solid var(--border)}
+  .nav-pill{font-family:'JetBrains Mono',monospace;font-size:11px;padding:5px 13px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);cursor:pointer;transition:all .2s;text-decoration:none}
+  .nav-pill:hover,.nav-pill.active{background:rgba(56,189,248,0.1);border-color:var(--accent);color:var(--accent)}
+
+  main{max-width:900px;margin:0 auto;padding:40px 24px 80px}
+
+  .step-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;margin-bottom:28px;overflow:hidden;transition:border-color .3s;scroll-margin-top:100px;animation:fadeUp .4s ease both}
+  .step-card.done{border-color:rgba(74,222,128,0.35)}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  .step-header{display:flex;align-items:center;gap:14px;padding:20px 26px;cursor:pointer;user-select:none;transition:background .2s}
+  .step-header:hover{background:var(--surface2)}
+  .step-num{width:38px;height:38px;border-radius:10px;background:var(--surface2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--text-muted);flex-shrink:0;transition:all .3s}
+  .step-card.done .step-num{background:rgba(74,222,128,0.1);border-color:var(--ok);color:var(--ok)}
+  .step-title-wrap{flex:1}
+  .step-title{font-size:1rem;font-weight:700}
+  .step-meta{font-size:.75rem;color:var(--text-muted);margin-top:3px;font-family:'JetBrains Mono',monospace}
+  .step-toggle{font-size:16px;color:var(--text-muted);transition:transform .3s;flex-shrink:0}
+  .step-card.open .step-toggle{transform:rotate(180deg)}
+  .step-body{display:none;padding:0 26px 26px;border-top:1px solid var(--border)}
+  .step-card.open .step-body{display:block}
+  .step-body p,.step-body li{color:var(--text-dim);line-height:1.8;font-size:.92rem}
+  .step-body ul,.step-body ol{padding-left:20px;margin:10px 0}
+  .step-body li{margin-bottom:6px}
+  .step-body h3{font-size:.78rem;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);margin:20px 0 10px;font-family:'JetBrains Mono',monospace}
+
+  .info-box{border-radius:10px;padding:13px 17px;margin:14px 0;font-size:.87rem;line-height:1.7;display:flex;gap:11px;align-items:flex-start}
+  .info-box .icon{font-size:17px;flex-shrink:0;margin-top:1px}
+  .info-box.tip{background:rgba(74,222,128,0.07);border:1px solid rgba(74,222,128,0.2);color:#86efac}
+  .info-box.warn{background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.2);color:#fcd34d}
+  .info-box.info{background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.18);color:#7dd3fc}
+
+  .code-block{position:relative;margin:16px 0;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:9px 17px;background:#090d19;border-bottom:1px solid var(--border)}
+  .code-lang{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:1px;text-transform:uppercase}
+  .copy-btn{font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 11px;border-radius:6px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.25);color:var(--accent);cursor:pointer;transition:all .2s}
+  .copy-btn:hover{background:rgba(56,189,248,0.16)}
+  .copy-btn.copied{color:var(--ok);border-color:var(--ok)}
+  pre{background:var(--code-bg);padding:20px 22px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:#cbd5e1}
+
+  .kw{color:#38bdf8;font-weight:600}
+  .fn{color:#4ade80}
+  .str{color:#fbbf24}
+  .num{color:#a78bfa}
+  .cm{color:#1e3a52;font-style:italic}
+  .type{color:#fb7185}
+  .var{color:#94a3b8}
+  .cls{color:#818cf8;font-weight:600}
+  .chain{color:#e2e8f0}
+
+  .check-btn{margin-top:18px;display:inline-flex;align-items:center;gap:8px;font-family:'Raleway',sans-serif;font-size:.84rem;font-weight:700;padding:9px 20px;border-radius:10px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.22);color:var(--ok);cursor:pointer;transition:all .2s}
+  .check-btn:hover{background:rgba(74,222,128,0.15)}
+
+  .tabla{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:16px;margin:14px 0;overflow-x:auto}
+  .tabla table{border-collapse:collapse;width:100%;min-width:500px}
+  .tabla th{background:rgba(56,189,248,0.08);color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 14px;text-align:left;border:1px solid var(--border)}
+  .tabla td{font-family:'JetBrains Mono',monospace;font-size:12px;padding:7px 14px;border:1px solid var(--border);color:var(--text-dim)}
+  .tabla tr:nth-child(even) td{background:rgba(255,255,255,0.015)}
+  .hl{color:var(--accent);font-weight:600}
+  .hl2{color:var(--accent2);font-weight:600}
+
+  footer{text-align:center;padding:36px;color:var(--text-muted);font-size:.78rem;border-top:1px solid var(--border);font-family:'JetBrains Mono',monospace}
+  @media(max-width:600px){header{padding:40px 18px}.nav-pills,.progress-wrap{padding:12px 14px}main{padding:20px 10px 60px}.step-header{padding:14px}.step-body{padding:0 14px 18px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Moonshine v3 · Laravel 11 · Admin Panel</div>
+  <h1><em>Laravel</em> <span>Moonshine</span><br>Panel admin sin esfuerzo</h1>
+  <p>Aprende a construir paneles de administración completos con Moonshine: Resources, Fields, Relations, Actions y deploy.</p>
+</header>
+
+<div class="progress-wrap">
+  <span class="progress-label">PROGRESO</span>
+  <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+  <span class="progress-count" id="progressCount">0 / 8</span>
+</div>
+
+<div class="nav-pills">
+  <a class="nav-pill" href="#paso1">1. Instalación</a>
+  <a class="nav-pill" href="#paso2">2. Resource</a>
+  <a class="nav-pill" href="#paso3">3. Fields</a>
+  <a class="nav-pill" href="#paso4">4. Filtros</a>
+  <a class="nav-pill" href="#paso5">5. Relaciones</a>
+  <a class="nav-pill" href="#paso6">6. Actions</a>
+  <a class="nav-pill" href="#paso7">7. Pages custom</a>
+  <a class="nav-pill" href="#paso8">8. Deploy</a>
+</div>
+
+<main>
+
+<!-- PASO 1 -->
+<div class="step-card" id="paso1">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">01</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Instalación de Moonshine</div>
+      <div class="step-meta">composer · artisan moonshine:install · admin user · /admin</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Moonshine v3 es un paquete que genera un panel de administración completo sobre Laravel, con su propio sistema de auth, UI y componentes. Es independiente de Breeze.</p>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># 1. Instalar el paquete</span>
+composer require moonshine/moonshine
+
+<span class="cm"># 2. Publicar y configurar Moonshine</span>
+php artisan moonshine:install
+
+<span class="cm"># El comando pregunta:</span>
+<span class="cm"># - ¿Instalar migraciones de Moonshine? → yes</span>
+<span class="cm"># - ¿Crear usuario administrador? → yes</span>
+<span class="cm"># - Nombre, Email, Password del admin</span>
+
+<span class="cm"># 3. Ejecutar migraciones</span>
+php artisan migrate
+
+<span class="cm"># 4. Acceder al panel</span>
+<span class="cm"># http://tu-dominio/admin</span></pre>
+    </div>
+    <div class="info-box info"><span class="icon">🌙</span><div>Moonshine crea su propia tabla <code>moonshine_users</code> separada de la tabla <code>users</code> de Laravel. El admin del panel y los usuarios de la app son independientes por defecto.</div></div>
+    <h3>Archivos generados por moonshine:install</h3>
+    <div class="tabla">
+      <table>
+        <tr><th>Archivo</th><th>Para qué sirve</th></tr>
+        <tr><td class="hl">config/moonshine.php</td><td>Configuración central: ruta, título, logo, tema</td></tr>
+        <tr><td class="hl">app/MoonShine/MoonShineServiceProvider.php</td><td>Registro de Resources y menú del panel</td></tr>
+        <tr><td class="hl">app/MoonShine/Resources/</td><td>Carpeta donde van todos tus Resources</td></tr>
+        <tr><td class="hl">app/MoonShine/Pages/</td><td>Páginas personalizadas del panel</td></tr>
+      </table>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — config/moonshine.php (fragmento)</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">return</span> [
+    <span class="str">'title'</span>  => <span class="str">'EduCode Admin'</span>,
+    <span class="str">'logo'</span>   => <span class="str">'/img/logo.png'</span>,
+    <span class="str">'prefix'</span> => <span class="str">'admin'</span>,        <span class="cm">// URL: /admin</span>
+    <span class="str">'locale'</span> => <span class="str">'es'</span>,
+
+    <span class="cm">// Color principal del panel</span>
+    <span class="str">'colors'</span> => [
+        <span class="str">'primary'</span>   => <span class="str">'#38bdf8'</span>,
+        <span class="str">'secondary'</span> => <span class="str">'#818cf8'</span>,
+    ],
+];</pre>
+    </div>
+    <button class="check-btn" onclick="markDone(this,'paso1')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 2 -->
+<div class="step-card" id="paso2">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">02</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Resources — el corazón de Moonshine</div>
+      <div class="step-meta">make:resource · Model · fields() · indexFields · formFields</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Un <strong>Resource</strong> en Moonshine equivale a un CRUD completo para un modelo. Con un solo archivo obtienes listado, creación, edición y eliminación.</p>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Crear resource para el modelo Producto</span>
+php artisan moonshine:resource ProductoResource
+
+<span class="cm"># Resource con Model asociado automáticamente</span>
+php artisan moonshine:resource ProductoResource --model=Producto</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — ProductoResource.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">&lt;?php</span>
+<span class="kw">namespace</span> <span class="cls">App\MoonShine\Resources</span>;
+
+<span class="kw">use</span> <span class="cls">App\Models\Producto</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Resources\ModelResource</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Decorations\Block</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Fields\ID</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Fields\Text</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Fields\Number</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Fields\Switcher</span>;
+
+<span class="kw">class</span> <span class="cls">ProductoResource</span> <span class="kw">extends</span> <span class="cls">ModelResource</span>
+{
+    <span class="cm">// Modelo asociado</span>
+    <span class="kw">protected</span> <span class="type">string</span> <span class="var">$model</span> = <span class="cls">Producto</span>::class;
+
+    <span class="cm">// Título del resource en el panel</span>
+    <span class="kw">protected</span> <span class="type">string</span> <span class="var">$title</span> = <span class="str">'Productos'</span>;
+
+    <span class="cm">// Columna que se muestra en relaciones</span>
+    <span class="kw">protected</span> <span class="type">string</span> <span class="var">$column</span> = <span class="str">'nombre'</span>;
+
+    <span class="cm">// Campos en el LISTADO y en el FORMULARIO</span>
+    <span class="kw">public function</span> <span class="fn">fields</span>(): <span class="type">array</span>
+    {
+        <span class="kw">return</span> [
+            <span class="cls">Block</span>::<span class="fn">make</span>(<span class="str">'Información del Producto'</span>, [
+                <span class="cls">ID</span>::<span class="fn">make</span>()-><span class="fn">sortable</span>(),
+
+                <span class="cls">Text</span>::<span class="fn">make</span>(<span class="str">'Nombre'</span>, <span class="str">'nombre'</span>)
+                    -><span class="fn">required</span>()
+                    -><span class="fn">sortable</span>()
+                    -><span class="fn">searchable</span>(),
+
+                <span class="cls">Number</span>::<span class="fn">make</span>(<span class="str">'Precio'</span>, <span class="str">'precio'</span>)
+                    -><span class="fn">required</span>()
+                    -><span class="fn">min</span>(<span class="num">0</span>)
+                    -><span class="fn">step</span>(<span class="num">100</span>),
+
+                <span class="cls">Number</span>::<span class="fn">make</span>(<span class="str">'Stock'</span>, <span class="str">'stock'</span>)
+                    -><span class="fn">min</span>(<span class="num">0</span>)
+                    -><span class="fn">default</span>(<span class="num">0</span>),
+
+                <span class="cls">Switcher</span>::<span class="fn">make</span>(<span class="str">'Activo'</span>, <span class="str">'activo'</span>)
+                    -><span class="fn">default</span>(<span class="kw">true</span>),
+            ]),
+        ];
+    }
+}</pre>
+    </div>
+    <h3>Registrar el Resource en el menú</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — MoonShineServiceProvider.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">use</span> <span class="cls">App\MoonShine\Resources\ProductoResource</span>;
+<span class="kw">use</span> <span class="cls">App\MoonShine\Resources\ClienteResource</span>;
+<span class="kw">use</span> <span class="cls">App\MoonShine\Resources\PedidoResource</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Menu\MenuGroup</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Menu\MenuItem</span>;
+
+<span class="kw">protected function</span> <span class="fn">menu</span>(): <span class="type">array</span>
+{
+    <span class="kw">return</span> [
+        <span class="cls">MenuItem</span>::<span class="fn">make</span>(<span class="str">'Dashboard'</span>, <span class="kw">new</span> <span class="cls">DashboardPage</span>(), <span class="str">'heroicons.home'</span>),
+
+        <span class="cls">MenuGroup</span>::<span class="fn">make</span>(<span class="str">'Catálogo'</span>, [
+            <span class="cls">MenuItem</span>::<span class="fn">make</span>(<span class="str">'Productos'</span>, <span class="kw">new</span> <span class="cls">ProductoResource</span>(), <span class="str">'heroicons.cube'</span>),
+        ]),
+
+        <span class="cls">MenuGroup</span>::<span class="fn">make</span>(<span class="str">'Ventas'</span>, [
+            <span class="cls">MenuItem</span>::<span class="fn">make</span>(<span class="str">'Clientes'</span>, <span class="kw">new</span> <span class="cls">ClienteResource</span>(), <span class="str">'heroicons.users'</span>),
+            <span class="cls">MenuItem</span>::<span class="fn">make</span>(<span class="str">'Pedidos'</span>, <span class="kw">new</span> <span class="cls">PedidoResource</span>(), <span class="str">'heroicons.shopping-cart'</span>),
+        ]),
+    ];
+}</pre>
+    </div>
+    <button class="check-btn" onclick="markDone(this,'paso2')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 3 -->
+<div class="step-card" id="paso3">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">03</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Fields — tipos de campos disponibles</div>
+      <div class="step-meta">Text · Select · Enum · Date · Image · Textarea · Checkbox</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Los Fields son los bloques de construcción de un Resource. Moonshine incluye más de 30 tipos de campo listos para usar.</p>
+    <h3>Fields más usados</h3>
+    <div class="tabla">
+      <table>
+        <tr><th>Field</th><th>Tipo de dato</th><th>Cuándo usarlo</th></tr>
+        <tr><td class="hl">ID</td><td>int PK</td><td>Siempre primero, con sortable()</td></tr>
+        <tr><td class="hl">Text</td><td>VARCHAR</td><td>Nombres, títulos, textos cortos</td></tr>
+        <tr><td class="hl">Textarea</td><td>TEXT</td><td>Descripciones largas</td></tr>
+        <tr><td class="hl">Number</td><td>INT / DECIMAL</td><td>Precios, cantidades, stock</td></tr>
+        <tr><td class="hl">Select</td><td>Enum / FK</td><td>Opciones fijas o relacionadas</td></tr>
+        <tr><td class="hl">Switcher</td><td>BOOLEAN</td><td>Activo/Inactivo, toggles</td></tr>
+        <tr><td class="hl">Date</td><td>DATE / DATETIME</td><td>Fechas, timestamps</td></tr>
+        <tr><td class="hl2">Image</td><td>VARCHAR (path)</td><td>Subida de imágenes</td></tr>
+        <tr><td class="hl2">Enum</td><td>ENUM column</td><td>Estados con opciones definidas</td></tr>
+        <tr><td class="hl2">Slug</td><td>VARCHAR</td><td>URLs amigables auto-generadas</td></tr>
+        <tr><td class="hl2">TinyMce / Quill</td><td>LONGTEXT</td><td>Editor de contenido HTML</td></tr>
+        <tr><td class="hl2">Json</td><td>JSON</td><td>Datos estructurados complejos</td></tr>
+      </table>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — Uso de múltiples Fields</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">use</span> <span class="cls">MoonShine\Fields\Text</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Fields\Select</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Fields\Enum</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Fields\Date</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Fields\Image</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Fields\Textarea</span>;
+
+<span class="kw">public function</span> <span class="fn">fields</span>(): <span class="type">array</span>
+{
+    <span class="kw">return</span> [
+        <span class="cls">ID</span>::<span class="fn">make</span>()-><span class="fn">sortable</span>(),
+
+        <span class="cls">Text</span>::<span class="fn">make</span>(<span class="str">'Nombre'</span>, <span class="str">'nombre'</span>)
+            -><span class="fn">required</span>()
+            -><span class="fn">sortable</span>()
+            -><span class="fn">searchable</span>()
+            -><span class="fn">placeholder</span>(<span class="str">'Ej: Mochila escolar'</span>),
+
+        <span class="cls">Textarea</span>::<span class="fn">make</span>(<span class="str">'Descripción'</span>, <span class="str">'descripcion'</span>)
+            -><span class="fn">hideOnIndex</span>(),    <span class="cm">// solo en formulario</span>
+
+        <span class="cls">Number</span>::<span class="fn">make</span>(<span class="str">'Precio (COP)'</span>, <span class="str">'precio'</span>)
+            -><span class="fn">min</span>(<span class="num">0</span>)-><span class="fn">step</span>(<span class="num">500</span>)-><span class="fn">sortable</span>(),
+
+        <span class="cm">// Enum column de la BD</span>
+        <span class="cls">Select</span>::<span class="fn">make</span>(<span class="str">'Estado'</span>, <span class="str">'estado'</span>)
+            -><span class="fn">options</span>([
+                <span class="str">'pendiente'</span>  => <span class="str">'Pendiente'</span>,
+                <span class="str">'enviado'</span>    => <span class="str">'Enviado'</span>,
+                <span class="str">'entregado'</span>  => <span class="str">'Entregado'</span>,
+                <span class="str">'cancelado'</span>  => <span class="str">'Cancelado'</span>,
+            ])
+            -><span class="fn">badge</span>(<span class="kw">fn</span>(<span class="var">$val</span>) => <span class="kw">match</span>(<span class="var">$val</span>) {
+                <span class="str">'pendiente'</span>  => <span class="str">'warning'</span>,
+                <span class="str">'enviado'</span>    => <span class="str">'info'</span>,
+                <span class="str">'entregado'</span>  => <span class="str">'success'</span>,
+                <span class="str">'cancelado'</span>  => <span class="str">'danger'</span>,
+                <span class="kw">default</span>      => <span class="str">'default'</span>,
+            }),
+
+        <span class="cls">Date</span>::<span class="fn">make</span>(<span class="str">'Fecha'</span>, <span class="str">'created_at'</span>)
+            -><span class="fn">format</span>(<span class="str">'d/m/Y'</span>)
+            -><span class="fn">withTime</span>()
+            -><span class="fn">showOnForm</span>(<span class="kw">false</span>),
+
+        <span class="cls">Image</span>::<span class="fn">make</span>(<span class="str">'Foto'</span>, <span class="str">'imagen'</span>)
+            -><span class="fn">disk</span>(<span class="str">'public'</span>)
+            -><span class="fn">dir</span>(<span class="str">'productos'</span>)
+            -><span class="fn">nullable</span>(),
+
+        <span class="cls">Switcher</span>::<span class="fn">make</span>(<span class="str">'Activo'</span>, <span class="str">'activo'</span>),
+    ];
+}</pre>
+    </div>
+    <button class="check-btn" onclick="markDone(this,'paso3')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 4 -->
+<div class="step-card" id="paso4">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">04</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Filtros y búsqueda</div>
+      <div class="step-meta">filters() · search · sortable · scopes en Resource</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — Filtros en el Resource</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">use</span> <span class="cls">MoonShine\Fields\Text</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Fields\Select</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Fields\RangeSlider</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Fields\DateRange</span>;
+
+<span class="cm">// Columnas buscables (barra de búsqueda)</span>
+<span class="kw">protected</span> <span class="type">array</span> <span class="var">$search</span> = [<span class="str">'nombre'</span>, <span class="str">'descripcion'</span>];
+
+<span class="cm">// Filtros del panel lateral</span>
+<span class="kw">public function</span> <span class="fn">filters</span>(): <span class="type">array</span>
+{
+    <span class="kw">return</span> [
+        <span class="cls">Text</span>::<span class="fn">make</span>(<span class="str">'Nombre'</span>, <span class="str">'nombre'</span>)
+            -><span class="fn">like</span>(<span class="str">'nombre'</span>),       <span class="cm">// LIKE %valor%</span>
+
+        <span class="cls">Select</span>::<span class="fn">make</span>(<span class="str">'Estado'</span>, <span class="str">'estado'</span>)
+            -><span class="fn">options</span>([
+                <span class="str">'pendiente'</span> => <span class="str">'Pendiente'</span>,
+                <span class="str">'enviado'</span>   => <span class="str">'Enviado'</span>,
+                <span class="str">'entregado'</span> => <span class="str">'Entregado'</span>,
+            ])
+            -><span class="fn">nullable</span>(),
+
+        <span class="cls">RangeSlider</span>::<span class="fn">make</span>(<span class="str">'Precio'</span>, <span class="str">'precio'</span>)
+            -><span class="fn">fromTo</span>(<span class="str">'precio_min'</span>, <span class="str">'precio_max'</span>)
+            -><span class="fn">min</span>(<span class="num">0</span>)-><span class="fn">max</span>(<span class="num">500000</span>),
+
+        <span class="cls">DateRange</span>::<span class="fn">make</span>(<span class="str">'Fecha de registro'</span>, <span class="str">'created_at'</span>)
+            -><span class="fn">fromTo</span>(<span class="str">'fecha_desde'</span>, <span class="str">'fecha_hasta'</span>),
+
+        <span class="cls">Switcher</span>::<span class="fn">make</span>(<span class="str">'Solo activos'</span>, <span class="str">'activo'</span>)
+            -><span class="fn">default</span>(<span class="kw">true</span>),
+    ];
+}
+
+<span class="cm">// Query por defecto (ordenar por nombre)</span>
+<span class="kw">public function</span> <span class="fn">query</span>(): <span class="cls">Builder</span>
+{
+    <span class="kw">return</span> <span class="kw">parent</span>::<span class="fn">query</span>()-><span class="fn">orderBy</span>(<span class="str">'nombre'</span>);
+}</pre>
+    </div>
+    <button class="check-btn" onclick="markDone(this,'paso4')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 5 -->
+<div class="step-card" id="paso5">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">05</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Relaciones en Moonshine</div>
+      <div class="step-meta">BelongsTo · HasMany · BelongsToMany · MorphMany</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — Relaciones en Resource</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">use</span> <span class="cls">MoonShine\Fields\Relationships\BelongsTo</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Fields\Relationships\HasMany</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Fields\Relationships\BelongsToMany</span>;
+
+<span class="cm">// En PedidoResource — relación ManyToOne</span>
+<span class="cls">BelongsTo</span>::<span class="fn">make</span>(<span class="str">'Cliente'</span>, <span class="str">'cliente'</span>, <span class="kw">fn</span>() => <span class="kw">new</span> <span class="cls">ClienteResource</span>())
+    -><span class="fn">required</span>()
+    -><span class="fn">searchable</span>(),   <span class="cm">// búsqueda por nombre en dropdown</span>
+
+<span class="cls">BelongsTo</span>::<span class="fn">make</span>(<span class="str">'Producto'</span>, <span class="str">'producto'</span>, <span class="kw">fn</span>() => <span class="kw">new</span> <span class="cls">ProductoResource</span>())
+    -><span class="fn">nullable</span>()
+    -><span class="fn">placeholder</span>(<span class="str">'Seleccionar producto'</span>),
+
+
+<span class="cm">// En ClienteResource — ver pedidos del cliente</span>
+<span class="cls">HasMany</span>::<span class="fn">make</span>(<span class="str">'Pedidos'</span>, <span class="str">'pedidos'</span>, <span class="kw">fn</span>() => <span class="kw">new</span> <span class="cls">PedidoResource</span>())
+    -><span class="fn">hideOnIndex</span>(),  <span class="cm">// solo en la vista detalle del cliente</span>
+
+
+<span class="cm">// Muchos a muchos — Estudiante ↔ Cursos</span>
+<span class="cls">BelongsToMany</span>::<span class="fn">make</span>(<span class="str">'Cursos'</span>, <span class="str">'cursos'</span>, <span class="kw">fn</span>() => <span class="kw">new</span> <span class="cls">CursoResource</span>())
+    -><span class="fn">withPivot</span>([
+        <span class="cls">Number</span>::<span class="fn">make</span>(<span class="str">'Nota'</span>, <span class="str">'nota'</span>),
+        <span class="cls">Select</span>::<span class="fn">make</span>(<span class="str">'Estado'</span>, <span class="str">'estado'</span>)
+            -><span class="fn">options</span>([<span class="str">'activo'</span> => <span class="str">'Activo'</span>, <span class="str">'retirado'</span> => <span class="str">'Retirado'</span>]),
+    ])</pre>
+    </div>
+    <div class="info-box tip"><span class="icon">✅</span><div>El método <code>searchable()</code> en un <code>BelongsTo</code> activa la búsqueda por AJAX en el dropdown — ideal cuando hay cientos de registros y no quieres cargarlos todos.</div></div>
+    <button class="check-btn" onclick="markDone(this,'paso5')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 6 -->
+<div class="step-card" id="paso6">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">06</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Actions — acciones personalizadas</div>
+      <div class="step-meta">ItemAction · BulkAction · make:action · confirmación</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Las Actions permiten ejecutar lógica personalizada desde el panel: exportar, cambiar estado, enviar correos, etc.</p>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>php artisan moonshine:action MarcarEnviadoAction</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — Action individual (por fila)</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">use</span> <span class="cls">MoonShine\Actions\ItemAction</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\ActionButtons\ActionButton</span>;
+
+<span class="cm">// En el Resource, definir actions()</span>
+<span class="kw">public function</span> <span class="fn">itemActions</span>(): <span class="type">array</span>
+{
+    <span class="kw">return</span> [
+        <span class="cls">ItemAction</span>::<span class="fn">make</span>(
+            <span class="str">'Marcar Enviado'</span>,
+            <span class="kw">function</span>(<span class="cls">Pedido</span> <span class="var">$pedido</span>) {
+                <span class="var">$pedido</span>-><span class="fn">update</span>([<span class="str">'estado'</span> => <span class="str">'enviado'</span>]);
+            }
+        )
+        -><span class="fn">icon</span>(<span class="str">'heroicons.truck'</span>)
+        -><span class="fn">withConfirm</span>(<span class="str">'¿Confirmar envío?'</span>)
+        -><span class="fn">canSee</span>(<span class="kw">fn</span>(<span class="cls">Pedido</span> <span class="var">$p</span>) => <span class="var">$p</span>->estado === <span class="str">'pendiente'</span>),
+    ];
+}
+
+<span class="cm">// Bulk Action — aplica a múltiples seleccionados</span>
+<span class="kw">public function</span> <span class="fn">bulkActions</span>(): <span class="type">array</span>
+{
+    <span class="kw">return</span> [
+        <span class="cls">BulkAction</span>::<span class="fn">make</span>(
+            <span class="str">'Marcar todos Entregados'</span>,
+            <span class="kw">function</span>(<span class="cls">Collection</span> <span class="var">$items</span>) {
+                <span class="var">$items</span>-><span class="fn">each</span>-><span class="fn">update</span>([<span class="str">'estado'</span> => <span class="str">'entregado'</span>]);
+            }
+        )
+        -><span class="fn">icon</span>(<span class="str">'heroicons.check-circle'</span>)
+        -><span class="fn">withConfirm</span>(),
+    ];
+}</pre>
+    </div>
+    <button class="check-btn" onclick="markDone(this,'paso6')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 7 -->
+<div class="step-card" id="paso7">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">07</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Dashboard y páginas personalizadas</div>
+      <div class="step-meta">make:page · Metrics · Cards · Charts · Dashboard</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>php artisan moonshine:page Dashboard</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — Dashboard.php (página personalizada)</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">use</span> <span class="cls">MoonShine\Components\FlexibleRender</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Decorations\Grid</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Decorations\Column</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Metrics\ValueMetric</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Metrics\DonutChartMetric</span>;
+
+<span class="kw">class</span> <span class="cls">Dashboard</span> <span class="kw">extends</span> <span class="cls">Page</span>
+{
+    <span class="kw">public function</span> <span class="fn">components</span>(): <span class="type">array</span>
+    {
+        <span class="kw">return</span> [
+            <span class="cls">Grid</span>::<span class="fn">make</span>([
+
+                <span class="cls">Column</span>::<span class="fn">make</span>([
+                    <span class="cls">ValueMetric</span>::<span class="fn">make</span>(<span class="str">'Total Clientes'</span>)
+                        -><span class="fn">value</span>(<span class="cls">Cliente</span>::<span class="fn">count</span>())
+                        -><span class="fn">icon</span>(<span class="str">'heroicons.users'</span>)
+                        -><span class="fn">columnSpan</span>(<span class="num">4</span>),
+
+                    <span class="cls">ValueMetric</span>::<span class="fn">make</span>(<span class="str">'Pedidos Hoy'</span>)
+                        -><span class="fn">value</span>(
+                            <span class="cls">Pedido</span>::<span class="fn">whereDate</span>(<span class="str">'created_at'</span>, <span class="fn">today</span>())-><span class="fn">count</span>()
+                        )
+                        -><span class="fn">icon</span>(<span class="str">'heroicons.shopping-bag'</span>)
+                        -><span class="fn">columnSpan</span>(<span class="num">4</span>),
+
+                    <span class="cls">ValueMetric</span>::<span class="fn">make</span>(<span class="str">'Ingresos del mes'</span>)
+                        -><span class="fn">value</span>(
+                            <span class="str">'$'</span> . <span class="fn">number_format</span>(
+                                <span class="cls">Pedido</span>::<span class="fn">thisMonth</span>()-><span class="fn">sum</span>(<span class="str">'total'</span>), <span class="num">0</span>, <span class="str">','</span>, <span class="str">'.'</span>
+                            )
+                        )
+                        -><span class="fn">columnSpan</span>(<span class="num">4</span>),
+                ]),
+
+                <span class="cls">Column</span>::<span class="fn">make</span>([
+                    <span class="cls">DonutChartMetric</span>::<span class="fn">make</span>(<span class="str">'Pedidos por Estado'</span>)
+                        -><span class="fn">values</span>([
+                            <span class="str">'Pendientes'</span>  => <span class="cls">Pedido</span>::<span class="fn">where</span>(<span class="str">'estado'</span>,<span class="str">'pendiente'</span>)-><span class="fn">count</span>(),
+                            <span class="str">'Enviados'</span>    => <span class="cls">Pedido</span>::<span class="fn">where</span>(<span class="str">'estado'</span>,<span class="str">'enviado'</span>)-><span class="fn">count</span>(),
+                            <span class="str">'Entregados'</span>  => <span class="cls">Pedido</span>::<span class="fn">where</span>(<span class="str">'estado'</span>,<span class="str">'entregado'</span>)-><span class="fn">count</span>(),
+                        ])
+                        -><span class="fn">columnSpan</span>(<span class="num">6</span>),
+                ]),
+            ]),
+        ];
+    }
+}</pre>
+    </div>
+    <button class="check-btn" onclick="markDone(this,'paso7')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 8 -->
+<div class="step-card" id="paso8">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">08</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Deploy con Moonshine en Railway</div>
+      <div class="step-meta">assets · storage · admin user en producción</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal — Checklist de deploy</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># 1. Publicar assets de Moonshine (CSS/JS del panel)</span>
+php artisan moonshine:publish
+
+<span class="cm"># 2. Subir a Railway</span>
+railway up
+
+<span class="cm"># 3. Migrar (incluye tablas de Moonshine)</span>
+railway run php artisan migrate --force
+
+<span class="cm"># 4. Crear usuario admin en producción</span>
+railway run php artisan moonshine:user
+
+<span class="cm"># 5. Vincular storage (imágenes subidas)</span>
+railway run php artisan storage:link
+
+<span class="cm"># 6. Cachear para producción</span>
+railway run php artisan config:cache
+railway run php artisan route:cache
+railway run php artisan view:cache
+railway run php artisan moonshine:cache</pre>
+    </div>
+    <div class="info-box warn"><span class="icon">⚠️</span><div>Railway no persiste el filesystem entre deploys. Las imágenes subidas desde Moonshine se perderán. Para producción real usa <strong>S3</strong> o <strong>Cloudinary</strong> como disco de storage.</div></div>
+    <div class="info-box tip"><span class="icon">✅</span><div>El panel de Moonshine queda accesible en <code>https://tu-dominio.up.railway.app/admin</code>. Puedes cambiar el prefijo en <code>config/moonshine.php</code> con la clave <code>'prefix'</code>.</div></div>
+    <button class="check-btn" onclick="markDone(this,'paso8')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+</main>
+<footer>CEFIT-SENA · Laravel Moonshine v3 · Guía educativa paso a paso</footer>
+
+<script>
+const TOTAL=8;
+function toggle(h){const c=h.closest('.step-card');const o=c.classList.contains('open');document.querySelectorAll('.step-card.open').forEach(x=>x.classList.remove('open'));if(!o)c.classList.add('open')}
+function copyCode(btn){const pre=btn.closest('.code-block').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='✓ Copiado';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copiar';btn.classList.remove('copied')},2000)})}
+function markDone(btn,id){const c=document.getElementById(id);c.classList.toggle('done');const d=c.classList.contains('done');btn.classList.toggle('checked',d);btn.textContent=d?'✓  Completado':'✓  Marcar como completado';update()}
+function update(){const d=document.querySelectorAll('.step-card.done').length;document.getElementById('progressBar').style.width=(d/TOTAL*100)+'%';document.getElementById('progressCount').textContent=d+' / '+TOTAL}
+document.querySelector('.step-card .step-header').click();
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const id=e.target.id;document.querySelectorAll('.nav-pill').forEach(p=>p.classList.toggle('active',p.getAttribute('href')==='#'+id))}}),{threshold:.4});
+document.querySelectorAll('.step-card').forEach(c=>obs.observe(c));
+</script>
+</body>
+</html>

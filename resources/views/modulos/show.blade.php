@@ -5,11 +5,33 @@
         <div class="flex items-center gap-3 mb-1">
             <a href="{{ route('modulos.index') }}" class="text-gray-500 hover:text-white transition-colors text-sm">← Módulos</a>
         </div>
-        <div class="flex items-center gap-3">
-            <span class="text-3xl">{{ $modulo->icono }}</span>
-            <div>
-                <h2 class="text-xl font-bold text-white">{{ $modulo->nombre }}</h2>
-                <p class="text-sm text-gray-400 mt-0.5">{{ $modulo->descripcion }}</p>
+        <div class="flex items-start justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">{{ $modulo->icono }}</span>
+                <div>
+                    <h2 class="text-xl font-bold text-white">{{ $modulo->nombre }}</h2>
+                    <p class="text-sm text-gray-400 mt-0.5">{{ $modulo->descripcion }}</p>
+                </div>
+            </div>
+            @php
+                $talleres = [1=>'taller_01_bases_de_datos',2=>'taller_02_php_puro',3=>'taller_03_html_css',4=>'taller_04_laravel',5=>'taller_05_moonshine'];
+                $guias    = [1=>'guia_sql_mysql',2=>'guia_php',3=>null,4=>'guia_laravel',5=>'guia_moonshine'];
+                $taller   = $talleres[$modulo->orden] ?? null;
+                $guia     = $guias[$modulo->orden] ?? null;
+            @endphp
+            <div class="flex items-center gap-2 flex-shrink-0">
+                @if($taller)
+                <a href="/talleres/{{ $taller }}.html" target="_blank"
+                   class="flex items-center gap-1.5 mono text-xs px-3 py-1.5 bg-cyan-400/10 text-cyan-400 border border-cyan-400/20 rounded-xl hover:bg-cyan-400/20 transition-colors">
+                    📋 Taller
+                </a>
+                @endif
+                @if($guia)
+                <a href="/guias/{{ $guia }}.html" target="_blank"
+                   class="flex items-center gap-1.5 mono text-xs px-3 py-1.5 bg-violet-400/10 text-violet-400 border border-violet-400/20 rounded-xl hover:bg-violet-400/20 transition-colors">
+                    📖 Guía
+                </a>
+                @endif
             </div>
         </div>
     </x-slot>
