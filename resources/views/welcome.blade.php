@@ -134,6 +134,26 @@
         </div>
         @endforeach
     </div>
+
+    {{-- QR proyectable: mostrar en PC/TV para que los estudiantes escaneen con el celular --}}
+    <div class="flex justify-center mt-10">
+        <div class="relative">
+            <div class="absolute -inset-px bg-gradient-to-r from-cyan-500/25 to-violet-500/25 rounded-2xl blur"></div>
+            <div class="relative flex flex-col sm:flex-row items-center gap-6 bg-gray-900 border border-white/10 rounded-2xl px-7 py-6">
+                {{-- QR --}}
+                <div class="bg-white p-3 rounded-xl shadow-2xl flex-shrink-0">
+                    <div id="qr-code"></div>
+                </div>
+                {{-- Texto --}}
+                <div class="text-center sm:text-left">
+                    <p class="font-bold text-base text-white mb-2">📱 Escanea para acceder</p>
+                    <p class="text-gray-400 text-sm leading-relaxed max-w-[220px]">
+                        Apunta la cámara de tu celular al código y abre la plataforma sin escribir nada.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
 
 {{-- ═══════════════ MÓDULOS ═══════════════ --}}
@@ -350,17 +370,23 @@
 
 {{-- ═══════════════ FOOTER ═══════════════ --}}
 <footer class="border-t border-white/5 py-10 px-4 sm:px-6">
-    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="flex items-center gap-2.5">
-            <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center text-xs font-bold text-white">E</div>
-            <span class="font-bold text-sm">{{ config('app.name', 'EduCode') }}</span>
-            <span class="mono text-xs text-gray-600">{{ now()->year }}</span>
-        </div>
-        <p class="mono text-xs text-gray-600">
-            Construido con Laravel {{ app()->version() }} · PHP {{ PHP_MAJOR_VERSION }}.{{ PHP_MINOR_VERSION }}
-        </p>
+    <div class="max-w-6xl mx-auto flex items-center justify-center gap-2.5">
+        <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center text-xs font-bold text-white">E</div>
+        <span class="font-bold text-sm">{{ config('app.name', 'EduCode') }}</span>
+        <span class="mono text-xs text-gray-600">{{ now()->year }}</span>
     </div>
 </footer>
 
+<script src="/js/qrcode.min.js"></script>
+<script>
+    new QRCode(document.getElementById('qr-code'), {
+        text: 'https://programandolaweb-production.up.railway.app/',
+        width: 160,
+        height: 160,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+    });
+</script>
 </body>
 </html>
