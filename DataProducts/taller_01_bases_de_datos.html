@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taller 01 — Bases de Datos | EduCode CEFIT</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0f1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --code-bg: #0d1117;
+    --step-done: #10b981;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+  header {
+    position: relative; padding: 60px 40px 50px; text-align: center;
+    overflow: hidden; border-bottom: 1px solid var(--border);
+  }
+  header::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0,212,255,0.12), transparent),
+                radial-gradient(ellipse 60% 40% at 90% 110%, rgba(124,58,237,0.1), transparent);
+  }
+  header .module-tag {
+    display: inline-block; font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 3px; color: var(--accent);
+    background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.25);
+    padding: 4px 14px; border-radius: 20px; margin-bottom: 8px; text-transform: uppercase;
+  }
+  header .taller-num {
+    display: block; font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--text-muted); margin-bottom: 14px; letter-spacing: 2px;
+  }
+  header h1 { font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 800; line-height: 1.15; position: relative; }
+  header h1 span { color: var(--accent); }
+  header p.subtitle {
+    margin-top: 14px; font-size: 0.97rem; color: var(--text-dim);
+    font-weight: 300; max-width: 560px; margin-inline: auto; line-height: 1.7; position: relative;
+  }
+  header .objetivo {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 22px; font-size: 0.82rem; color: var(--accent3);
+    background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2);
+    padding: 8px 18px; border-radius: 30px; position: relative;
+  }
+
+  .progress-wrap {
+    padding: 18px 40px; background: var(--surface); border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 16px;
+  }
+  .progress-label { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .progress-bar-outer { flex: 1; height: 6px; background: var(--border); border-radius: 10px; overflow: hidden; }
+  .progress-bar-inner { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 10px; transition: width 0.4s ease; }
+  .progress-count { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent); white-space: nowrap; }
+
+  .nav-pills { display: flex; gap: 8px; flex-wrap: wrap; padding: 16px 40px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .nav-pill {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 5px 13px;
+    border-radius: 20px; background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-muted); cursor: pointer; transition: all 0.2s; text-decoration: none;
+  }
+  .nav-pill:hover, .nav-pill.active { background: rgba(0,212,255,0.1); border-color: var(--accent); color: var(--accent); }
+
+  main { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  .step-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; margin-bottom: 28px; overflow: hidden;
+    transition: border-color 0.3s; scroll-margin-top: 100px;
+    animation: fadeUp 0.4s ease both;
+  }
+  .step-card.done { border-color: rgba(16,185,129,0.35); }
+  .step-header {
+    display: flex; align-items: center; gap: 16px; padding: 20px 26px;
+    cursor: pointer; user-select: none; background: var(--surface); transition: background 0.2s;
+  }
+  .step-header:hover { background: var(--surface2); }
+  .step-num {
+    width: 40px; height: 40px; border-radius: 12px; background: var(--surface2);
+    border: 2px solid var(--border); display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700;
+    color: var(--text-muted); flex-shrink: 0; transition: all 0.3s;
+  }
+  .step-card.done .step-num { background: rgba(16,185,129,0.15); border-color: var(--step-done); color: var(--step-done); }
+  .step-title-wrap { flex: 1; }
+  .step-title { font-size: 1rem; font-weight: 700; line-height: 1.3; }
+  .step-meta { font-size: 0.76rem; color: var(--text-muted); margin-top: 3px; font-family: 'JetBrains Mono', monospace; }
+  .step-toggle { font-size: 16px; color: var(--text-muted); transition: transform 0.3s; flex-shrink: 0; }
+  .step-card.open .step-toggle { transform: rotate(180deg); }
+  .step-body { display: none; padding: 0 26px 26px; border-top: 1px solid var(--border); }
+  .step-card.open .step-body { display: block; }
+  .step-body p, .step-body li { color: var(--text-dim); line-height: 1.8; font-size: 0.91rem; }
+  .step-body ul, .step-body ol { padding-left: 20px; margin: 10px 0; }
+  .step-body li { margin-bottom: 5px; }
+  .step-body h3 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin: 20px 0 10px; font-family: 'JetBrains Mono', monospace; }
+
+  .info-box { border-radius: 10px; padding: 13px 16px; margin: 14px 0; font-size: 0.87rem; line-height: 1.7; display: flex; gap: 12px; align-items: flex-start; }
+  .info-box .icon { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+  .info-box.tip { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); color: #6ee7b7; }
+  .info-box.warn { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); color: #fcd34d; }
+  .info-box.info { background: rgba(0,212,255,0.06); border: 1px solid rgba(0,212,255,0.18); color: #7dd3fc; }
+
+  .code-block { position: relative; margin: 16px 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+  .code-header { display: flex; align-items: center; justify-content: space-between; padding: 9px 16px; background: #161c2d; border-bottom: 1px solid var(--border); }
+  .code-lang { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; }
+  .copy-btn { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 3px 11px; border-radius: 6px; background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3); color: var(--accent); cursor: pointer; transition: all 0.2s; }
+  .copy-btn:hover { background: rgba(0,212,255,0.2); }
+  .copy-btn.copied { color: var(--accent3); border-color: var(--accent3); }
+  pre { background: var(--code-bg); padding: 18px 20px; overflow-x: auto; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.7; color: #c9d1d9; }
+
+  /* SQL syntax */
+  .kw { color: #ff7b72; font-weight: 600; }
+  .fn { color: #d2a8ff; }
+  .str { color: #a5d6ff; }
+  .num { color: #79c0ff; }
+  .cm { color: #6e7681; font-style: italic; }
+  .type { color: #ffa657; }
+  .tbl { color: #7ee787; }
+  .col { color: #e2e8f0; }
+  .todo { color: #f59e0b; background: rgba(245,158,11,0.1); border-radius: 3px; padding: 0 3px; }
+
+  .tu-turno {
+    background: rgba(124,58,237,0.07); border: 1px solid rgba(124,58,237,0.25);
+    border-radius: 12px; padding: 18px 20px; margin: 18px 0;
+  }
+  .tu-turno-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .tu-turno-badge {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 2px;
+    color: #a78bfa; background: rgba(124,58,237,0.15); border: 1px solid rgba(124,58,237,0.3);
+    padding: 3px 10px; border-radius: 20px; text-transform: uppercase;
+  }
+  .tu-turno h4 { font-size: 0.92rem; font-weight: 700; color: #c4b5fd; }
+  .tu-turno p { font-size: 0.87rem; color: #a78bfa; line-height: 1.7; margin-bottom: 10px; }
+  .code-input {
+    width: 100%; min-height: 100px; background: var(--code-bg); border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 8px; padding: 14px 16px; font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; color: #c9d1d9; resize: vertical; outline: none;
+    transition: border-color 0.2s;
+  }
+  .code-input:focus { border-color: var(--accent2); }
+  .code-input::placeholder { color: var(--text-muted); }
+
+  .checklist { list-style: none !important; padding-left: 0 !important; }
+  .checklist li {
+    display: flex; align-items: flex-start; gap: 10px; padding: 6px 0;
+    font-size: 0.88rem; color: var(--text-dim); border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li input[type="checkbox"] { margin-top: 3px; accent-color: var(--accent3); flex-shrink: 0; cursor: pointer; }
+
+  .check-btn {
+    margin-top: 20px; display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'Sora', sans-serif; font-size: 0.84rem; font-weight: 600;
+    padding: 9px 20px; border-radius: 10px; background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.3); color: var(--step-done); cursor: pointer; transition: all 0.2s;
+  }
+  .check-btn:hover { background: rgba(16,185,129,0.2); }
+  .check-btn.checked { background: rgba(16,185,129,0.25); }
+
+  footer { text-align: center; padding: 36px; color: var(--text-muted); font-size: 0.78rem; border-top: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; }
+
+  @media(max-width:600px) {
+    header { padding: 36px 18px; }
+    .nav-pills, .progress-wrap { padding: 12px 14px; }
+    main { padding: 20px 12px 60px; }
+    .step-header { padding: 14px 14px; }
+    .step-body { padding: 0 14px 18px; }
+  }
+  @keyframes fadeUp { from { opacity:0; transform: translateY(14px); } to { opacity:1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="module-tag">Módulo 01</div>
+  <span class="taller-num">TALLER PRÁCTICO · CEFIT-SENA · EduCode</span>
+  <h1>Bases de <span>Datos</span><br>con MySQL</h1>
+  <p class="subtitle">Construye desde cero la base de datos real de la plataforma EduCode: tablas, claves foráneas, CASCADE y datos de prueba.</p>
+  <div class="objetivo">🎯 Al final tendrás la BD completa de la plataforma funcionando</div>
+</header>
+
+<div class="progress-wrap">
+  <span class="progress-label">PROGRESO</span>
+  <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+  <span class="progress-count" id="progressCount">0 / 10</span>
+</div>
+
+<div class="nav-pills">
+  <a class="nav-pill" href="#paso1">1. Crear BD</a>
+  <a class="nav-pill" href="#paso2">2. modulos</a>
+  <a class="nav-pill" href="#paso3">3. lecciones</a>
+  <a class="nav-pill" href="#paso4">4. pasos</a>
+  <a class="nav-pill" href="#paso5">5. ejercicios</a>
+  <a class="nav-pill" href="#paso6">6. progresos</a>
+  <a class="nav-pill" href="#paso7">7. INSERT</a>
+  <a class="nav-pill" href="#paso8">8. SELECT + JOIN</a>
+  <a class="nav-pill" href="#paso9">9. ALTER</a>
+  <a class="nav-pill" href="#paso10">10. Script final</a>
+</div>
+
+<main>
+
+<!-- PASO 1 -->
+<div class="step-card" id="paso1">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">01</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Crear la base de datos</div>
+      <div class="step-meta">CREATE DATABASE · USE · CHARACTER SET · COLLATE</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Antes de crear cualquier tabla necesitamos un <strong>contenedor</strong>: la base de datos. En este proyecto usamos el nombre <code>programando</code>, que coincide con el archivo <code>.env</code> de Laravel.</p>
+
+    <div class="info-box info">
+      <span class="icon">💡</span>
+      <div>Abre <strong>WAMP → phpMyAdmin</strong> o el cliente MySQL de tu preferencia. Ejecuta los comandos en el orden indicado.</div>
+    </div>
+
+    <h3>Comandos</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">SQL</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">-- Ver las bases de datos existentes</span>
+<span class="kw">SHOW</span> <span class="kw">DATABASES</span>;
+
+<span class="cm">-- Crear la base de datos de la plataforma</span>
+<span class="kw">CREATE</span> <span class="kw">DATABASE</span> <span class="tbl">programando</span>
+  <span class="kw">CHARACTER SET</span> utf8mb4
+  <span class="kw">COLLATE</span> utf8mb4_unicode_ci;
+
+<span class="cm">-- Seleccionarla para trabajar</span>
+<span class="kw">USE</span> <span class="tbl">programando</span>;
+
+<span class="cm">-- Verificar que estamos en la BD correcta</span>
+<span class="kw">SELECT</span> <span class="fn">DATABASE</span>();</pre>
+    </div>
+
+    <div class="info-box warn">
+      <span class="icon">⚠️</span>
+      <div>Siempre usa <strong>utf8mb4</strong>, no <code>utf8</code>. utf8mb4 soporta tildes, ñ y emojis correctamente en MySQL moderno.</div>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Verifica y practica</h4>
+      </div>
+      <p>Ejecuta <code>SHOW DATABASES;</code> antes y después de crear la BD. ¿Qué diferencia ves? Escribe aquí qué retornó <code>SELECT DATABASE();</code>:</p>
+      <textarea class="code-input" placeholder="Escribe tu respuesta aquí..."></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Abrí el cliente MySQL (phpMyAdmin / MySQL Workbench / DBeaver)</li>
+      <li><input type="checkbox"> Ejecuté CREATE DATABASE programando con utf8mb4</li>
+      <li><input type="checkbox"> Ejecuté USE programando y verifiqué con SELECT DATABASE()</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso1')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 2 -->
+<div class="step-card" id="paso2">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">02</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Tabla <code>modulos</code></div>
+      <div class="step-meta">CREATE TABLE · INT · VARCHAR · TINYINT · TIMESTAMP · ENGINE=InnoDB</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Los <strong>módulos</strong> son los bloques principales del curso (BD, PHP, HTML/CSS, Laravel, Moonshine). Esta tabla no tiene claves foráneas — es tabla padre.</p>
+
+    <div class="info-box tip">
+      <span class="icon">🚀</span>
+      <div>Regla de oro: crear siempre las tablas <strong>padre primero</strong>, luego las hijas. Si hay FK y la tabla padre no existe, el script fallará.</div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">SQL</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">CREATE TABLE</span> <span class="tbl">modulos</span> (
+  <span class="col">id</span>          <span class="type">INT UNSIGNED</span> <span class="kw">NOT NULL</span> <span class="kw">AUTO_INCREMENT</span>,
+  <span class="col">nombre</span>      <span class="type">VARCHAR</span>(<span class="num">120</span>) <span class="kw">NOT NULL</span>,
+  <span class="col">descripcion</span> <span class="type">TEXT</span> <span class="kw">NULL</span>,
+  <span class="col">icono</span>       <span class="type">VARCHAR</span>(<span class="num">60</span>) <span class="kw">NULL</span>,          <span class="cm">-- emoji o nombre de ícono</span>
+  <span class="col">orden</span>       <span class="type">TINYINT UNSIGNED</span> <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="num">0</span>,
+  <span class="col">activo</span>      <span class="type">TINYINT</span>(<span class="num">1</span>) <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="num">1</span>,
+  <span class="col">created_at</span>  <span class="type">TIMESTAMP</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="kw">NULL</span>,
+  <span class="col">updated_at</span>  <span class="type">TIMESTAMP</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="kw">NULL</span>,
+  <span class="kw">PRIMARY KEY</span> (<span class="col">id</span>)
+) <span class="kw">ENGINE</span>=InnoDB <span class="kw">DEFAULT CHARSET</span>=utf8mb4 <span class="kw">COLLATE</span>=utf8mb4_unicode_ci;</pre>
+    </div>
+
+    <h3>Columnas importantes</h3>
+    <ul>
+      <li><strong>id</strong> — INT UNSIGNED AUTO_INCREMENT: clave primaria auto-numérica positiva</li>
+      <li><strong>activo</strong> — TINYINT(1): actúa como booleano (0 = inactivo, 1 = activo)</li>
+      <li><strong>orden</strong> — define el orden de aparición en la plataforma</li>
+      <li><strong>created_at / updated_at</strong> — timestamps que Laravel maneja automáticamente</li>
+    </ul>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Verifica la estructura</h4>
+      </div>
+      <p>Ejecuta <code>DESCRIBE modulos;</code> y escribe cuántas columnas tiene la tabla:</p>
+      <textarea class="code-input" placeholder="Número de columnas: ___&#10;&#10;¿Qué tipo de dato tiene 'activo'?"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Ejecuté el CREATE TABLE modulos sin errores</li>
+      <li><input type="checkbox"> Verifiqué la estructura con DESCRIBE modulos;</li>
+      <li><input type="checkbox"> Entiendo para qué sirve ENGINE=InnoDB</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso2')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 3 -->
+<div class="step-card" id="paso3">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">03</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Tabla <code>lecciones</code></div>
+      <div class="step-meta">FOREIGN KEY · REFERENCES · ON DELETE CASCADE</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Cada módulo contiene varias lecciones. La columna <code>modulo_id</code> es una <strong>clave foránea (FK)</strong> que apunta a <code>modulos.id</code>. Si se elimina un módulo, sus lecciones se borran automáticamente (CASCADE).</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">SQL</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">CREATE TABLE</span> <span class="tbl">lecciones</span> (
+  <span class="col">id</span>          <span class="type">INT UNSIGNED</span> <span class="kw">NOT NULL</span> <span class="kw">AUTO_INCREMENT</span>,
+  <span class="col">modulo_id</span>   <span class="type">INT UNSIGNED</span> <span class="kw">NOT NULL</span>,
+  <span class="col">titulo</span>      <span class="type">VARCHAR</span>(<span class="num">200</span>) <span class="kw">NOT NULL</span>,
+  <span class="col">descripcion</span> <span class="type">TEXT</span> <span class="kw">NULL</span>,
+  <span class="col">orden</span>       <span class="type">TINYINT UNSIGNED</span> <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="num">0</span>,
+  <span class="col">activo</span>      <span class="type">TINYINT</span>(<span class="num">1</span>) <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="num">1</span>,
+  <span class="col">created_at</span>  <span class="type">TIMESTAMP</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="kw">NULL</span>,
+  <span class="col">updated_at</span>  <span class="type">TIMESTAMP</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="kw">NULL</span>,
+  <span class="kw">PRIMARY KEY</span> (<span class="col">id</span>),
+  <span class="kw">CONSTRAINT</span> <span class="col">fk_lecciones_modulo</span>
+    <span class="kw">FOREIGN KEY</span> (<span class="col">modulo_id</span>)
+    <span class="kw">REFERENCES</span> <span class="tbl">modulos</span>(<span class="col">id</span>)
+    <span class="kw">ON DELETE CASCADE</span>
+    <span class="kw">ON UPDATE CASCADE</span>
+) <span class="kw">ENGINE</span>=InnoDB <span class="kw">DEFAULT CHARSET</span>=utf8mb4 <span class="kw">COLLATE</span>=utf8mb4_unicode_ci;</pre>
+    </div>
+
+    <div class="info-box info">
+      <span class="icon">🔗</span>
+      <div><strong>ON DELETE CASCADE</strong>: si borras el módulo "Bases de Datos", todas sus lecciones se eliminan automáticamente. Mantiene la integridad referencial.</div>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Prueba el CASCADE</h4>
+      </div>
+      <p>Intenta insertar una lección con un <code>modulo_id</code> que no existe (ej: 999). ¿Qué error te da MySQL? ¿Por qué ocurre ese error?</p>
+      <textarea class="code-input" placeholder="-- Escribe el INSERT que intentaste:&#10;INSERT INTO lecciones ...&#10;&#10;-- Error que recibiste:&#10;&#10;-- ¿Por qué ocurre?"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Creé la tabla lecciones con la FK correcta</li>
+      <li><input type="checkbox"> Entiendo qué hace ON DELETE CASCADE</li>
+      <li><input type="checkbox"> Probé insertar un modulo_id inválido y vi el error de FK</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso3')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 4 -->
+<div class="step-card" id="paso4">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">04</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Tabla <code>pasos</code></div>
+      <div class="step-meta">LONGTEXT · ENUM · orden de creación</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Cada lección tiene varios <strong>pasos</strong> de contenido: teoría, bloques de código, tips o advertencias. El campo <code>contenido</code> es LONGTEXT porque puede tener HTML enriquecido.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">SQL</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">CREATE TABLE</span> <span class="tbl">pasos</span> (
+  <span class="col">id</span>         <span class="type">INT UNSIGNED</span> <span class="kw">NOT NULL</span> <span class="kw">AUTO_INCREMENT</span>,
+  <span class="col">leccion_id</span> <span class="type">INT UNSIGNED</span> <span class="kw">NOT NULL</span>,
+  <span class="col">titulo</span>     <span class="type">VARCHAR</span>(<span class="num">200</span>) <span class="kw">NOT NULL</span>,
+  <span class="col">contenido</span>  <span class="type">LONGTEXT</span> <span class="kw">NOT NULL</span>,
+  <span class="col">tipo</span>       <span class="type">ENUM</span>(<span class="str">'teoria'</span>,<span class="str">'codigo'</span>,<span class="str">'tip'</span>,<span class="str">'advertencia'</span>) <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="str">'teoria'</span>,
+  <span class="col">orden</span>      <span class="type">TINYINT UNSIGNED</span> <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="num">0</span>,
+  <span class="col">created_at</span> <span class="type">TIMESTAMP</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="kw">NULL</span>,
+  <span class="col">updated_at</span> <span class="type">TIMESTAMP</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="kw">NULL</span>,
+  <span class="kw">PRIMARY KEY</span> (<span class="col">id</span>),
+  <span class="kw">CONSTRAINT</span> <span class="col">fk_pasos_leccion</span>
+    <span class="kw">FOREIGN KEY</span> (<span class="col">leccion_id</span>) <span class="kw">REFERENCES</span> <span class="tbl">lecciones</span>(<span class="col">id</span>)
+    <span class="kw">ON DELETE CASCADE</span> <span class="kw">ON UPDATE CASCADE</span>
+) <span class="kw">ENGINE</span>=InnoDB <span class="kw">DEFAULT CHARSET</span>=utf8mb4 <span class="kw">COLLATE</span>=utf8mb4_unicode_ci;</pre>
+    </div>
+
+    <h3>¿Qué es ENUM?</h3>
+    <p>ENUM restringe el campo a una lista de valores válidos. Si intentas insertar un valor que no esté en la lista, MySQL lanza un error. Es ideal para columnas como <code>tipo</code> donde solo hay opciones fijas.</p>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Explora ENUM</h4>
+      </div>
+      <p>¿Qué valores válidos acepta la columna <code>tipo</code>? Intenta insertar <code>tipo = 'imagen'</code> (no está en el ENUM). ¿Qué pasa?</p>
+      <textarea class="code-input" placeholder="Valores válidos del ENUM tipo: ___&#10;&#10;Resultado al insertar 'imagen':"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Creé la tabla pasos con FK a lecciones</li>
+      <li><input type="checkbox"> Entiendo qué hace ENUM y para qué se usa</li>
+      <li><input type="checkbox"> Entiendo por qué usamos LONGTEXT para contenido</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso4')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 5 -->
+<div class="step-card" id="paso5">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">05</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Tabla <code>ejercicios</code></div>
+      <div class="step-meta">BOOLEAN · TEXT nullable · dificultad ENUM</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Al final de cada lección hay ejercicios propuestos. El instructor puede decidir si mostrar la solución o no con la columna <code>solucion_visible</code>.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">SQL</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">CREATE TABLE</span> <span class="tbl">ejercicios</span> (
+  <span class="col">id</span>               <span class="type">INT UNSIGNED</span> <span class="kw">NOT NULL</span> <span class="kw">AUTO_INCREMENT</span>,
+  <span class="col">leccion_id</span>       <span class="type">INT UNSIGNED</span> <span class="kw">NOT NULL</span>,
+  <span class="col">enunciado</span>        <span class="type">TEXT</span> <span class="kw">NOT NULL</span>,
+  <span class="col">dificultad</span>       <span class="type">ENUM</span>(<span class="str">'basico'</span>,<span class="str">'intermedio'</span>,<span class="str">'avanzado'</span>) <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="str">'basico'</span>,
+  <span class="col">solucion_visible</span> <span class="type">TINYINT</span>(<span class="num">1</span>) <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="num">0</span>,
+  <span class="col">solucion</span>         <span class="type">TEXT</span> <span class="kw">NULL</span>,
+  <span class="col">orden</span>            <span class="type">TINYINT UNSIGNED</span> <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="num">0</span>,
+  <span class="col">created_at</span>       <span class="type">TIMESTAMP</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="kw">NULL</span>,
+  <span class="col">updated_at</span>       <span class="type">TIMESTAMP</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="kw">NULL</span>,
+  <span class="kw">PRIMARY KEY</span> (<span class="col">id</span>),
+  <span class="kw">CONSTRAINT</span> <span class="col">fk_ejercicios_leccion</span>
+    <span class="kw">FOREIGN KEY</span> (<span class="col">leccion_id</span>) <span class="kw">REFERENCES</span> <span class="tbl">lecciones</span>(<span class="col">id</span>)
+    <span class="kw">ON DELETE CASCADE</span> <span class="kw">ON UPDATE CASCADE</span>
+) <span class="kw">ENGINE</span>=InnoDB <span class="kw">DEFAULT CHARSET</span>=utf8mb4 <span class="kw">COLLATE</span>=utf8mb4_unicode_ci;</pre>
+    </div>
+
+    <div class="info-box tip">
+      <span class="icon">💡</span>
+      <div>La columna <code>solucion</code> es <strong>TEXT NULL</strong> — puede estar vacía si el instructor no ha escrito la solución aún. <code>solucion_visible</code> controla si el estudiante puede verla.</div>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Diseña un ejercicio</h4>
+      </div>
+      <p>Escribe el INSERT para agregar un ejercicio de nivel básico de la lección 1 (cuando la tengamos). Deja la solución como NULL por ahora:</p>
+      <textarea class="code-input" placeholder="INSERT INTO ejercicios (leccion_id, enunciado, dificultad, solucion_visible, orden)&#10;VALUES (1, '...', '...', 0, 1);"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Creé la tabla ejercicios correctamente</li>
+      <li><input type="checkbox"> Entiendo la diferencia entre TEXT NOT NULL y TEXT NULL</li>
+      <li><input type="checkbox"> Entiendo por qué solucion_visible es TINYINT(1) y no BOOLEAN</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso5')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 6 -->
+<div class="step-card" id="paso6">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">06</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Tabla <code>progresos</code></div>
+      <div class="step-meta">FK múltiples · UNIQUE KEY · TIMESTAMP nullable</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Esta tabla registra qué lecciones completó cada estudiante. La clave <strong>UNIQUE(user_id, leccion_id)</strong> garantiza que un estudiante no pueda "completar" la misma lección dos veces.</p>
+
+    <div class="info-box warn">
+      <span class="icon">⚠️</span>
+      <div>Esta tabla referencia <code>users</code> que en este contexto la crea Laravel. Si estás ejecutando solo el SQL (sin Laravel), debes crear primero la tabla <code>users</code> o eliminar esa FK.</div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">SQL</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">CREATE TABLE</span> <span class="tbl">progresos</span> (
+  <span class="col">id</span>            <span class="type">INT UNSIGNED</span> <span class="kw">NOT NULL</span> <span class="kw">AUTO_INCREMENT</span>,
+  <span class="col">user_id</span>       <span class="type">BIGINT UNSIGNED</span> <span class="kw">NOT NULL</span>,     <span class="cm">-- mismo tipo que users.id en Laravel</span>
+  <span class="col">leccion_id</span>    <span class="type">INT UNSIGNED</span> <span class="kw">NOT NULL</span>,
+  <span class="col">completado_at</span> <span class="type">TIMESTAMP</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="kw">NULL</span>, <span class="cm">-- NULL = no completado aún</span>
+  <span class="col">created_at</span>    <span class="type">TIMESTAMP</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="kw">NULL</span>,
+  <span class="col">updated_at</span>    <span class="type">TIMESTAMP</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="kw">NULL</span>,
+  <span class="kw">PRIMARY KEY</span> (<span class="col">id</span>),
+  <span class="kw">UNIQUE KEY</span> <span class="col">uq_progreso</span> (<span class="col">user_id</span>, <span class="col">leccion_id</span>),
+  <span class="kw">CONSTRAINT</span> <span class="col">fk_progresos_leccion</span>
+    <span class="kw">FOREIGN KEY</span> (<span class="col">leccion_id</span>) <span class="kw">REFERENCES</span> <span class="tbl">lecciones</span>(<span class="col">id</span>)
+    <span class="kw">ON DELETE CASCADE</span> <span class="kw">ON UPDATE CASCADE</span>
+) <span class="kw">ENGINE</span>=InnoDB <span class="kw">DEFAULT CHARSET</span>=utf8mb4 <span class="kw">COLLATE</span>=utf8mb4_unicode_ci;</pre>
+    </div>
+
+    <h3>¿Por qué UNIQUE(user_id, leccion_id)?</h3>
+    <p>La combinación de ambas columnas debe ser única: un estudiante puede tener un único registro de progreso por lección. Sin esta restricción podría registrar la misma lección como completada múltiples veces.</p>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Entiende el UNIQUE</h4>
+      </div>
+      <p>Explica con tus palabras: ¿qué pasaría si intentamos insertar dos filas con el mismo user_id y leccion_id? ¿Y si solo user_id es igual pero leccion_id es diferente?</p>
+      <textarea class="code-input" placeholder="Caso 1 — mismo user_id y mismo leccion_id: ___&#10;&#10;Caso 2 — mismo user_id pero diferente leccion_id: ___"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Creé la tabla progresos con las FKs correctas</li>
+      <li><input type="checkbox"> Entiendo para qué sirve UNIQUE KEY compuesta</li>
+      <li><input type="checkbox"> Noto que user_id es BIGINT (igual que users.id en Laravel)</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso6')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 7 -->
+<div class="step-card" id="paso7">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">07</div>
+    <div class="step-title-wrap">
+      <div class="step-title">INSERT — Poblar la base de datos</div>
+      <div class="step-meta">INSERT INTO · VALUES múltiples · datos reales del LMS</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Insertamos los 5 módulos reales de la plataforma y algunas lecciones de ejemplo.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">SQL</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">-- Insertar los 5 módulos del curso</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">modulos</span> (<span class="col">nombre</span>, <span class="col">descripcion</span>, <span class="col">icono</span>, <span class="col">orden</span>, <span class="col">activo</span>, <span class="col">created_at</span>)
+<span class="kw">VALUES</span>
+  (<span class="str">'Bases de Datos'</span>, <span class="str">'SQL, MySQL, normalización y scripts'</span>, <span class="str">'🗄️'</span>, <span class="num">1</span>, <span class="num">1</span>, <span class="fn">NOW</span>()),
+  (<span class="str">'PHP Puro'</span>, <span class="str">'Sintaxis, funciones, arrays y OOP'</span>, <span class="str">'🐘'</span>, <span class="num">2</span>, <span class="num">1</span>, <span class="fn">NOW</span>()),
+  (<span class="str">'HTML & CSS'</span>, <span class="str">'Estructura, Flexbox, Grid y diseño responsive'</span>, <span class="str">'🎨'</span>, <span class="num">3</span>, <span class="num">1</span>, <span class="fn">NOW</span>()),
+  (<span class="str">'Laravel'</span>, <span class="str">'MVC, rutas, Eloquent, Blade y Breeze'</span>, <span class="str">'⚡'</span>, <span class="num">4</span>, <span class="num">1</span>, <span class="fn">NOW</span>()),
+  (<span class="str">'Laravel Moonshine'</span>, <span class="str">'Panel admin: Resources, Fields y Actions'</span>, <span class="str">'🌙'</span>, <span class="num">5</span>, <span class="num">1</span>, <span class="fn">NOW</span>());
+
+<span class="cm">-- Verificar</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">modulos</span>;
+
+<span class="cm">-- Insertar lecciones del módulo 1 (Bases de Datos)</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">lecciones</span> (<span class="col">modulo_id</span>, <span class="col">titulo</span>, <span class="col">descripcion</span>, <span class="col">orden</span>, <span class="col">created_at</span>)
+<span class="kw">VALUES</span>
+  (<span class="num">1</span>, <span class="str">'Crear y gestionar bases de datos'</span>, <span class="str">'CREATE DATABASE, USE, DROP'</span>, <span class="num">1</span>, <span class="fn">NOW</span>()),
+  (<span class="num">1</span>, <span class="str">'Tablas y tipos de datos'</span>, <span class="str">'CREATE TABLE, tipos de columnas'</span>, <span class="num">2</span>, <span class="fn">NOW</span>()),
+  (<span class="num">1</span>, <span class="str">'Claves foráneas y CASCADE'</span>, <span class="str">'FOREIGN KEY, ON DELETE CASCADE'</span>, <span class="num">3</span>, <span class="fn">NOW</span>()),
+  (<span class="num">1</span>, <span class="str">'Consultas SELECT y JOIN'</span>, <span class="str">'SELECT, WHERE, JOIN, ORDER BY'</span>, <span class="num">4</span>, <span class="fn">NOW</span>());</pre>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Agrega lecciones del módulo 2</h4>
+      </div>
+      <p>Crea al menos 3 lecciones para el módulo de PHP Puro (modulo_id = 2). Piensa qué temas debería incluir:</p>
+      <textarea class="code-input" placeholder="INSERT INTO lecciones (modulo_id, titulo, descripcion, orden, created_at)&#10;VALUES&#10;  (2, '...', '...', 1, NOW()),&#10;  (2, '...', '...', 2, NOW()),&#10;  (2, '...', '...', 3, NOW());"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Inserté los 5 módulos correctamente</li>
+      <li><input type="checkbox"> Inserté las lecciones del módulo 1</li>
+      <li><input type="checkbox"> Creé lecciones para el módulo 2 por mi cuenta</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso7')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 8 -->
+<div class="step-card" id="paso8">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">08</div>
+    <div class="step-title-wrap">
+      <div class="step-title">SELECT y JOINs</div>
+      <div class="step-meta">SELECT · WHERE · JOIN · COUNT · GROUP BY · ORDER BY</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Con las tablas pobladas, practiquemos las consultas que la plataforma usará para mostrar contenido al estudiante.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">SQL</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">-- 1. Todos los módulos activos ordenados</span>
+<span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">nombre</span>, <span class="col">icono</span>, <span class="col">orden</span>
+<span class="kw">FROM</span>  <span class="tbl">modulos</span>
+<span class="kw">WHERE</span> <span class="col">activo</span> = <span class="num">1</span>
+<span class="kw">ORDER BY</span> <span class="col">orden</span> <span class="kw">ASC</span>;
+
+<span class="cm">-- 2. Lecciones con el nombre de su módulo (INNER JOIN)</span>
+<span class="kw">SELECT</span>
+  <span class="tbl">l</span>.<span class="col">id</span>,
+  <span class="tbl">m</span>.<span class="col">nombre</span> <span class="kw">AS</span> <span class="col">modulo</span>,
+  <span class="tbl">l</span>.<span class="col">titulo</span>,
+  <span class="tbl">l</span>.<span class="col">orden</span>
+<span class="kw">FROM</span>       <span class="tbl">lecciones</span> <span class="tbl">l</span>
+<span class="kw">INNER JOIN</span> <span class="tbl">modulos</span>   <span class="tbl">m</span> <span class="kw">ON</span> <span class="tbl">l</span>.<span class="col">modulo_id</span> = <span class="tbl">m</span>.<span class="col">id</span>
+<span class="kw">ORDER BY</span>   <span class="tbl">m</span>.<span class="col">orden</span>, <span class="tbl">l</span>.<span class="col">orden</span>;
+
+<span class="cm">-- 3. Cuántas lecciones tiene cada módulo</span>
+<span class="kw">SELECT</span>
+  <span class="tbl">m</span>.<span class="col">nombre</span>,
+  <span class="fn">COUNT</span>(<span class="tbl">l</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">total_lecciones</span>
+<span class="kw">FROM</span>      <span class="tbl">modulos</span>   <span class="tbl">m</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">lecciones</span> <span class="tbl">l</span> <span class="kw">ON</span> <span class="tbl">l</span>.<span class="col">modulo_id</span> = <span class="tbl">m</span>.<span class="col">id</span>
+<span class="kw">GROUP BY</span>  <span class="tbl">m</span>.<span class="col">id</span>, <span class="tbl">m</span>.<span class="col">nombre</span>
+<span class="kw">ORDER BY</span>  <span class="tbl">m</span>.<span class="col">orden</span>;</pre>
+    </div>
+
+    <div class="info-box info">
+      <span class="icon">🔍</span>
+      <div><strong>INNER JOIN</strong> retorna solo las filas que tienen coincidencia en ambas tablas. <strong>LEFT JOIN</strong> retorna todos de la tabla izquierda aunque no haya coincidencia (útil para contar, incluye módulos sin lecciones).</div>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Escribe tu propia consulta</h4>
+      </div>
+      <p>Escribe una consulta que muestre: nombre del módulo, título de la lección y cuántos pasos tiene cada lección (usando un JOIN con pasos). Usa alias claros.</p>
+      <textarea class="code-input" placeholder="SELECT m.nombre AS modulo, l.titulo AS leccion, COUNT(p.id) AS pasos&#10;FROM ...&#10;JOIN ...&#10;GROUP BY ..."></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Ejecuté las 3 consultas SELECT del ejemplo</li>
+      <li><input type="checkbox"> Entiendo la diferencia entre INNER JOIN y LEFT JOIN</li>
+      <li><input type="checkbox"> Escribí mi propia consulta con JOINs</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso8')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 9 -->
+<div class="step-card" id="paso9">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">09</div>
+    <div class="step-title-wrap">
+      <div class="step-title">ALTER TABLE — Modificar estructura</div>
+      <div class="step-meta">ADD COLUMN · MODIFY · DROP COLUMN · AFTER</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Cuando la aplicación evoluciona, necesitamos modificar tablas existentes. <code>ALTER TABLE</code> permite agregar, modificar o eliminar columnas sin borrar los datos.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">SQL</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">-- Agregar columna 'duracion_minutos' a lecciones</span>
+<span class="kw">ALTER TABLE</span> <span class="tbl">lecciones</span>
+  <span class="kw">ADD COLUMN</span> <span class="col">duracion_minutos</span> <span class="type">SMALLINT UNSIGNED</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="num">NULL</span>
+  <span class="kw">AFTER</span> <span class="col">descripcion</span>;
+
+<span class="cm">-- Agregar columna 'imagen_url' a modulos</span>
+<span class="kw">ALTER TABLE</span> <span class="tbl">modulos</span>
+  <span class="kw">ADD COLUMN</span> <span class="col">imagen_url</span> <span class="type">VARCHAR</span>(<span class="num">500</span>) <span class="kw">NULL</span>
+  <span class="kw">AFTER</span> <span class="col">icono</span>;
+
+<span class="cm">-- Modificar el tamaño de 'titulo' en lecciones</span>
+<span class="kw">ALTER TABLE</span> <span class="tbl">lecciones</span>
+  <span class="kw">MODIFY COLUMN</span> <span class="col">titulo</span> <span class="type">VARCHAR</span>(<span class="num">255</span>) <span class="kw">NOT NULL</span>;
+
+<span class="cm">-- Ver la estructura actualizada</span>
+<span class="kw">DESCRIBE</span> <span class="tbl">lecciones</span>;</pre>
+    </div>
+
+    <div class="info-box tip">
+      <span class="icon">💡</span>
+      <div>Usa siempre <strong>AFTER columna</strong> al agregar columnas. Así controlas el orden visual en las consultas y mantiene coherencia con las migraciones de Laravel.</div>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Agrega una columna nueva</h4>
+      </div>
+      <p>Agrega una columna <code>color_hex</code> de tipo VARCHAR(7) nullable a la tabla <code>modulos</code>, posicionada después de <code>icono</code>. Sirve para el color del módulo en la UI.</p>
+      <textarea class="code-input" placeholder="ALTER TABLE modulos&#10;  ADD COLUMN color_hex ..."></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Ejecuté el ALTER TABLE para agregar duracion_minutos</li>
+      <li><input type="checkbox"> Usé AFTER para posicionar la columna correctamente</li>
+      <li><input type="checkbox"> Agregué la columna color_hex por mi cuenta</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso9')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 10 -->
+<div class="step-card" id="paso10">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">10</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Script completo de la plataforma</div>
+      <div class="step-meta">DROP IF EXISTS · script reproducible · orden correcto</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Este es el script maestro que puedes ejecutar desde cero para recrear toda la BD. Usa <code>DROP TABLE IF EXISTS</code> en orden inverso para evitar errores de FK.</p>
+
+    <div class="info-box warn">
+      <span class="icon">⚠️</span>
+      <div>Este script <strong>borra y recrea</strong> todas las tablas. Solo úsalo en desarrollo. En producción usa migraciones de Laravel con <code>php artisan migrate</code>.</div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">SQL</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">-- ============================================</span>
+<span class="cm">-- EduCode CEFIT — Script BD completo</span>
+<span class="cm">-- Ejecutar en orden. Requiere: USE programando;</span>
+<span class="cm">-- ============================================</span>
+
+<span class="kw">SET</span> FOREIGN_KEY_CHECKS = <span class="num">0</span>;
+
+<span class="cm">-- Eliminar en orden hijo → padre</span>
+<span class="kw">DROP TABLE IF EXISTS</span> <span class="tbl">progresos</span>;
+<span class="kw">DROP TABLE IF EXISTS</span> <span class="tbl">ejercicios</span>;
+<span class="kw">DROP TABLE IF EXISTS</span> <span class="tbl">pasos</span>;
+<span class="kw">DROP TABLE IF EXISTS</span> <span class="tbl">lecciones</span>;
+<span class="kw">DROP TABLE IF EXISTS</span> <span class="tbl">modulos</span>;
+
+<span class="kw">SET</span> FOREIGN_KEY_CHECKS = <span class="num">1</span>;
+
+<span class="cm">-- Crear en orden padre → hijo</span>
+<span class="kw">CREATE TABLE</span> <span class="tbl">modulos</span> (
+  <span class="col">id</span> <span class="type">INT UNSIGNED</span> <span class="kw">NOT NULL AUTO_INCREMENT</span>,
+  <span class="col">nombre</span> <span class="type">VARCHAR</span>(<span class="num">120</span>) <span class="kw">NOT NULL</span>,
+  <span class="col">descripcion</span> <span class="type">TEXT</span> <span class="kw">NULL</span>,
+  <span class="col">icono</span> <span class="type">VARCHAR</span>(<span class="num">60</span>) <span class="kw">NULL</span>,
+  <span class="col">orden</span> <span class="type">TINYINT UNSIGNED</span> <span class="kw">NOT NULL DEFAULT</span> <span class="num">0</span>,
+  <span class="col">activo</span> <span class="type">TINYINT</span>(<span class="num">1</span>) <span class="kw">NOT NULL DEFAULT</span> <span class="num">1</span>,
+  <span class="col">created_at</span> <span class="type">TIMESTAMP</span> <span class="kw">NULL DEFAULT NULL</span>,
+  <span class="col">updated_at</span> <span class="type">TIMESTAMP</span> <span class="kw">NULL DEFAULT NULL</span>,
+  <span class="kw">PRIMARY KEY</span> (<span class="col">id</span>)
+) <span class="kw">ENGINE</span>=InnoDB <span class="kw">DEFAULT CHARSET</span>=utf8mb4 <span class="kw">COLLATE</span>=utf8mb4_unicode_ci;
+
+<span class="kw">CREATE TABLE</span> <span class="tbl">lecciones</span> (
+  <span class="col">id</span> <span class="type">INT UNSIGNED</span> <span class="kw">NOT NULL AUTO_INCREMENT</span>,
+  <span class="col">modulo_id</span> <span class="type">INT UNSIGNED</span> <span class="kw">NOT NULL</span>,
+  <span class="col">titulo</span> <span class="type">VARCHAR</span>(<span class="num">200</span>) <span class="kw">NOT NULL</span>,
+  <span class="col">descripcion</span> <span class="type">TEXT</span> <span class="kw">NULL</span>,
+  <span class="col">orden</span> <span class="type">TINYINT UNSIGNED</span> <span class="kw">NOT NULL DEFAULT</span> <span class="num">0</span>,
+  <span class="col">activo</span> <span class="type">TINYINT</span>(<span class="num">1</span>) <span class="kw">NOT NULL DEFAULT</span> <span class="num">1</span>,
+  <span class="col">created_at</span> <span class="type">TIMESTAMP</span> <span class="kw">NULL DEFAULT NULL</span>,
+  <span class="col">updated_at</span> <span class="type">TIMESTAMP</span> <span class="kw">NULL DEFAULT NULL</span>,
+  <span class="kw">PRIMARY KEY</span> (<span class="col">id</span>),
+  <span class="kw">CONSTRAINT</span> <span class="col">fk_lecciones_modulo</span>
+    <span class="kw">FOREIGN KEY</span> (<span class="col">modulo_id</span>) <span class="kw">REFERENCES</span> <span class="tbl">modulos</span>(<span class="col">id</span>)
+    <span class="kw">ON DELETE CASCADE ON UPDATE CASCADE</span>
+) <span class="kw">ENGINE</span>=InnoDB <span class="kw">DEFAULT CHARSET</span>=utf8mb4 <span class="kw">COLLATE</span>=utf8mb4_unicode_ci;
+
+<span class="cm">-- (pasos, ejercicios y progresos siguen el mismo patrón)</span>
+
+<span class="cm">-- Datos iniciales</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">modulos</span> (<span class="col">nombre</span>, <span class="col">icono</span>, <span class="col">orden</span>, <span class="col">created_at</span>) <span class="kw">VALUES</span>
+  (<span class="str">'Bases de Datos'</span>, <span class="str">'🗄️'</span>, <span class="num">1</span>, <span class="fn">NOW</span>()),
+  (<span class="str">'PHP Puro'</span>, <span class="str">'🐘'</span>, <span class="num">2</span>, <span class="fn">NOW</span>()),
+  (<span class="str">'HTML & CSS'</span>, <span class="str">'🎨'</span>, <span class="num">3</span>, <span class="fn">NOW</span>()),
+  (<span class="str">'Laravel'</span>, <span class="str">'⚡'</span>, <span class="num">4</span>, <span class="fn">NOW</span>()),
+  (<span class="str">'Laravel Moonshine'</span>, <span class="str">'🌙'</span>, <span class="num">5</span>, <span class="fn">NOW</span>());</pre>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Reto final</span>
+        <h4>Completa el script</h4>
+      </div>
+      <p>Completa el script agregando los CREATE TABLE de <code>pasos</code>, <code>ejercicios</code> y <code>progresos</code>. Ejecútalo completo desde cero y verifica que todo funcione con SHOW TABLES y DESCRIBE.</p>
+      <textarea class="code-input" style="min-height:160px" placeholder="-- Agrega aquí los CREATE TABLE que faltan:&#10;&#10;CREATE TABLE pasos (&#10;  ...&#10;);&#10;&#10;CREATE TABLE ejercicios (&#10;  ...&#10;);&#10;&#10;CREATE TABLE progresos (&#10;  ...&#10;);"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Ejecuté el script completo desde cero sin errores</li>
+      <li><input type="checkbox"> Verifiqué con SHOW TABLES que aparecen las 5 tablas</li>
+      <li><input type="checkbox"> Inserté los módulos y al menos 4 lecciones</li>
+      <li><input type="checkbox"> Ejecuté al menos un JOIN para ver datos relacionados</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso10')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  EduCode CEFIT-SENA · Módulo 01 — Bases de Datos · MySQL / MariaDB &nbsp;·&nbsp; Taller práctico
+</footer>
+
+<script>
+  const TOTAL = 10;
+
+  function toggle(header) {
+    const card = header.closest('.step-card');
+    const isOpen = card.classList.contains('open');
+    document.querySelectorAll('.step-card.open').forEach(c => c.classList.remove('open'));
+    if (!isOpen) card.classList.add('open');
+  }
+
+  function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = '✓ Copiado';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function markDone(btn, stepId) {
+    const card = document.getElementById(stepId);
+    card.classList.toggle('done');
+    const isDone = card.classList.contains('done');
+    btn.classList.toggle('checked', isDone);
+    btn.textContent = isDone ? '✓  Completado' : '✓  Marcar como completado';
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const done = document.querySelectorAll('.step-card.done').length;
+    document.getElementById('progressBar').style.width = (done / TOTAL * 100) + '%';
+    document.getElementById('progressCount').textContent = done + ' / ' + TOTAL;
+  }
+
+  document.querySelector('.step-card .step-header').click();
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.id;
+        document.querySelectorAll('.nav-pill').forEach(p => {
+          p.classList.toggle('active', p.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { threshold: 0.4 });
+  document.querySelectorAll('.step-card').forEach(c => observer.observe(c));
+</script>
+</body>
+</html>

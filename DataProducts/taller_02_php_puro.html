@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taller 02 — PHP Puro | EduCode CEFIT</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0f1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --accent: #818cf8;
+    --accent2: #6366f1;
+    --accent3: #10b981;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --code-bg: #0d1117;
+    --step-done: #10b981;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+  header { position: relative; padding: 60px 40px 50px; text-align: center; overflow: hidden; border-bottom: 1px solid var(--border); }
+  header::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(129,140,248,0.12), transparent),
+                radial-gradient(ellipse 60% 40% at 90% 110%, rgba(99,102,241,0.1), transparent);
+  }
+  header .module-tag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 3px; color: var(--accent); background: rgba(129,140,248,0.08); border: 1px solid rgba(129,140,248,0.25); padding: 4px 14px; border-radius: 20px; margin-bottom: 8px; text-transform: uppercase; }
+  header .taller-num { display: block; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); margin-bottom: 14px; letter-spacing: 2px; }
+  header h1 { font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 800; line-height: 1.15; position: relative; }
+  header h1 span { color: var(--accent); }
+  header p.subtitle { margin-top: 14px; font-size: 0.97rem; color: var(--text-dim); font-weight: 300; max-width: 560px; margin-inline: auto; line-height: 1.7; position: relative; }
+  header .objetivo { display: inline-flex; align-items: center; gap: 8px; margin-top: 22px; font-size: 0.82rem; color: var(--accent3); background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); padding: 8px 18px; border-radius: 30px; position: relative; }
+
+  .progress-wrap { padding: 18px 40px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 16px; }
+  .progress-label { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .progress-bar-outer { flex: 1; height: 6px; background: var(--border); border-radius: 10px; overflow: hidden; }
+  .progress-bar-inner { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 10px; transition: width 0.4s ease; }
+  .progress-count { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent); white-space: nowrap; }
+
+  .nav-pills { display: flex; gap: 8px; flex-wrap: wrap; padding: 16px 40px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .nav-pill { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 5px 13px; border-radius: 20px; background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; transition: all 0.2s; text-decoration: none; }
+  .nav-pill:hover, .nav-pill.active { background: rgba(129,140,248,0.1); border-color: var(--accent); color: var(--accent); }
+
+  main { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  .step-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 28px; overflow: hidden; transition: border-color 0.3s; scroll-margin-top: 100px; animation: fadeUp 0.4s ease both; }
+  .step-card.done { border-color: rgba(16,185,129,0.35); }
+  .step-header { display: flex; align-items: center; gap: 16px; padding: 20px 26px; cursor: pointer; user-select: none; background: var(--surface); transition: background 0.2s; }
+  .step-header:hover { background: var(--surface2); }
+  .step-num { width: 40px; height: 40px; border-radius: 12px; background: var(--surface2); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--text-muted); flex-shrink: 0; transition: all 0.3s; }
+  .step-card.done .step-num { background: rgba(16,185,129,0.15); border-color: var(--step-done); color: var(--step-done); }
+  .step-title-wrap { flex: 1; }
+  .step-title { font-size: 1rem; font-weight: 700; line-height: 1.3; }
+  .step-meta { font-size: 0.76rem; color: var(--text-muted); margin-top: 3px; font-family: 'JetBrains Mono', monospace; }
+  .step-toggle { font-size: 16px; color: var(--text-muted); transition: transform 0.3s; flex-shrink: 0; }
+  .step-card.open .step-toggle { transform: rotate(180deg); }
+  .step-body { display: none; padding: 0 26px 26px; border-top: 1px solid var(--border); }
+  .step-card.open .step-body { display: block; }
+  .step-body p, .step-body li { color: var(--text-dim); line-height: 1.8; font-size: 0.91rem; }
+  .step-body ul, .step-body ol { padding-left: 20px; margin: 10px 0; }
+  .step-body li { margin-bottom: 5px; }
+  .step-body h3 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin: 20px 0 10px; font-family: 'JetBrains Mono', monospace; }
+
+  .info-box { border-radius: 10px; padding: 13px 16px; margin: 14px 0; font-size: 0.87rem; line-height: 1.7; display: flex; gap: 12px; align-items: flex-start; }
+  .info-box .icon { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+  .info-box.tip { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); color: #6ee7b7; }
+  .info-box.warn { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); color: #fcd34d; }
+  .info-box.info { background: rgba(129,140,248,0.06); border: 1px solid rgba(129,140,248,0.18); color: #a5b4fc; }
+
+  .code-block { position: relative; margin: 16px 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+  .code-header { display: flex; align-items: center; justify-content: space-between; padding: 9px 16px; background: #161c2d; border-bottom: 1px solid var(--border); }
+  .code-lang { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; }
+  .copy-btn { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 3px 11px; border-radius: 6px; background: rgba(129,140,248,0.1); border: 1px solid rgba(129,140,248,0.3); color: var(--accent); cursor: pointer; transition: all 0.2s; }
+  .copy-btn:hover { background: rgba(129,140,248,0.2); }
+  .copy-btn.copied { color: var(--accent3); border-color: var(--accent3); }
+  pre { background: var(--code-bg); padding: 18px 20px; overflow-x: auto; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.7; color: #c9d1d9; }
+
+  /* PHP syntax */
+  .kw { color: #ff7b72; font-weight: 600; }
+  .fn { color: #d2a8ff; }
+  .str { color: #a5d6ff; }
+  .num { color: #79c0ff; }
+  .cm { color: #6e7681; font-style: italic; }
+  .var { color: #ffa657; }
+  .cls { color: #7ee787; }
+  .op { color: #ff7b72; }
+
+  .tu-turno { background: rgba(99,102,241,0.07); border: 1px solid rgba(99,102,241,0.25); border-radius: 12px; padding: 18px 20px; margin: 18px 0; }
+  .tu-turno-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .tu-turno-badge { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 2px; color: #a5b4fc; background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); padding: 3px 10px; border-radius: 20px; text-transform: uppercase; }
+  .tu-turno h4 { font-size: 0.92rem; font-weight: 700; color: #c7d2fe; }
+  .tu-turno p { font-size: 0.87rem; color: #a5b4fc; line-height: 1.7; margin-bottom: 10px; }
+  .code-input { width: 100%; min-height: 100px; background: var(--code-bg); border: 1px solid rgba(99,102,241,0.3); border-radius: 8px; padding: 14px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #c9d1d9; resize: vertical; outline: none; transition: border-color 0.2s; }
+  .code-input:focus { border-color: var(--accent2); }
+  .code-input::placeholder { color: var(--text-muted); }
+
+  .checklist { list-style: none !important; padding-left: 0 !important; }
+  .checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; font-size: 0.88rem; color: var(--text-dim); border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li input[type="checkbox"] { margin-top: 3px; accent-color: var(--accent3); flex-shrink: 0; cursor: pointer; }
+
+  .check-btn { margin-top: 20px; display: inline-flex; align-items: center; gap: 8px; font-family: 'Sora', sans-serif; font-size: 0.84rem; font-weight: 600; padding: 9px 20px; border-radius: 10px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: var(--step-done); cursor: pointer; transition: all 0.2s; }
+  .check-btn:hover { background: rgba(16,185,129,0.2); }
+  .check-btn.checked { background: rgba(16,185,129,0.25); }
+
+  footer { text-align: center; padding: 36px; color: var(--text-muted); font-size: 0.78rem; border-top: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; }
+
+  @media(max-width:600px) {
+    header { padding: 36px 18px; }
+    .nav-pills, .progress-wrap { padding: 12px 14px; }
+    main { padding: 20px 12px 60px; }
+    .step-header { padding: 14px 14px; }
+    .step-body { padding: 0 14px 18px; }
+  }
+  @keyframes fadeUp { from { opacity:0; transform: translateY(14px); } to { opacity:1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="module-tag">Módulo 02</div>
+  <span class="taller-num">TALLER PRÁCTICO · CEFIT-SENA · EduCode</span>
+  <h1><span>PHP</span> Puro<br>De variables a OOP</h1>
+  <p class="subtitle">Aprende PHP desde la sintaxis básica hasta clases y objetos, conectando finalmente con la base de datos de la plataforma usando PDO.</p>
+  <div class="objetivo">🎯 Al final podrás leer la BD de EduCode con PHP puro</div>
+</header>
+
+<div class="progress-wrap">
+  <span class="progress-label">PROGRESO</span>
+  <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+  <span class="progress-count" id="progressCount">0 / 8</span>
+</div>
+
+<div class="nav-pills">
+  <a class="nav-pill" href="#paso1">1. Variables</a>
+  <a class="nav-pill" href="#paso2">2. Control flujo</a>
+  <a class="nav-pill" href="#paso3">3. Funciones</a>
+  <a class="nav-pill" href="#paso4">4. Arrays</a>
+  <a class="nav-pill" href="#paso5">5. Clases</a>
+  <a class="nav-pill" href="#paso6">6. Herencia</a>
+  <a class="nav-pill" href="#paso7">7. Formularios</a>
+  <a class="nav-pill" href="#paso8">8. PDO + MySQL</a>
+</div>
+
+<main>
+
+<!-- PASO 1 -->
+<div class="step-card" id="paso1">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">01</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Variables y tipos de datos</div>
+      <div class="step-meta">$var · string · int · float · bool · null · var_dump</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>En PHP todas las variables empiezan con <code>$</code>. PHP es de tipado dinámico: la variable toma el tipo del valor que le asignas.</p>
+
+    <div class="info-box info">
+      <span class="icon">📁</span>
+      <div>Crea una carpeta <strong>practica_php/</strong> en tu escritorio. Dentro crea <code>01_variables.php</code> y ábrelo en PhpStorm. Usa WAMP para ejecutarlo: <code>http://localhost/practica_php/01_variables.php</code></div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="op">&lt;?php</span>
+
+<span class="cm">// Tipos básicos</span>
+<span class="var">$nombre</span>     = <span class="str">'EduCode CEFIT'</span>;    <span class="cm">// string</span>
+<span class="var">$modulos</span>    = <span class="num">5</span>;                  <span class="cm">// int</span>
+<span class="var">$precio</span>     = <span class="num">0.0</span>;                <span class="cm">// float (gratis!)</span>
+<span class="var">$activo</span>     = <span class="kw">true</span>;               <span class="cm">// bool</span>
+<span class="var">$descripcion</span> = <span class="kw">null</span>;              <span class="cm">// null = sin valor</span>
+
+<span class="cm">// Ver el tipo y valor de una variable</span>
+<span class="fn">var_dump</span>(<span class="var">$nombre</span>);     <span class="cm">// string(13) "EduCode CEFIT"</span>
+<span class="fn">var_dump</span>(<span class="var">$modulos</span>);    <span class="cm">// int(5)</span>
+<span class="fn">var_dump</span>(<span class="var">$activo</span>);     <span class="cm">// bool(true)</span>
+
+<span class="cm">// Concatenación con punto</span>
+<span class="fn">echo</span> <span class="str">"La plataforma "</span> . <span class="var">$nombre</span> . <span class="str">" tiene "</span> . <span class="var">$modulos</span> . <span class="str">" módulos."</span>;
+
+<span class="cm">// Interpolación dentro de comillas dobles</span>
+<span class="fn">echo</span> <span class="str">"&lt;br&gt;Plataforma: {$nombre}, módulos: {$modulos}"</span>;</pre>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Crea variables de la plataforma</h4>
+      </div>
+      <p>Crea variables para: nombre del instructor, año de inicio (2024), si la plataforma está activa (true), y la versión de PHP mínima (8.3). Muéstralas con var_dump y echo.</p>
+      <textarea class="code-input" placeholder="<?php&#10;&#10;$instructor = '...';&#10;$anio_inicio = ...;&#10;$esta_activa = ...;&#10;$version_php = '...';&#10;&#10;echo ...;"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Creé el archivo 01_variables.php y lo ejecuté en el navegador</li>
+      <li><input type="checkbox"> Usé var_dump para ver el tipo de cada variable</li>
+      <li><input type="checkbox"> Usé concatenación (.) e interpolación (" ")</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso1')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 2 -->
+<div class="step-card" id="paso2">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">02</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Control de flujo</div>
+      <div class="step-meta">if · else · elseif · for · foreach · while · match</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>El control de flujo permite ejecutar código condicionalmente o repetirlo. Es la base de toda lógica de programación.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="op">&lt;?php</span>
+
+<span class="var">$progreso</span> = <span class="num">75</span>; <span class="cm">// % de lecciones completadas</span>
+
+<span class="cm">// if / elseif / else</span>
+<span class="kw">if</span> (<span class="var">$progreso</span> === <span class="num">100</span>) {
+    <span class="fn">echo</span> <span class="str">"🎉 ¡Módulo completado!"</span>;
+} <span class="kw">elseif</span> (<span class="var">$progreso</span> >= <span class="num">50</span>) {
+    <span class="fn">echo</span> <span class="str">"📚 Vas por buen camino: {$progreso}%"</span>;
+} <span class="kw">else</span> {
+    <span class="fn">echo</span> <span class="str">"🚀 Empieza a estudiar ya!"</span>;
+}
+
+<span class="cm">// foreach — iterar un array</span>
+<span class="var">$modulos</span> = [<span class="str">'Bases de Datos'</span>, <span class="str">'PHP'</span>, <span class="str">'HTML'</span>, <span class="str">'Laravel'</span>, <span class="str">'Moonshine'</span>];
+
+<span class="kw">foreach</span> (<span class="var">$modulos</span> <span class="kw">as</span> <span class="var">$indice</span> => <span class="var">$nombre</span>) {
+    <span class="fn">echo</span> <span class="str">"&lt;br&gt;"</span> . (<span class="var">$indice</span> + <span class="num">1</span>) . <span class="str">". "</span> . <span class="var">$nombre</span>;
+}
+
+<span class="cm">// match — alternativa moderna al switch</span>
+<span class="var">$nivel</span> = <span class="str">'intermedio'</span>;
+<span class="var">$emoji</span> = <span class="kw">match</span>(<span class="var">$nivel</span>) {
+    <span class="str">'basico'</span>     => <span class="str">'🟢'</span>,
+    <span class="str">'intermedio'</span> => <span class="str">'🟡'</span>,
+    <span class="str">'avanzado'</span>   => <span class="str">'🔴'</span>,
+    <span class="kw">default</span>      => <span class="str">'⚪'</span>,
+};
+<span class="fn">echo</span> <span class="str">"&lt;br&gt;Nivel: {$emoji} {$nivel}"</span>;</pre>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Lógica de progreso</h4>
+      </div>
+      <p>Crea un array con 4 lecciones donde cada una tiene <code>true</code> (completada) o <code>false</code> (pendiente). Usa foreach para contar cuántas están completadas y muestra el porcentaje:</p>
+      <textarea class="code-input" placeholder="<?php&#10;$lecciones = [true, false, true, false];&#10;$completadas = 0;&#10;&#10;foreach ($lecciones as $completada) {&#10;    // contar completadas&#10;}&#10;&#10;$porcentaje = ...;&#10;echo &quot;Progreso: {$porcentaje}%&quot;;"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Usé if/elseif/else para evaluar el progreso</li>
+      <li><input type="checkbox"> Iteré un array con foreach y usé el índice</li>
+      <li><input type="checkbox"> Probé match() como alternativa moderna al switch</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso2')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 3 -->
+<div class="step-card" id="paso3">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">03</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Funciones</div>
+      <div class="step-meta">function · parámetros · return · tipos · arrow functions</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Las funciones encapsulan lógica reutilizable. En PHP moderno (8+) podemos declarar los tipos de parámetros y retorno, lo que hace el código más seguro y claro.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="op">&lt;?php</span>
+
+<span class="cm">// Función con tipos declarados (PHP 8+)</span>
+<span class="kw">function</span> <span class="fn">calcularProgreso</span>(<span class="kw">int</span> <span class="var">$completadas</span>, <span class="kw">int</span> <span class="var">$total</span>): <span class="kw">float</span>
+{
+    <span class="kw">if</span> (<span class="var">$total</span> === <span class="num">0</span>) <span class="kw">return</span> <span class="num">0.0</span>;
+    <span class="kw">return</span> <span class="fn">round</span>((<span class="var">$completadas</span> / <span class="var">$total</span>) * <span class="num">100</span>, <span class="num">1</span>);
+}
+
+<span class="fn">echo</span> <span class="fn">calcularProgreso</span>(<span class="num">3</span>, <span class="num">5</span>); <span class="cm">// 60.0</span>
+
+<span class="cm">// Parámetros con valor por defecto</span>
+<span class="kw">function</span> <span class="fn">saludarEstudiante</span>(<span class="kw">string</span> <span class="var">$nombre</span>, <span class="kw">string</span> <span class="var">$modulo</span> = <span class="str">'General'</span>): <span class="kw">string</span>
+{
+    <span class="kw">return</span> <span class="str">"Hola {$nombre}, estás en el módulo: {$modulo}"</span>;
+}
+
+<span class="fn">echo</span> <span class="fn">saludarEstudiante</span>(<span class="str">'Ana'</span>);
+<span class="fn">echo</span> <span class="fn">saludarEstudiante</span>(<span class="str">'Luis'</span>, <span class="str">'PHP Puro'</span>);
+
+<span class="cm">// Arrow function (función flecha, PHP 7.4+)</span>
+<span class="var">$estaActivo</span> = <span class="kw">fn</span>(<span class="kw">bool</span> <span class="var">$activo</span>): <span class="kw">string</span> => <span class="var">$activo</span> ? <span class="str">'✅ Activo'</span> : <span class="str">'❌ Inactivo'</span>;
+
+<span class="fn">echo</span> <span class="var">$estaActivo</span>(<span class="kw">true</span>);  <span class="cm">// ✅ Activo</span>
+<span class="fn">echo</span> <span class="var">$estaActivo</span>(<span class="kw">false</span>); <span class="cm">// ❌ Inactivo</span></pre>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Función de estadísticas</h4>
+      </div>
+      <p>Escribe una función <code>resumenModulo(string $nombre, int $lecciones, bool $activo): string</code> que retorne una línea de texto con esa info formateada. Llámala para los 5 módulos del curso.</p>
+      <textarea class="code-input" placeholder="function resumenModulo(string $nombre, int $lecciones, bool $activo): string&#10;{&#10;    return &quot;...&quot;;&#10;}&#10;&#10;echo resumenModulo('Bases de Datos', 4, true);"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Creé funciones con tipos en parámetros y retorno</li>
+      <li><input type="checkbox"> Usé parámetros con valores por defecto</li>
+      <li><input type="checkbox"> Probé una arrow function con fn()</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso3')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 4 -->
+<div class="step-card" id="paso4">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">04</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Arrays</div>
+      <div class="step-meta">array indexado · asociativo · multidimensional · array_* functions</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Los arrays son la estructura de datos más usada en PHP. En un LMS los usaremos para listas de módulos, lecciones, ejercicios y datos del usuario.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="op">&lt;?php</span>
+
+<span class="cm">// Array indexado</span>
+<span class="var">$nombres</span> = [<span class="str">'Bases de Datos'</span>, <span class="str">'PHP'</span>, <span class="str">'HTML'</span>, <span class="str">'Laravel'</span>, <span class="str">'Moonshine'</span>];
+<span class="fn">echo</span> <span class="fn">count</span>(<span class="var">$nombres</span>); <span class="cm">// 5</span>
+
+<span class="cm">// Array asociativo (clave => valor)</span>
+<span class="var">$modulo</span> = [
+    <span class="str">'nombre'</span>     => <span class="str">'PHP Puro'</span>,
+    <span class="str">'icono'</span>      => <span class="str">'🐘'</span>,
+    <span class="str">'orden'</span>      => <span class="num">2</span>,
+    <span class="str">'activo'</span>     => <span class="kw">true</span>,
+    <span class="str">'lecciones'</span>  => <span class="num">6</span>,
+];
+
+<span class="fn">echo</span> <span class="var">$modulo</span>[<span class="str">'nombre'</span>];  <span class="cm">// PHP Puro</span>
+
+<span class="cm">// Array multidimensional (como resultado de una BD)</span>
+<span class="var">$modulos</span> = [
+    [<span class="str">'id'</span> => <span class="num">1</span>, <span class="str">'nombre'</span> => <span class="str">'Bases de Datos'</span>, <span class="str">'lecciones'</span> => <span class="num">4</span>],
+    [<span class="str">'id'</span> => <span class="num">2</span>, <span class="str">'nombre'</span> => <span class="str">'PHP Puro'</span>,       <span class="str">'lecciones'</span> => <span class="num">6</span>],
+    [<span class="str">'id'</span> => <span class="num">3</span>, <span class="str">'nombre'</span> => <span class="str">'HTML & CSS'</span>,     <span class="str">'lecciones'</span> => <span class="num">5</span>],
+];
+
+<span class="kw">foreach</span> (<span class="var">$modulos</span> <span class="kw">as</span> <span class="var">$m</span>) {
+    <span class="fn">echo</span> <span class="str">"&lt;br&gt;#{$m['id']} {$m['nombre']}: {$m['lecciones']} lecciones"</span>;
+}
+
+<span class="cm">// Funciones útiles de array</span>
+<span class="var">$total</span> = <span class="fn">array_sum</span>(<span class="fn">array_column</span>(<span class="var">$modulos</span>, <span class="str">'lecciones'</span>));
+<span class="fn">echo</span> <span class="str">"&lt;br&gt;Total lecciones: {$total}"</span>; <span class="cm">// 15</span></pre>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Simula datos de la plataforma</h4>
+      </div>
+      <p>Crea un array multidimensional con los 5 módulos reales (nombre, icono, orden). Usa array_filter para obtener solo los activos, y array_map para formatear la salida como "1. 🗄️ Bases de Datos".</p>
+      <textarea class="code-input" placeholder="$modulos = [&#10;    ['nombre' => 'Bases de Datos', 'icono' => '🗄️', 'orden' => 1, 'activo' => true],&#10;    // ... más módulos&#10;];&#10;&#10;$activos = array_filter($modulos, fn($m) => $m['activo']);&#10;// formatear y mostrar..."></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Creé arrays indexados, asociativos y multidimensionales</li>
+      <li><input type="checkbox"> Usé array_sum, array_column, array_filter, array_map</li>
+      <li><input type="checkbox"> Simulé datos de módulos del LMS</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso4')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 5 -->
+<div class="step-card" id="paso5">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">05</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Clases y Objetos (OOP)</div>
+      <div class="step-meta">class · __construct · properties · methods · visibility</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>La Programación Orientada a Objetos (POO) organiza el código en <strong>clases</strong> que modelan entidades del mundo real. Laravel está 100% construido con OOP.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="op">&lt;?php</span>
+
+<span class="kw">class</span> <span class="cls">Modulo</span>
+{
+    <span class="cm">// Propiedades</span>
+    <span class="kw">public</span> <span class="kw">int</span> <span class="var">$id</span>;
+    <span class="kw">public</span> <span class="kw">string</span> <span class="var">$nombre</span>;
+    <span class="kw">public</span> <span class="kw">string</span> <span class="var">$icono</span>;
+    <span class="kw">private</span> <span class="kw">bool</span> <span class="var">$activo</span>;
+    <span class="kw">private</span> <span class="kw">array</span> <span class="var">$lecciones</span> = [];
+
+    <span class="cm">// Constructor</span>
+    <span class="kw">public function</span> <span class="fn">__construct</span>(<span class="kw">int</span> <span class="var">$id</span>, <span class="kw">string</span> <span class="var">$nombre</span>, <span class="kw">string</span> <span class="var">$icono</span>)
+    {
+        <span class="var">$this</span>-><span class="var">id</span>     = <span class="var">$id</span>;
+        <span class="var">$this</span>-><span class="var">nombre</span> = <span class="var">$nombre</span>;
+        <span class="var">$this</span>-><span class="var">icono</span>  = <span class="var">$icono</span>;
+        <span class="var">$this</span>-><span class="var">activo</span> = <span class="kw">true</span>;
+    }
+
+    <span class="cm">// Métodos</span>
+    <span class="kw">public function</span> <span class="fn">agregarLeccion</span>(<span class="kw">string</span> <span class="var">$titulo</span>): <span class="kw">void</span>
+    {
+        <span class="var">$this</span>-><span class="var">lecciones</span>[] = <span class="var">$titulo</span>;
+    }
+
+    <span class="kw">public function</span> <span class="fn">totalLecciones</span>(): <span class="kw">int</span>
+    {
+        <span class="kw">return</span> <span class="fn">count</span>(<span class="var">$this</span>-><span class="var">lecciones</span>);
+    }
+
+    <span class="kw">public function</span> <span class="fn">resumen</span>(): <span class="kw">string</span>
+    {
+        <span class="var">$estado</span> = <span class="var">$this</span>-><span class="var">activo</span> ? <span class="str">'activo'</span> : <span class="str">'inactivo'</span>;
+        <span class="kw">return</span> <span class="str">"{$this->icono} {$this->nombre} — {$this->totalLecciones()} lecciones ({$estado})"</span>;
+    }
+}
+
+<span class="cm">// Crear instancias</span>
+<span class="var">$bd</span>  = <span class="kw">new</span> <span class="cls">Modulo</span>(<span class="num">1</span>, <span class="str">'Bases de Datos'</span>, <span class="str">'🗄️'</span>);
+<span class="var">$php</span> = <span class="kw">new</span> <span class="cls">Modulo</span>(<span class="num">2</span>, <span class="str">'PHP Puro'</span>, <span class="str">'🐘'</span>);
+
+<span class="var">$bd</span>-><span class="fn">agregarLeccion</span>(<span class="str">'Crear tablas'</span>);
+<span class="var">$bd</span>-><span class="fn">agregarLeccion</span>(<span class="str">'Claves foráneas'</span>);
+
+<span class="fn">echo</span> <span class="var">$bd</span>-><span class="fn">resumen</span>();   <span class="cm">// 🗄️ Bases de Datos — 2 lecciones (activo)</span>
+<span class="fn">echo</span> <span class="var">$php</span>-><span class="fn">resumen</span>();  <span class="cm">// 🐘 PHP Puro — 0 lecciones (activo)</span></pre>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Crea la clase Leccion</h4>
+      </div>
+      <p>Crea una clase <code>Leccion</code> con propiedades: id, modulo_id, titulo, orden. Agrega un método <code>esPrimera(): bool</code> que retorne true si orden es 1. Instancia 3 lecciones del módulo de BD.</p>
+      <textarea class="code-input" placeholder="class Leccion&#10;{&#10;    public function __construct(&#10;        public int $id,&#10;        public int $modulo_id,&#10;        public string $titulo,&#10;        public int $orden&#10;    ) {}&#10;&#10;    public function esPrimera(): bool&#10;    {&#10;        // ...&#10;    }&#10;}"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Creé la clase Modulo con constructor, propiedades y métodos</li>
+      <li><input type="checkbox"> Entiendo la diferencia entre public, private y protected</li>
+      <li><input type="checkbox"> Creé la clase Leccion con mi propia lógica</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso5')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 6 -->
+<div class="step-card" id="paso6">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">06</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Herencia e Interfaces</div>
+      <div class="step-meta">extends · parent:: · abstract · interface · implements</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>La herencia permite crear clases más específicas basadas en otras. Laravel usa extensivamente este patrón (todos los modelos extienden <code>Model</code>, todos los controladores extienden <code>Controller</code>).</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="op">&lt;?php</span>
+
+<span class="cm">// Clase base (padre)</span>
+<span class="kw">abstract class</span> <span class="cls">Contenido</span>
+{
+    <span class="kw">public function</span> <span class="fn">__construct</span>(
+        <span class="kw">public readonly int</span>    <span class="var">$id</span>,
+        <span class="kw">public readonly string</span> <span class="var">$titulo</span>,
+        <span class="kw">public readonly int</span>    <span class="var">$orden</span>
+    ) {}
+
+    <span class="cm">// Método abstracto: DEBE implementarse en la clase hija</span>
+    <span class="kw">abstract public function</span> <span class="fn">tipo</span>(): <span class="kw">string</span>;
+
+    <span class="cm">// Método concreto: se hereda tal cual</span>
+    <span class="kw">public function</span> <span class="fn">info</span>(): <span class="kw">string</span>
+    {
+        <span class="kw">return</span> <span class="str">"[{$this->tipo()}] #{$this->orden}: {$this->titulo}"</span>;
+    }
+}
+
+<span class="cm">// Clase hija</span>
+<span class="kw">class</span> <span class="cls">Paso</span> <span class="kw">extends</span> <span class="cls">Contenido</span>
+{
+    <span class="kw">public function</span> <span class="fn">__construct</span>(
+        <span class="kw">int</span>    <span class="var">$id</span>,
+        <span class="kw">string</span> <span class="var">$titulo</span>,
+        <span class="kw">int</span>    <span class="var">$orden</span>,
+        <span class="kw">public readonly string</span> <span class="var">$contenido</span>
+    ) {
+        <span class="kw">parent</span>::<span class="fn">__construct</span>(<span class="var">$id</span>, <span class="var">$titulo</span>, <span class="var">$orden</span>);
+    }
+
+    <span class="kw">public function</span> <span class="fn">tipo</span>(): <span class="kw">string</span> { <span class="kw">return</span> <span class="str">'PASO'</span>; }
+}
+
+<span class="var">$paso</span> = <span class="kw">new</span> <span class="cls">Paso</span>(<span class="num">1</span>, <span class="str">'Instalar MySQL'</span>, <span class="num">1</span>, <span class="str">'Descarga WAMP...'</span>);
+<span class="fn">echo</span> <span class="var">$paso</span>-><span class="fn">info</span>(); <span class="cm">// [PASO] #1: Instalar MySQL</span></pre>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Crea la clase Ejercicio</h4>
+      </div>
+      <p>Crea la clase <code>Ejercicio</code> que extienda <code>Contenido</code>. Agrega la propiedad <code>dificultad</code> (string) y el método <code>tipo(): string</code> que retorne 'EJERCICIO'. Agrega también <code>esAvanzado(): bool</code>.</p>
+      <textarea class="code-input" placeholder="class Ejercicio extends Contenido&#10;{&#10;    public function __construct(&#10;        int $id,&#10;        string $titulo,&#10;        int $orden,&#10;        public readonly string $dificultad&#10;    ) {&#10;        parent::__construct($id, $titulo, $orden);&#10;    }&#10;&#10;    public function tipo(): string { ... }&#10;    public function esAvanzado(): bool { ... }&#10;}"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Entiendo para qué sirve abstract class y abstract method</li>
+      <li><input type="checkbox"> Usé parent::__construct() para llamar al constructor padre</li>
+      <li><input type="checkbox"> Creé la clase Ejercicio extendiendo Contenido</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso6')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 7 -->
+<div class="step-card" id="paso7">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">07</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Formularios HTML + PHP</div>
+      <div class="step-meta">$_POST · $_GET · filter_input · htmlspecialchars · validación</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Un formulario HTML envía datos al servidor. PHP los recibe en <code>$_POST</code> o <code>$_GET</code>. Siempre debemos <strong>validar y sanitizar</strong> antes de usar esos datos.</p>
+
+    <div class="info-box warn">
+      <span class="icon">🔒</span>
+      <div>Nunca insertes <code>$_POST</code> directamente en HTML o SQL. Usa <strong>htmlspecialchars()</strong> para mostrar y <strong>prepared statements</strong> para BD. Verás esto en acción en el paso de PDO.</div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="op">&lt;?php</span>
+<span class="cm">// formulario.php — misma página para mostrar y procesar</span>
+
+<span class="var">$mensaje</span> = <span class="str">''</span>;
+
+<span class="kw">if</span> (<span class="var">$_SERVER</span>[<span class="str">'REQUEST_METHOD'</span>] === <span class="str">'POST'</span>) {
+
+    <span class="cm">// Obtener y sanitizar datos</span>
+    <span class="var">$nombre</span> = <span class="fn">trim</span>(<span class="var">$_POST</span>[<span class="str">'nombre'</span>] ?? <span class="str">''</span>);
+    <span class="var">$correo</span> = <span class="fn">filter_input</span>(<span class="kw">INPUT_POST</span>, <span class="str">'correo'</span>, <span class="kw">FILTER_VALIDATE_EMAIL</span>);
+
+    <span class="cm">// Validar</span>
+    <span class="kw">if</span> (<span class="fn">empty</span>(<span class="var">$nombre</span>)) {
+        <span class="var">$mensaje</span> = <span class="str">'❌ El nombre es obligatorio.'</span>;
+    } <span class="kw">elseif</span> (!<span class="var">$correo</span>) {
+        <span class="var">$mensaje</span> = <span class="str">'❌ Correo inválido.'</span>;
+    } <span class="kw">else</span> {
+        <span class="var">$nombreSafe</span> = <span class="fn">htmlspecialchars</span>(<span class="var">$nombre</span>, <span class="kw">ENT_QUOTES</span>, <span class="str">'UTF-8'</span>);
+        <span class="var">$mensaje</span> = <span class="str">"✅ Bienvenido, {$nombreSafe}! Correo: {$correo}"</span>;
+    }
+}
+<span class="op">?&gt;</span>
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;&lt;body&gt;
+&lt;form method="POST"&gt;
+  &lt;input type="text"  name="nombre" placeholder="Tu nombre"&gt;
+  &lt;input type="email" name="correo" placeholder="tu@correo.com"&gt;
+  &lt;button type="submit"&gt;Enviar&lt;/button&gt;
+&lt;/form&gt;
+<span class="op">&lt;?php</span> <span class="kw">if</span>(<span class="var">$mensaje</span>) <span class="fn">echo</span> <span class="str">"&lt;p&gt;{$mensaje}&lt;/p&gt;"</span>; <span class="op">?&gt;</span>
+&lt;/body&gt;&lt;/html&gt;</pre>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Formulario de registro simplificado</h4>
+      </div>
+      <p>Crea un formulario con campos: nombre, email y módulo favorito (select con los 5 módulos). Valida que ningún campo esté vacío y muestra un resumen de lo que envió el usuario.</p>
+      <textarea class="code-input" placeholder="// Tu formulario aquí. Recuerda:&#10;// 1. Verificar REQUEST_METHOD === 'POST'&#10;// 2. Validar campos vacíos&#10;// 3. Usar htmlspecialchars() al mostrar&#10;// 4. El select debe tener los 5 módulos"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Creé un formulario que se procesa en la misma página</li>
+      <li><input type="checkbox"> Usé filter_input para validar el email</li>
+      <li><input type="checkbox"> Apliqué htmlspecialchars antes de mostrar datos del usuario</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso7')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 8 -->
+<div class="step-card" id="paso8">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">08</div>
+    <div class="step-title-wrap">
+      <div class="step-title">PDO — PHP conecta con MySQL</div>
+      <div class="step-meta">PDO · prepare · execute · fetchAll · prepared statements</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>PDO (PHP Data Objects) es la forma segura y moderna de conectar PHP con bases de datos. Usa <strong>prepared statements</strong> que evitan SQL Injection.</p>
+
+    <div class="info-box tip">
+      <span class="icon">🔐</span>
+      <div>Los <strong>prepared statements</strong> separan el SQL del dato. El motor de BD procesa la estructura del query primero y los datos después — imposible de inyectar código SQL malicioso.</div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="op">&lt;?php</span>
+
+<span class="cm">// Conexión a la BD (igual que el .env de Laravel)</span>
+<span class="var">$dsn</span>  = <span class="str">'mysql:host=127.0.0.1;dbname=programando;charset=utf8mb4'</span>;
+<span class="var">$user</span> = <span class="str">'root'</span>;
+<span class="var">$pass</span> = <span class="str">'base1234'</span>;
+
+<span class="kw">try</span> {
+    <span class="var">$pdo</span> = <span class="kw">new</span> <span class="cls">PDO</span>(<span class="var">$dsn</span>, <span class="var">$user</span>, <span class="var">$pass</span>, [
+        <span class="cls">PDO</span>::<span class="kw">ATTR_ERRMODE</span>            => <span class="cls">PDO</span>::<span class="kw">ERRMODE_EXCEPTION</span>,
+        <span class="cls">PDO</span>::<span class="kw">ATTR_DEFAULT_FETCH_MODE</span> => <span class="cls">PDO</span>::<span class="kw">FETCH_ASSOC</span>,
+    ]);
+
+    <span class="cm">// Leer todos los módulos activos</span>
+    <span class="var">$stmt</span> = <span class="var">$pdo</span>-><span class="fn">query</span>(<span class="str">'SELECT id, nombre, icono FROM modulos WHERE activo = 1 ORDER BY orden'</span>);
+    <span class="var">$modulos</span> = <span class="var">$stmt</span>-><span class="fn">fetchAll</span>();
+
+    <span class="kw">foreach</span> (<span class="var">$modulos</span> <span class="kw">as</span> <span class="var">$m</span>) {
+        <span class="fn">echo</span> <span class="str">"{$m['icono']} {$m['nombre']}&lt;br&gt;"</span>;
+    }
+
+    <span class="cm">// Buscar lecciones de un módulo (prepared statement)</span>
+    <span class="var">$moduloId</span> = <span class="num">1</span>; <span class="cm">// viene de $_GET en la realidad</span>
+    <span class="var">$stmt</span> = <span class="var">$pdo</span>-><span class="fn">prepare</span>(<span class="str">'SELECT titulo FROM lecciones WHERE modulo_id = ? AND activo = 1'</span>);
+    <span class="var">$stmt</span>-><span class="fn">execute</span>([<span class="var">$moduloId</span>]);
+    <span class="var">$lecciones</span> = <span class="var">$stmt</span>-><span class="fn">fetchAll</span>();
+
+    <span class="kw">echo</span> <span class="str">"&lt;br&gt;Lecciones del módulo 1:&lt;br&gt;"</span>;
+    <span class="kw">foreach</span> (<span class="var">$lecciones</span> <span class="kw">as</span> <span class="var">$l</span>) {
+        <span class="fn">echo</span> <span class="str">"— {$l['titulo']}&lt;br&gt;"</span>;
+    }
+
+} <span class="kw">catch</span> (<span class="cls">PDOException</span> <span class="var">$e</span>) {
+    <span class="fn">echo</span> <span class="str">'Error de conexión: '</span> . <span class="var">$e</span>-><span class="fn">getMessage</span>();
+}</pre>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Reto final</span>
+        <h4>Conecta PHP con la BD del LMS</h4>
+      </div>
+      <p>Usando PDO, muestra en una página HTML todos los módulos con sus lecciones. Usa un foreach anidado. Formatea la salida con HTML básico (h2, ul, li). Asegúrate de que la BD del Taller 01 esté cargada.</p>
+      <textarea class="code-input" style="min-height:140px" placeholder="// Conectar a BD...&#10;// Query: SELECT * FROM modulos ORDER BY orden&#10;// Para cada módulo, hacer otro query de sus lecciones&#10;// Mostrar como:&#10;// &lt;h2&gt;🗄️ Bases de Datos&lt;/h2&gt;&#10;// &lt;ul&gt;&lt;li&gt;Lección 1&lt;/li&gt;...&lt;/ul&gt;"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Me conecté a MySQL usando PDO sin errores</li>
+      <li><input type="checkbox"> Usé prepared statements para la consulta con parámetro</li>
+      <li><input type="checkbox"> Mostré módulos y lecciones anidados en HTML</li>
+      <li><input type="checkbox"> El try/catch captura errores de conexión correctamente</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso8')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  EduCode CEFIT-SENA · Módulo 02 — PHP Puro · PHP 8.3 &nbsp;·&nbsp; Taller práctico
+</footer>
+
+<script>
+  const TOTAL = 8;
+
+  function toggle(header) {
+    const card = header.closest('.step-card');
+    const isOpen = card.classList.contains('open');
+    document.querySelectorAll('.step-card.open').forEach(c => c.classList.remove('open'));
+    if (!isOpen) card.classList.add('open');
+  }
+
+  function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = '✓ Copiado';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function markDone(btn, stepId) {
+    const card = document.getElementById(stepId);
+    card.classList.toggle('done');
+    const isDone = card.classList.contains('done');
+    btn.classList.toggle('checked', isDone);
+    btn.textContent = isDone ? '✓  Completado' : '✓  Marcar como completado';
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const done = document.querySelectorAll('.step-card.done').length;
+    document.getElementById('progressBar').style.width = (done / TOTAL * 100) + '%';
+    document.getElementById('progressCount').textContent = done + ' / ' + TOTAL;
+  }
+
+  document.querySelector('.step-card .step-header').click();
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.id;
+        document.querySelectorAll('.nav-pill').forEach(p => {
+          p.classList.toggle('active', p.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { threshold: 0.4 });
+  document.querySelectorAll('.step-card').forEach(c => observer.observe(c));
+</script>
+</body>
+</html>

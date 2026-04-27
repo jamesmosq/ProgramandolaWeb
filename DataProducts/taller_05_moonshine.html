@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taller 05 — Laravel Moonshine | EduCode CEFIT</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0f1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --accent: #a855f7;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --code-bg: #0d1117;
+    --step-done: #10b981;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+  header { position: relative; padding: 60px 40px 50px; text-align: center; overflow: hidden; border-bottom: 1px solid var(--border); }
+  header::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(168,85,247,0.12), transparent),
+                radial-gradient(ellipse 60% 40% at 90% 110%, rgba(124,58,237,0.1), transparent);
+  }
+  header .module-tag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 3px; color: var(--accent); background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.25); padding: 4px 14px; border-radius: 20px; margin-bottom: 8px; text-transform: uppercase; }
+  header .taller-num { display: block; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); margin-bottom: 14px; letter-spacing: 2px; }
+  header h1 { font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 800; line-height: 1.15; position: relative; }
+  header h1 span { color: var(--accent); }
+  header p.subtitle { margin-top: 14px; font-size: 0.97rem; color: var(--text-dim); font-weight: 300; max-width: 560px; margin-inline: auto; line-height: 1.7; position: relative; }
+  header .objetivo { display: inline-flex; align-items: center; gap: 8px; margin-top: 22px; font-size: 0.82rem; color: var(--accent3); background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); padding: 8px 18px; border-radius: 30px; position: relative; }
+
+  .progress-wrap { padding: 18px 40px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 16px; }
+  .progress-label { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .progress-bar-outer { flex: 1; height: 6px; background: var(--border); border-radius: 10px; overflow: hidden; }
+  .progress-bar-inner { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 10px; transition: width 0.4s ease; }
+  .progress-count { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent); white-space: nowrap; }
+
+  .nav-pills { display: flex; gap: 8px; flex-wrap: wrap; padding: 16px 40px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .nav-pill { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 5px 13px; border-radius: 20px; background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; transition: all 0.2s; text-decoration: none; }
+  .nav-pill:hover, .nav-pill.active { background: rgba(168,85,247,0.1); border-color: var(--accent); color: var(--accent); }
+
+  main { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  .step-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 28px; overflow: hidden; transition: border-color 0.3s; scroll-margin-top: 100px; animation: fadeUp 0.4s ease both; }
+  .step-card.done { border-color: rgba(16,185,129,0.35); }
+  .step-header { display: flex; align-items: center; gap: 16px; padding: 20px 26px; cursor: pointer; user-select: none; background: var(--surface); transition: background 0.2s; }
+  .step-header:hover { background: var(--surface2); }
+  .step-num { width: 40px; height: 40px; border-radius: 12px; background: var(--surface2); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--text-muted); flex-shrink: 0; transition: all 0.3s; }
+  .step-card.done .step-num { background: rgba(16,185,129,0.15); border-color: var(--step-done); color: var(--step-done); }
+  .step-title-wrap { flex: 1; }
+  .step-title { font-size: 1rem; font-weight: 700; line-height: 1.3; }
+  .step-meta { font-size: 0.76rem; color: var(--text-muted); margin-top: 3px; font-family: 'JetBrains Mono', monospace; }
+  .step-toggle { font-size: 16px; color: var(--text-muted); transition: transform 0.3s; flex-shrink: 0; }
+  .step-card.open .step-toggle { transform: rotate(180deg); }
+  .step-body { display: none; padding: 0 26px 26px; border-top: 1px solid var(--border); }
+  .step-card.open .step-body { display: block; }
+  .step-body p, .step-body li { color: var(--text-dim); line-height: 1.8; font-size: 0.91rem; }
+  .step-body ul, .step-body ol { padding-left: 20px; margin: 10px 0; }
+  .step-body li { margin-bottom: 5px; }
+  .step-body h3 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin: 20px 0 10px; font-family: 'JetBrains Mono', monospace; }
+
+  .info-box { border-radius: 10px; padding: 13px 16px; margin: 14px 0; font-size: 0.87rem; line-height: 1.7; display: flex; gap: 12px; align-items: flex-start; }
+  .info-box .icon { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+  .info-box.tip { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); color: #6ee7b7; }
+  .info-box.warn { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); color: #fcd34d; }
+  .info-box.info { background: rgba(168,85,247,0.06); border: 1px solid rgba(168,85,247,0.18); color: #d8b4fe; }
+
+  .code-block { position: relative; margin: 16px 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+  .code-header { display: flex; align-items: center; justify-content: space-between; padding: 9px 16px; background: #161c2d; border-bottom: 1px solid var(--border); }
+  .code-lang { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; }
+  .copy-btn { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 3px 11px; border-radius: 6px; background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.3); color: var(--accent); cursor: pointer; transition: all 0.2s; }
+  .copy-btn:hover { background: rgba(168,85,247,0.2); }
+  .copy-btn.copied { color: var(--accent3); border-color: var(--accent3); }
+  pre { background: var(--code-bg); padding: 18px 20px; overflow-x: auto; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.7; color: #c9d1d9; }
+
+  .kw { color: #ff7b72; font-weight: 600; }
+  .fn { color: #d2a8ff; }
+  .str { color: #a5d6ff; }
+  .num { color: #79c0ff; }
+  .cm { color: #6e7681; font-style: italic; }
+  .var { color: #ffa657; }
+  .cls { color: #7ee787; }
+
+  .tu-turno { background: rgba(124,58,237,0.07); border: 1px solid rgba(124,58,237,0.25); border-radius: 12px; padding: 18px 20px; margin: 18px 0; }
+  .tu-turno-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .tu-turno-badge { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 2px; color: #c4b5fd; background: rgba(124,58,237,0.15); border: 1px solid rgba(124,58,237,0.3); padding: 3px 10px; border-radius: 20px; text-transform: uppercase; }
+  .tu-turno h4 { font-size: 0.92rem; font-weight: 700; color: #ddd6fe; }
+  .tu-turno p { font-size: 0.87rem; color: #c4b5fd; line-height: 1.7; margin-bottom: 10px; }
+  .code-input { width: 100%; min-height: 100px; background: var(--code-bg); border: 1px solid rgba(124,58,237,0.3); border-radius: 8px; padding: 14px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #c9d1d9; resize: vertical; outline: none; transition: border-color 0.2s; }
+  .code-input:focus { border-color: var(--accent2); }
+  .code-input::placeholder { color: var(--text-muted); }
+
+  .checklist { list-style: none !important; padding-left: 0 !important; }
+  .checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; font-size: 0.88rem; color: var(--text-dim); border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li input[type="checkbox"] { margin-top: 3px; accent-color: var(--accent3); flex-shrink: 0; cursor: pointer; }
+
+  .check-btn { margin-top: 20px; display: inline-flex; align-items: center; gap: 8px; font-family: 'Sora', sans-serif; font-size: 0.84rem; font-weight: 600; padding: 9px 20px; border-radius: 10px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: var(--step-done); cursor: pointer; transition: all 0.2s; }
+  .check-btn:hover { background: rgba(16,185,129,0.2); }
+  .check-btn.checked { background: rgba(16,185,129,0.25); }
+
+  footer { text-align: center; padding: 36px; color: var(--text-muted); font-size: 0.78rem; border-top: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; }
+
+  @media(max-width:600px) {
+    header { padding: 36px 18px; }
+    .nav-pills, .progress-wrap { padding: 12px 14px; }
+    main { padding: 20px 12px 60px; }
+    .step-header { padding: 14px 14px; }
+    .step-body { padding: 0 14px 18px; }
+  }
+  @keyframes fadeUp { from { opacity:0; transform: translateY(14px); } to { opacity:1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="module-tag">Módulo 05</div>
+  <span class="taller-num">TALLER PRÁCTICO · CEFIT-SENA · EduCode</span>
+  <h1>Laravel <span>Moonshine</span><br>Panel de administración</h1>
+  <p class="subtitle">Instala Moonshine v3 y crea Resources para gestionar módulos, lecciones, pasos y ejercicios desde un panel admin profesional.</p>
+  <div class="objetivo">🎯 Al final tendrás el panel admin completo de EduCode</div>
+</header>
+
+<div class="progress-wrap">
+  <span class="progress-label">PROGRESO</span>
+  <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+  <span class="progress-count" id="progressCount">0 / 8</span>
+</div>
+
+<div class="nav-pills">
+  <a class="nav-pill" href="#paso1">1. Instalar</a>
+  <a class="nav-pill" href="#paso2">2. ModuloResource</a>
+  <a class="nav-pill" href="#paso3">3. LeccionResource</a>
+  <a class="nav-pill" href="#paso4">4. PasoResource</a>
+  <a class="nav-pill" href="#paso5">5. EjercicioResource</a>
+  <a class="nav-pill" href="#paso6">6. HasMany</a>
+  <a class="nav-pill" href="#paso7">7. Actions</a>
+  <a class="nav-pill" href="#paso8">8. Dashboard</a>
+</div>
+
+<main>
+
+<!-- PASO 1 -->
+<div class="step-card" id="paso1">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">01</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Instalar Laravel Moonshine</div>
+      <div class="step-meta">composer require · moonshine:install · /admin · MoonShineServiceProvider</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Moonshine v3 es un panel de administración construido específicamente para Laravel. Se instala como un paquete de Composer y genera todo su scaffolding automáticamente.</p>
+
+    <div class="info-box info">
+      <span class="icon">🌙</span>
+      <div>Moonshine genera su propio sistema de autenticación separado del de la aplicación. El admin tendrá su propio usuario y contraseña, independiente de los estudiantes.</div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># 1. Instalar el paquete</span>
+composer require moonshine/moonshine
+
+<span class="cm"># 2. Ejecutar el instalador</span>
+php artisan moonshine:install
+
+<span class="cm"># El instalador pregunta:
+# → Confirm install? (yes)
+# → Choose template: default
+# → Use migrations? (yes)
+# → Create superadmin? (yes)
+# → Name / Email / Password del admin</span>
+
+<span class="cm"># 3. Ejecutar migraciones de Moonshine</span>
+php artisan migrate
+
+<span class="cm"># 4. Abrir el panel</span>
+<span class="cm"># → http://programando.test/admin</span></pre>
+    </div>
+
+    <h3>¿Qué genera el instalador?</h3>
+    <ul>
+      <li><strong>app/MoonShine/</strong> — directorio para Resources, Pages y Layouts</li>
+      <li><strong>app/Providers/MoonShineServiceProvider.php</strong> — registro de Resources</li>
+      <li><strong>config/moonshine.php</strong> — configuración del panel</li>
+      <li><strong>Tabla moonshine_users</strong> — usuarios del admin (separada de users)</li>
+      <li><strong>Ruta /admin</strong> — acceso al panel con middleware moonshine.auth</li>
+    </ul>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Accede al panel de admin</h4>
+      </div>
+      <p>Abre <code>http://programando.test/admin</code> e inicia sesión con las credenciales del superadmin que creaste. ¿Qué secciones aparecen en el menú lateral por defecto?</p>
+      <textarea class="code-input" placeholder="URL del admin: ___&#10;&#10;Secciones del menú por defecto:&#10;1. ___&#10;2. ___&#10;3. ___&#10;&#10;¿En qué tabla se guarda el superadmin? ___"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Instalé Moonshine sin errores de Composer</li>
+      <li><input type="checkbox"> Ejecuté moonshine:install y creé el superadmin</li>
+      <li><input type="checkbox"> El panel abre en /admin sin errores 500</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso1')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 2 -->
+<div class="step-card" id="paso2">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">02</div>
+    <div class="step-title-wrap">
+      <div class="step-title">ModuloResource</div>
+      <div class="step-meta">moonshine:resource · fields() · indexFields · formFields · Text · Number · Toggle</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Un <strong>Resource</strong> en Moonshine es la clase que define cómo se administra un modelo: qué campos se muestran, en qué formato, con qué validaciones.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">BASH</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Crear el Resource para Modulo</span>
+php artisan moonshine:resource ModuloResource</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// app/MoonShine/Resources/ModuloResource.php</span>
+<span class="kw">use</span> <span class="cls">MoonShine\Laravel\Resources\ModelResource</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\ID</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\Text</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\Textarea</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\Number</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\Toggle</span>;
+
+<span class="kw">class</span> <span class="cls">ModuloResource</span> <span class="kw">extends</span> <span class="cls">ModelResource</span>
+{
+    <span class="cm">// Modelo que administra</span>
+    <span class="kw">protected</span> <span class="kw">string</span> <span class="var">$model</span> = <span class="cls">Modulo</span>::<span class="kw">class</span>;
+
+    <span class="cm">// Título del Resource en el panel</span>
+    <span class="kw">protected</span> <span class="kw">string</span> <span class="var">$title</span> = <span class="str">'Módulos'</span>;
+
+    <span class="cm">// Columna por la que se ordena por defecto</span>
+    <span class="kw">protected</span> <span class="kw">string</span> <span class="var">$sortColumn</span> = <span class="str">'orden'</span>;
+
+    <span class="cm">// Campos del formulario y tabla</span>
+    <span class="kw">protected function</span> <span class="fn">fields</span>(): <span class="cls">FieldsContract</span>
+    {
+        <span class="kw">return</span> <span class="fn">IndexFields</span>::<span class="fn">make</span>([
+
+            <span class="cls">ID</span>::<span class="fn">make</span>()-><span class="fn">sortable</span>(),
+
+            <span class="cls">Text</span>::<span class="fn">make</span>(<span class="str">'Nombre'</span>, <span class="str">'nombre'</span>)
+                -><span class="fn">required</span>()
+                -><span class="fn">sortable</span>(),
+
+            <span class="cls">Text</span>::<span class="fn">make</span>(<span class="str">'Ícono'</span>, <span class="str">'icono'</span>)
+                -><span class="fn">placeholder</span>(<span class="str">'🗄️'</span>),
+
+            <span class="cls">Textarea</span>::<span class="fn">make</span>(<span class="str">'Descripción'</span>, <span class="str">'descripcion'</span>)
+                -><span class="fn">nullable</span>()
+                -><span class="fn">hideOnIndex</span>(),       <span class="cm">// no mostrar en la lista</span>
+
+            <span class="cls">Number</span>::<span class="fn">make</span>(<span class="str">'Orden'</span>, <span class="str">'orden'</span>)
+                -><span class="fn">default</span>(<span class="num">0</span>)
+                -><span class="fn">sortable</span>(),
+
+            <span class="cls">Toggle</span>::<span class="fn">make</span>(<span class="str">'Activo'</span>, <span class="str">'activo'</span>)
+                -><span class="fn">default</span>(<span class="kw">true</span>),
+        ]);
+    }
+}</pre>
+    </div>
+
+    <h3>Registrar el Resource</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// app/Providers/MoonShineServiceProvider.php</span>
+<span class="kw">protected function</span> <span class="fn">resources</span>(): <span class="kw">array</span>
+{
+    <span class="kw">return</span> [
+        <span class="cls">ModuloResource</span>::<span class="kw">class</span>,
+        <span class="cm">// Aquí irán los demás Resources</span>
+    ];
+}</pre>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Prueba el CRUD de módulos</h4>
+      </div>
+      <p>Desde el panel /admin, crea un nuevo módulo, edítalo cambiando el ícono, y luego activa/desactiva el toggle. ¿Qué validaciones aparecen si intentas guardar sin nombre?</p>
+      <textarea class="code-input" placeholder="1. Creé el módulo '...' con ícono '...' ✓&#10;&#10;2. Al guardar sin nombre el error fue: ___&#10;&#10;3. El toggle de 'activo' muestra en la lista: ___&#10;&#10;4. ¿El campo descripcion aparece en la lista (index)? ___ ¿Por qué?"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Creé ModuloResource con make:resource</li>
+      <li><input type="checkbox"> Lo registré en MoonShineServiceProvider</li>
+      <li><input type="checkbox"> Los campos aparecen correctamente en el panel</li>
+      <li><input type="checkbox"> Pude crear, editar y eliminar módulos desde el admin</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso2')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 3 -->
+<div class="step-card" id="paso3">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">03</div>
+    <div class="step-title-wrap">
+      <div class="step-title">LeccionResource + BelongsTo</div>
+      <div class="step-meta">BelongsTo field · searchable · relación en formulario</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>El campo <strong>BelongsTo</strong> de Moonshine genera un select (o búsqueda) para elegir el módulo al que pertenece la lección. Es el equivalente visual de la FK <code>modulo_id</code>.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// app/MoonShine/Resources/LeccionResource.php</span>
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\BelongsTo</span>;
+
+<span class="kw">class</span> <span class="cls">LeccionResource</span> <span class="kw">extends</span> <span class="cls">ModelResource</span>
+{
+    <span class="kw">protected</span> <span class="kw">string</span> <span class="var">$model</span>     = <span class="cls">Leccion</span>::<span class="kw">class</span>;
+    <span class="kw">protected</span> <span class="kw">string</span> <span class="var">$title</span>     = <span class="str">'Lecciones'</span>;
+    <span class="kw">protected</span> <span class="kw">string</span> <span class="var">$sortColumn</span> = <span class="str">'orden'</span>;
+
+    <span class="kw">protected function</span> <span class="fn">fields</span>(): <span class="cls">FieldsContract</span>
+    {
+        <span class="kw">return</span> <span class="fn">IndexFields</span>::<span class="fn">make</span>([
+
+            <span class="cls">ID</span>::<span class="fn">make</span>()-><span class="fn">sortable</span>(),
+
+            <span class="cm">// Selector del módulo padre</span>
+            <span class="cls">BelongsTo</span>::<span class="fn">make</span>(
+                <span class="str">'Módulo'</span>,           <span class="cm">// label</span>
+                <span class="str">'modulo'</span>,           <span class="cm">// relación en el modelo</span>
+                <span class="str">'nombre'</span>,           <span class="cm">// columna a mostrar del módulo</span>
+                <span class="cls">ModuloResource</span>::<span class="kw">class</span>  <span class="cm">// Resource relacionado</span>
+            )
+            -><span class="fn">required</span>()
+            -><span class="fn">searchable</span>(),      <span class="cm">// buscador en el select</span>
+
+            <span class="cls">Text</span>::<span class="fn">make</span>(<span class="str">'Título'</span>, <span class="str">'titulo'</span>)-><span class="fn">required</span>(),
+
+            <span class="cls">Textarea</span>::<span class="fn">make</span>(<span class="str">'Descripción'</span>, <span class="str">'descripcion'</span>)-><span class="fn">nullable</span>()-><span class="fn">hideOnIndex</span>(),
+
+            <span class="cls">Number</span>::<span class="fn">make</span>(<span class="str">'Orden'</span>, <span class="str">'orden'</span>)-><span class="fn">default</span>(<span class="num">0</span>)-><span class="fn">sortable</span>(),
+
+            <span class="cls">Toggle</span>::<span class="fn">make</span>(<span class="str">'Activo'</span>, <span class="str">'activo'</span>)-><span class="fn">default</span>(<span class="kw">true</span>),
+        ]);
+    }
+}</pre>
+    </div>
+
+    <div class="info-box tip">
+      <span class="icon">💡</span>
+      <div>El parámetro <code>'nombre'</code> en BelongsTo indica qué columna del módulo se muestra en el select. Si el módulo tiene un método <code>__toString()</code>, puedes omitir este parámetro.</div>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Crea lecciones desde el admin</h4>
+      </div>
+      <p>Crea al menos 3 lecciones para el módulo "Bases de Datos" usando el panel admin. ¿El campo BelongsTo te muestra todos los módulos disponibles? ¿Funciona el buscador?</p>
+      <textarea class="code-input" placeholder="Lecciones creadas:&#10;1. Módulo: ___, Título: ___, Orden: ___&#10;2. Módulo: ___, Título: ___, Orden: ___&#10;3. Módulo: ___, Título: ___, Orden: ___&#10;&#10;¿El searchable del BelongsTo funciona? ___&#10;¿Los módulos del seeder aparecen en el select? ___"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Creé LeccionResource con BelongsTo a ModuloResource</li>
+      <li><input type="checkbox"> Lo registré en MoonShineServiceProvider</li>
+      <li><input type="checkbox"> Creé 3 lecciones reales desde el panel admin</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso3')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 4 -->
+<div class="step-card" id="paso4">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">04</div>
+    <div class="step-title-wrap">
+      <div class="step-title">PasoResource</div>
+      <div class="step-meta">Select · TinyMce · hideOnIndex · campo ENUM · contenido HTML</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Los pasos tienen un campo ENUM (<code>tipo</code>) y el contenido puede ser HTML enriquecido. Moonshine tiene un field <strong>TinyMce</strong> para editores WYSIWYG.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// app/MoonShine/Resources/PasoResource.php</span>
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\Select</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\TinyMce</span>;
+
+<span class="kw">class</span> <span class="cls">PasoResource</span> <span class="kw">extends</span> <span class="cls">ModelResource</span>
+{
+    <span class="kw">protected</span> <span class="kw">string</span> <span class="var">$model</span>     = <span class="cls">Paso</span>::<span class="kw">class</span>;
+    <span class="kw">protected</span> <span class="kw">string</span> <span class="var">$title</span>     = <span class="str">'Pasos de Lección'</span>;
+    <span class="kw">protected</span> <span class="kw">string</span> <span class="var">$sortColumn</span> = <span class="str">'orden'</span>;
+
+    <span class="kw">protected function</span> <span class="fn">fields</span>(): <span class="cls">FieldsContract</span>
+    {
+        <span class="kw">return</span> <span class="fn">IndexFields</span>::<span class="fn">make</span>([
+
+            <span class="cls">ID</span>::<span class="fn">make</span>(),
+
+            <span class="cls">BelongsTo</span>::<span class="fn">make</span>(<span class="str">'Lección'</span>, <span class="str">'leccion'</span>, <span class="str">'titulo'</span>, <span class="cls">LeccionResource</span>::<span class="kw">class</span>)
+                -><span class="fn">required</span>()-><span class="fn">searchable</span>(),
+
+            <span class="cls">Text</span>::<span class="fn">make</span>(<span class="str">'Título'</span>, <span class="str">'titulo'</span>)-><span class="fn">required</span>(),
+
+            <span class="cm">// Select para el ENUM</span>
+            <span class="cls">Select</span>::<span class="fn">make</span>(<span class="str">'Tipo'</span>, <span class="str">'tipo'</span>)
+                -><span class="fn">options</span>([
+                    <span class="str">'teoria'</span>      => <span class="str">'📖 Teoría'</span>,
+                    <span class="str">'codigo'</span>      => <span class="str">'💻 Código'</span>,
+                    <span class="str">'tip'</span>         => <span class="str">'💡 Tip'</span>,
+                    <span class="str">'advertencia'</span> => <span class="str">'⚠️ Advertencia'</span>,
+                ])
+                -><span class="fn">required</span>()
+                -><span class="fn">default</span>(<span class="str">'teoria'</span>),
+
+            <span class="cm">// Editor WYSIWYG para el contenido</span>
+            <span class="cls">TinyMce</span>::<span class="fn">make</span>(<span class="str">'Contenido'</span>, <span class="str">'contenido'</span>)
+                -><span class="fn">required</span>()
+                -><span class="fn">hideOnIndex</span>(),
+
+            <span class="cls">Number</span>::<span class="fn">make</span>(<span class="str">'Orden'</span>, <span class="str">'orden'</span>)-><span class="fn">default</span>(<span class="num">0</span>),
+        ]);
+    }
+}</pre>
+    </div>
+
+    <div class="info-box info">
+      <span class="icon">✏️</span>
+      <div>TinyMce es un editor WYSIWYG gratuito. Moonshine lo integra sin configuración adicional. El contenido se guarda como HTML en la columna <code>contenido</code> (LONGTEXT).</div>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Crea el primer paso de contenido</h4>
+      </div>
+      <p>Crea un paso de tipo "Teoría" para la lección "Crear la base de datos". Escribe un párrafo explicativo en el TinyMce. ¿Cómo se guarda el HTML en la BD?</p>
+      <textarea class="code-input" placeholder="Paso creado:&#10;- Lección: 'Crear la base de datos'&#10;- Tipo: Teoría&#10;- Título: 'Introducción a MySQL'&#10;- Contenido: [escribí un párrafo en el editor WYSIWYG]&#10;&#10;¿El HTML se guardó correctamente en la tabla pasos? ___&#10;Ejecuta: SELECT contenido FROM pasos WHERE id=1; ¿Qué ves?"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Creé PasoResource con Select para el ENUM tipo</li>
+      <li><input type="checkbox"> El TinyMce aparece en el formulario de creación</li>
+      <li><input type="checkbox"> Creé un paso real y verifiqué el HTML en la BD</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso4')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 5 -->
+<div class="step-card" id="paso5">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">05</div>
+    <div class="step-title-wrap">
+      <div class="step-title">EjercicioResource</div>
+      <div class="step-meta">Select dificultad · Checkbox/Toggle · Textarea solución nullable</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>El resource de ejercicios introduce el campo condicional: la solución solo se puede ver cuando <code>solucion_visible = true</code>. En Moonshine podemos hacer campos dependientes.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// app/MoonShine/Resources/EjercicioResource.php</span>
+<span class="kw">class</span> <span class="cls">EjercicioResource</span> <span class="kw">extends</span> <span class="cls">ModelResource</span>
+{
+    <span class="kw">protected</span> <span class="kw">string</span> <span class="var">$model</span> = <span class="cls">Ejercicio</span>::<span class="kw">class</span>;
+    <span class="kw">protected</span> <span class="kw">string</span> <span class="var">$title</span> = <span class="str">'Ejercicios'</span>;
+
+    <span class="kw">protected function</span> <span class="fn">fields</span>(): <span class="cls">FieldsContract</span>
+    {
+        <span class="kw">return</span> <span class="fn">IndexFields</span>::<span class="fn">make</span>([
+
+            <span class="cls">ID</span>::<span class="fn">make</span>(),
+
+            <span class="cls">BelongsTo</span>::<span class="fn">make</span>(<span class="str">'Lección'</span>, <span class="str">'leccion'</span>, <span class="str">'titulo'</span>, <span class="cls">LeccionResource</span>::<span class="kw">class</span>)
+                -><span class="fn">required</span>()-><span class="fn">searchable</span>(),
+
+            <span class="cls">Textarea</span>::<span class="fn">make</span>(<span class="str">'Enunciado'</span>, <span class="str">'enunciado'</span>)-><span class="fn">required</span>(),
+
+            <span class="cls">Select</span>::<span class="fn">make</span>(<span class="str">'Dificultad'</span>, <span class="str">'dificultad'</span>)
+                -><span class="fn">options</span>([
+                    <span class="str">'basico'</span>      => <span class="str">'🟢 Básico'</span>,
+                    <span class="str">'intermedio'</span>  => <span class="str">'🟡 Intermedio'</span>,
+                    <span class="str">'avanzado'</span>    => <span class="str">'🔴 Avanzado'</span>,
+                ])
+                -><span class="fn">required</span>()
+                -><span class="fn">default</span>(<span class="str">'basico'</span>),
+
+            <span class="cls">Toggle</span>::<span class="fn">make</span>(<span class="str">'Mostrar solución'</span>, <span class="str">'solucion_visible'</span>)
+                -><span class="fn">default</span>(<span class="kw">false</span>),
+
+            <span class="cls">Textarea</span>::<span class="fn">make</span>(<span class="str">'Solución'</span>, <span class="str">'solucion'</span>)
+                -><span class="fn">nullable</span>()
+                -><span class="fn">hideOnIndex</span>()
+                -><span class="fn">hint</span>(<span class="str">'Solo visible si "Mostrar solución" está activo'</span>),
+
+            <span class="cls">Number</span>::<span class="fn">make</span>(<span class="str">'Orden'</span>, <span class="str">'orden'</span>)-><span class="fn">default</span>(<span class="num">0</span>),
+        ]);
+    }
+}</pre>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Crea 2 ejercicios de práctica</h4>
+      </div>
+      <p>Crea un ejercicio básico (sin solución visible) y uno intermedio (con solución). Asígnalos a la lección "Crear la base de datos". Verifica en la lista del admin cómo se muestra la dificultad.</p>
+      <textarea class="code-input" placeholder="Ejercicio 1:&#10;- Lección: ___, Dificultad: Básico&#10;- Enunciado: '...'&#10;- solucion_visible: false&#10;&#10;Ejercicio 2:&#10;- Lección: ___, Dificultad: Intermedio&#10;- Enunciado: '...'&#10;- solucion_visible: true, Solución: '...'"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Creé EjercicioResource con Select de dificultad</li>
+      <li><input type="checkbox"> El Toggle de solucion_visible funciona correctamente</li>
+      <li><input type="checkbox"> Creé 2 ejercicios con distintas dificultades</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso5')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 6 -->
+<div class="step-card" id="paso6">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">06</div>
+    <div class="step-title-wrap">
+      <div class="step-title">HasMany — relaciones en el admin</div>
+      <div class="step-meta">HasMany field · ver hijos desde el padre · relación inline</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Con el campo <strong>HasMany</strong> puedes ver y gestionar las lecciones de un módulo directamente desde la página de detalle del módulo en el admin. Sin tener que ir a otro Resource.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// Agregar HasMany en ModuloResource</span>
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\HasMany</span>;
+
+<span class="kw">protected function</span> <span class="fn">fields</span>(): <span class="cls">FieldsContract</span>
+{
+    <span class="kw">return</span> <span class="fn">IndexFields</span>::<span class="fn">make</span>([
+        <span class="cls">ID</span>::<span class="fn">make</span>(),
+        <span class="cls">Text</span>::<span class="fn">make</span>(<span class="str">'Nombre'</span>, <span class="str">'nombre'</span>)-><span class="fn">required</span>(),
+        <span class="cls">Text</span>::<span class="fn">make</span>(<span class="str">'Ícono'</span>, <span class="str">'icono'</span>),
+        <span class="cls">Number</span>::<span class="fn">make</span>(<span class="str">'Orden'</span>, <span class="str">'orden'</span>)-><span class="fn">sortable</span>(),
+        <span class="cls">Toggle</span>::<span class="fn">make</span>(<span class="str">'Activo'</span>, <span class="str">'activo'</span>),
+
+        <span class="cm">// Lecciones del módulo — solo en detalle/edición</span>
+        <span class="cls">HasMany</span>::<span class="fn">make</span>(
+            <span class="str">'Lecciones'</span>,              <span class="cm">// label</span>
+            <span class="str">'lecciones'</span>,              <span class="cm">// relación en el modelo Modulo</span>
+            <span class="cls">LeccionResource</span>::<span class="kw">class</span>   <span class="cm">// Resource de lecciones</span>
+        )-><span class="fn">hideOnIndex</span>(),           <span class="cm">// solo visible en la página de edición</span>
+    ]);
+}</pre>
+    </div>
+
+    <div class="info-box tip">
+      <span class="icon">🔗</span>
+      <div>Al entrar a editar un módulo, verás una tabla inline con sus lecciones. Puedes crear, editar y eliminar lecciones sin salir del módulo. Esto es la potencia de HasMany en Moonshine.</div>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Agrega HasMany a LeccionResource</h4>
+      </div>
+      <p>Agrega un HasMany de <code>pasos</code> en LeccionResource para gestionar pasos directamente desde la lección. ¿Qué relación del modelo Leccion usas? Pruébalo en el admin.</p>
+      <textarea class="code-input" placeholder="// En LeccionResource->fields():&#10;HasMany::make(&#10;    'Pasos',       // label&#10;    'pasos',       // relación en Leccion (hasMany(Paso::class))&#10;    PasoResource::class&#10;)->hideOnIndex(),&#10;&#10;// Resultado: desde la edición de una lección puedo ver sus pasos inline ___"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Agregué HasMany de lecciones en ModuloResource</li>
+      <li><input type="checkbox"> Al editar un módulo veo sus lecciones inline</li>
+      <li><input type="checkbox"> Agregué HasMany de pasos en LeccionResource</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso6')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 7 -->
+<div class="step-card" id="paso7">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">07</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Actions — acciones personalizadas</div>
+      <div class="step-meta">ItemAction · BulkAction · withConfirm · notifySuccess</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Las <strong>Actions</strong> de Moonshine son botones que ejecutan lógica personalizada sobre uno o varios registros. Por ejemplo: activar/desactivar todos los módulos seleccionados.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// Agregar BulkAction en ModuloResource</span>
+<span class="kw">use</span> <span class="cls">MoonShine\ActionButtons\ActionButton</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Laravel\ActionButtons\BulkButton</span>;
+
+<span class="kw">protected function</span> <span class="fn">indexButtons</span>(): <span class="cls">ListOf</span>
+{
+    <span class="kw">return</span> <span class="kw">parent</span>::<span class="fn">indexButtons</span>()-><span class="fn">add</span>(
+
+        <span class="cm">// Botón masivo: desactivar módulos seleccionados</span>
+        <span class="cls">BulkButton</span>::<span class="fn">make</span>(<span class="str">'Desactivar seleccionados'</span>)
+            -><span class="fn">icon</span>(<span class="str">'eye-slash'</span>)
+            -><span class="fn">withConfirm</span>(
+                <span class="str">'¿Desactivar módulos?'</span>,
+                <span class="str">'Los módulos seleccionados dejarán de verse para los estudiantes.'</span>
+            )
+            -><span class="fn">method</span>(<span class="str">'POST'</span>)
+            -><span class="fn">url</span>(<span class="kw">fn</span>(<span class="var">$item</span>) => <span class="fn">route</span>(<span class="str">'moonshine.modulos.desactivar'</span>, <span class="var">$item</span>))
+    );
+}
+
+<span class="cm">// ItemAction en cada fila — duplicar módulo</span>
+<span class="kw">protected function</span> <span class="fn">itemActions</span>(): <span class="cls">ListOf</span>
+{
+    <span class="kw">return</span> <span class="kw">parent</span>::<span class="fn">itemActions</span>()-><span class="fn">add</span>(
+        <span class="cls">ActionButton</span>::<span class="fn">make</span>(<span class="str">'Activar/Desactivar'</span>)
+            -><span class="fn">icon</span>(<span class="str">'power'</span>)
+            -><span class="fn">inModal</span>(<span class="kw">false</span>)
+            -><span class="fn">method</span>(<span class="str">'POST'</span>)
+            -><span class="fn">url</span>(<span class="kw">fn</span>(<span class="var">$modulo</span>) => <span class="fn">route</span>(<span class="str">'modulos.toggle'</span>, <span class="var">$modulo</span>))
+    );
+}</pre>
+    </div>
+
+    <div class="info-box warn">
+      <span class="icon">⚠️</span>
+      <div>Las acciones que usan rutas propias necesitan los endpoints definidos en <code>routes/web.php</code>. Para acciones simples puedes usar <code>ActionButton::make()->method('DELETE')</code> y apuntar al controlador de Moonshine.</div>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Tu turno</span>
+        <h4>Analiza las acciones por defecto</h4>
+      </div>
+      <p>Sin agregar código extra, ¿qué acciones tiene Moonshine por defecto en cada Resource? ¿Dónde aparece el botón de eliminar? ¿Pide confirmación antes de borrar?</p>
+      <textarea class="code-input" placeholder="Acciones por defecto en cada fila (ItemActions):&#10;1. ___&#10;2. ___&#10;3. ___&#10;&#10;¿Hay BulkActions por defecto? ___&#10;&#10;¿Pide confirmación antes de eliminar? ___&#10;¿Dónde se configuran las validaciones del Resource? ___"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Entiendo la diferencia entre ItemAction y BulkAction</li>
+      <li><input type="checkbox"> Identifiqué las acciones por defecto de Moonshine</li>
+      <li><input type="checkbox"> Sé que withConfirm() muestra un modal de confirmación</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso7')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 8 -->
+<div class="step-card" id="paso8">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">08</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Dashboard con estadísticas</div>
+      <div class="step-meta">DashboardPage · StatBlock · metrics · resumen de la plataforma</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>El dashboard es la primera pantalla del admin. Podemos personalizarlo para mostrar estadísticas clave de la plataforma: total de módulos, lecciones, estudiantes registrados y completados.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// app/MoonShine/Pages/Dashboard.php (generado por Moonshine)</span>
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Components\Metrics\Wrapped\Value</span>;
+<span class="kw">use</span> <span class="cls">App\Models\{Modulo, Leccion, User, Progreso}</span>;
+
+<span class="kw">class</span> <span class="cls">Dashboard</span> <span class="kw">extends</span> <span class="cls">Page</span>
+{
+    <span class="kw">protected</span> <span class="kw">function</span> <span class="fn">components</span>(): <span class="kw">array</span>
+    {
+        <span class="kw">return</span> [
+            <span class="cm">// Tarjeta de estadística — total módulos activos</span>
+            <span class="cls">Value</span>::<span class="fn">make</span>(
+                <span class="str">'Módulos activos'</span>,
+                <span class="kw">static fn</span>() => <span class="cls">Modulo</span>::<span class="fn">where</span>(<span class="str">'activo'</span>, <span class="kw">true</span>)-><span class="fn">count</span>()
+            )
+            -><span class="fn">icon</span>(<span class="str">'academic-cap'</span>)
+            -><span class="fn">columnSpan</span>(<span class="num">3</span>),
+
+            <span class="cm">// Total lecciones</span>
+            <span class="cls">Value</span>::<span class="fn">make</span>(
+                <span class="str">'Total lecciones'</span>,
+                <span class="kw">static fn</span>() => <span class="cls">Leccion</span>::<span class="fn">where</span>(<span class="str">'activo'</span>, <span class="kw">true</span>)-><span class="fn">count</span>()
+            )
+            -><span class="fn">icon</span>(<span class="str">'book-open'</span>)
+            -><span class="fn">columnSpan</span>(<span class="num">3</span>),
+
+            <span class="cm">// Estudiantes registrados</span>
+            <span class="cls">Value</span>::<span class="fn">make</span>(
+                <span class="str">'Estudiantes'</span>,
+                <span class="kw">static fn</span>() => <span class="cls">User</span>::<span class="fn">count</span>()
+            )
+            -><span class="fn">icon</span>(<span class="str">'users'</span>)
+            -><span class="fn">columnSpan</span>(<span class="num">3</span>),
+
+            <span class="cm">// Lecciones completadas hoy</span>
+            <span class="cls">Value</span>::<span class="fn">make</span>(
+                <span class="str">'Completadas hoy'</span>,
+                <span class="kw">static fn</span>() => <span class="cls">Progreso</span>::<span class="fn">whereDate</span>(<span class="str">'completado_at'</span>, <span class="fn">today</span>())-><span class="fn">count</span>()
+            )
+            -><span class="fn">icon</span>(<span class="str">'check-circle'</span>)
+            -><span class="fn">columnSpan</span>(<span class="num">3</span>),
+        ];
+    }
+}</pre>
+    </div>
+
+    <div class="tu-turno">
+      <div class="tu-turno-header">
+        <span class="tu-turno-badge">Reto final</span>
+        <h4>Dashboard completo de EduCode</h4>
+      </div>
+      <p>Agrega una 5ta estadística: el módulo con más lecciones completadas. Usa Progreso con un JOIN para obtenerlo. Además, personaliza el menú lateral con grupos: "Contenido" (Módulos, Lecciones, Pasos) y "Ejercicios".</p>
+      <textarea class="code-input" style="min-height:140px" placeholder="// 5ta estadística — módulo más popular:&#10;Value::make(&#10;    'Módulo más estudiado',&#10;    static fn() => Progreso::join('lecciones', ...)&#10;        ->join('modulos', ...)&#10;        ->groupBy('modulos.nombre')&#10;        ->orderByDesc(DB::raw('count(*)'))&#10;        ->value('modulos.nombre') ?? 'Sin datos'&#10;)->icon('star'),&#10;&#10;// En MoonShineServiceProvider, agrupar el menú:&#10;// MenuItem::make('Módulos', ModuloResource::class)&#10;// MenuItem::make('Lecciones', LeccionResource::class)&#10;// MenuItem::make('Pasos', PasoResource::class)"></textarea>
+    </div>
+
+    <ul class="checklist">
+      <li><input type="checkbox"> Personalicé el Dashboard con 4 estadísticas reales</li>
+      <li><input type="checkbox"> Los datos del dashboard se actualizan con los registros en BD</li>
+      <li><input type="checkbox"> Los 4 Resources están en el menú lateral del admin</li>
+      <li><input type="checkbox"> El admin completo funciona: puedo gestionar todo el contenido del LMS</li>
+    </ul>
+
+    <button class="check-btn" onclick="markDone(this, 'paso8')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  EduCode CEFIT-SENA · Módulo 05 — Laravel Moonshine v3 &nbsp;·&nbsp; Taller práctico · 🎓 ¡Curso completado!
+</footer>
+
+<script>
+  const TOTAL = 8;
+
+  function toggle(header) {
+    const card = header.closest('.step-card');
+    const isOpen = card.classList.contains('open');
+    document.querySelectorAll('.step-card.open').forEach(c => c.classList.remove('open'));
+    if (!isOpen) card.classList.add('open');
+  }
+
+  function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = '✓ Copiado';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function markDone(btn, stepId) {
+    const card = document.getElementById(stepId);
+    card.classList.toggle('done');
+    const isDone = card.classList.contains('done');
+    btn.classList.toggle('checked', isDone);
+    btn.textContent = isDone ? '✓  Completado' : '✓  Marcar como completado';
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const done = document.querySelectorAll('.step-card.done').length;
+    document.getElementById('progressBar').style.width = (done / TOTAL * 100) + '%';
+    document.getElementById('progressCount').textContent = done + ' / ' + TOTAL;
+  }
+
+  document.querySelector('.step-card .step-header').click();
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.id;
+        document.querySelectorAll('.nav-pill').forEach(p => {
+          p.classList.toggle('active', p.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { threshold: 0.4 });
+  document.querySelectorAll('.step-card').forEach(c => observer.observe(c));
+</script>
+</body>
+</html>
