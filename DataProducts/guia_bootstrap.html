@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bootstrap 5.3 — Guía completa CEFIT</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@300;400;600;700;900&family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #f8f5f0;
+    --surface:  #ffffff;
+    --surface2: #f2ede6;
+    --border:   #e0d8cc;
+    --accent:   #7952b3;
+    --accent2:  #0d6efd;
+    --ok:       #198754;
+    --warn:     #fd7e14;
+    --danger:   #dc3545;
+    --text:     #1a1218;
+    --text-dim: #4a3f58;
+    --text-muted: #9c8faa;
+    --code-bg:  #1a1218;
+    --code-text:#f0e8ff;
+    --violet-light: rgba(121,82,179,0.08);
+    --violet-border: rgba(121,82,179,0.22);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+
+  /* HEADER */
+  header{
+    background:var(--accent);
+    color:#fff;
+    padding:68px 40px 56px;
+    position:relative;
+    overflow:hidden;
+  }
+  header::before{
+    content:'';position:absolute;inset:0;
+    background:
+      radial-gradient(ellipse 80% 60% at 100% 0%,rgba(255,255,255,0.08),transparent),
+      radial-gradient(ellipse 50% 80% at 0% 100%,rgba(0,0,0,0.15),transparent);
+  }
+  header::after{
+    content:'B';
+    position:absolute;right:-20px;bottom:-60px;
+    font-family:'Fraunces',serif;font-size:22rem;font-weight:900;
+    color:rgba(255,255,255,0.05);line-height:1;pointer-events:none;
+  }
+  .badge-top{
+    display:inline-block;font-family:'Fira Code',monospace;font-size:11px;
+    letter-spacing:2px;color:rgba(255,255,255,0.7);
+    background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);
+    padding:5px 14px;border-radius:4px;margin-bottom:20px;text-transform:uppercase;
+    position:relative;
+  }
+  h1{font-family:'Fraunces',serif;font-size:clamp(2.4rem,5vw,4rem);font-weight:900;line-height:1.05;position:relative}
+  h1 em{font-style:normal;color:rgba(255,255,255,0.55)}
+  header p{margin-top:14px;font-size:1rem;color:rgba(255,255,255,0.65);max-width:540px;line-height:1.7;position:relative}
+
+  /* PROGRESS */
+  .progress-wrap{
+    padding:16px 40px;
+    background:var(--accent);
+    border-top:1px solid rgba(255,255,255,0.12);
+    position:sticky;top:0;z-index:200;
+    display:flex;align-items:center;gap:14px;
+  }
+  .progress-label{font-family:'Fira Code',monospace;font-size:10px;color:rgba(255,255,255,0.4);white-space:nowrap}
+  .progress-bar-outer{flex:1;height:3px;background:rgba(255,255,255,0.12);border-radius:10px;overflow:hidden}
+  .progress-bar-inner{height:100%;width:0%;background:#fff;border-radius:10px;transition:width .4s ease}
+  .progress-count{font-family:'Fira Code',monospace;font-size:10px;color:rgba(255,255,255,0.7);white-space:nowrap}
+
+  /* NAV */
+  .nav-pills{
+    display:flex;gap:6px;flex-wrap:wrap;
+    padding:14px 40px;
+    background:var(--surface);
+    border-bottom:2px solid var(--border);
+    position:sticky;top:43px;z-index:199;
+  }
+  .nav-pill{
+    font-family:'Fira Code',monospace;font-size:10px;
+    padding:5px 12px;border-radius:4px;
+    background:var(--surface2);border:1px solid var(--border);
+    color:var(--text-muted);cursor:pointer;transition:all .15s;text-decoration:none;
+  }
+  .nav-pill:hover,.nav-pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+  /* MAIN */
+  main{max-width:900px;margin:0 auto;padding:44px 24px 80px}
+
+  /* STEP CARD */
+  .step-card{
+    background:var(--surface);border:1.5px solid var(--border);border-radius:10px;
+    margin-bottom:24px;overflow:hidden;scroll-margin-top:120px;
+    animation:fadeUp .35s ease both;transition:border-color .2s, box-shadow .2s;
+  }
+  .step-card:hover{box-shadow:0 4px 20px rgba(121,82,179,0.08)}
+  .step-card.done{border-color:var(--ok)}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+  .step-header{display:flex;align-items:center;gap:14px;padding:18px 24px;cursor:pointer;user-select:none;transition:background .15s}
+  .step-header:hover{background:var(--surface2)}
+
+  .step-num{
+    font-family:'Fira Code',monospace;font-size:11px;font-weight:600;
+    color:#fff;background:var(--accent);
+    width:34px;height:34px;border-radius:6px;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;transition:all .2s;
+  }
+  .step-card.done .step-num{background:var(--ok)}
+
+  .step-title-wrap{flex:1}
+  .step-title{font-family:'Fraunces',serif;font-size:1.05rem;font-weight:700}
+  .step-meta{font-family:'Fira Code',monospace;font-size:.68rem;color:var(--text-muted);margin-top:3px}
+  .step-toggle{font-size:13px;color:var(--text-muted);transition:transform .3s;flex-shrink:0}
+  .step-card.open .step-toggle{transform:rotate(180deg)}
+
+  .step-body{display:none;padding:0 24px 26px;border-top:1.5px solid var(--border)}
+  .step-card.open .step-body{display:block}
+  .step-body p,.step-body li{color:var(--text-dim);line-height:1.8;font-size:.91rem}
+  .step-body ul,.step-body ol{padding-left:20px;margin:10px 0}
+  .step-body li{margin-bottom:5px}
+  .step-body h3{
+    font-family:'Fira Code',monospace;font-size:.72rem;text-transform:uppercase;
+    letter-spacing:2px;color:var(--text-muted);margin:20px 0 10px;
+    padding-bottom:6px;border-bottom:1px solid var(--border);
+  }
+
+  /* INFO BOXES */
+  .info-box{border-radius:6px;padding:12px 16px;margin:14px 0;font-size:.87rem;line-height:1.7;display:flex;gap:10px;align-items:flex-start}
+  .info-box .icon{font-size:16px;flex-shrink:0;margin-top:1px}
+  .info-box.tip{background:rgba(25,135,84,0.07);border:1px solid rgba(25,135,84,0.2);color:#0f5132}
+  .info-box.warn{background:rgba(253,126,20,0.07);border:1px solid rgba(253,126,20,0.2);color:#7c3a00}
+  .info-box.info{background:var(--violet-light);border:1px solid var(--violet-border);color:#3d1f6e}
+  .info-box.new{background:rgba(13,110,253,0.07);border:1px solid rgba(13,110,253,0.2);color:#084298}
+
+  /* CODE BLOCK */
+  .code-block{margin:16px 0;border-radius:8px;overflow:hidden;border:1.5px solid #2a1f38}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:#120c1c;border-bottom:1px solid #2a1f38}
+  .code-lang{font-family:'Fira Code',monospace;font-size:10px;color:var(--accent);letter-spacing:2px;text-transform:uppercase;opacity:.8}
+  .copy-btn{font-family:'Fira Code',monospace;font-size:10px;padding:3px 10px;border-radius:4px;background:rgba(121,82,179,0.15);border:1px solid rgba(121,82,179,0.3);color:#c4a8ff;cursor:pointer;transition:all .15s}
+  .copy-btn:hover{background:rgba(121,82,179,0.25)}
+  .copy-btn.copied{color:#6ee7b7;border-color:#6ee7b7}
+  pre{background:var(--code-bg);padding:18px 20px;overflow-x:auto;font-family:'Fira Code',monospace;font-size:12.5px;line-height:1.75;color:var(--code-text)}
+
+  /* Syntax */
+  .kw{color:#c084fc;font-weight:600}
+  .fn{color:#86efac}
+  .str{color:#fde68a}
+  .num{color:#93c5fd}
+  .cm{color:#3d2f52;font-style:italic}
+  .tag{color:#f9a8d4}
+  .atr{color:#86efac}
+  .val{color:#fde68a}
+  .cls-n{color:#c084fc;font-weight:600}
+  .cmt{color:#3d2f52;font-style:italic}
+
+  /* LIVE PREVIEW */
+  .preview{
+    background:#fff;border:1.5px solid var(--border);border-radius:8px;
+    padding:20px;margin:16px 0;
+    font-family:'Inter',sans-serif;font-size:14px;
+  }
+  .preview-label{font-family:'Fira Code',monospace;font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;display:block}
+
+  /* Bootstrap preview styles (minimal inline simulation) */
+  .prev-grid{display:flex;gap:8px;flex-wrap:wrap}
+  .prev-col{background:rgba(121,82,179,0.12);border:1px solid rgba(121,82,179,0.25);border-radius:4px;padding:8px 12px;font-size:12px;color:var(--accent);font-family:'Fira Code',monospace;flex:1;text-align:center;min-width:60px}
+  .prev-btn{display:inline-block;padding:6px 16px;border-radius:4px;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid transparent;margin:3px}
+  .prev-btn-primary{background:#0d6efd;color:#fff;border-color:#0d6efd}
+  .prev-btn-secondary{background:#6c757d;color:#fff;border-color:#6c757d}
+  .prev-btn-success{background:#198754;color:#fff;border-color:#198754}
+  .prev-btn-danger{background:#dc3545;color:#fff;border-color:#dc3545}
+  .prev-btn-warning{background:#ffc107;color:#000;border-color:#ffc107}
+  .prev-btn-info{background:#0dcaf0;color:#000;border-color:#0dcaf0}
+  .prev-btn-light{background:#f8f9fa;color:#000;border-color:#dee2e6}
+  .prev-btn-dark{background:#212529;color:#fff;border-color:#212529}
+  .prev-btn-outline{background:transparent;color:#0d6efd;border-color:#0d6efd}
+  .prev-alert{padding:12px 16px;border-radius:4px;margin:6px 0;font-size:13px}
+  .prev-alert-success{background:#d1e7dd;border:1px solid #badbcc;color:#0f5132}
+  .prev-alert-danger{background:#f8d7da;border:1px solid #f5c2c7;color:#842029}
+  .prev-alert-warning{background:#fff3cd;border:1px solid #ffecb5;color:#664d03}
+  .prev-alert-info{background:#cff4fc;border:1px solid #b6effb;color:#055160}
+  .prev-badge{display:inline-block;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;margin:2px}
+  .prev-card{border:1px solid #dee2e6;border-radius:8px;overflow:hidden;max-width:280px}
+  .prev-card-header{background:#f8f9fa;padding:10px 14px;font-weight:600;font-size:13px;border-bottom:1px solid #dee2e6}
+  .prev-card-body{padding:14px}
+  .prev-card-title{font-weight:700;margin-bottom:6px;font-size:14px}
+  .prev-card-text{font-size:12px;color:#6c757d}
+
+  /* TABLE */
+  .tabla{background:var(--code-bg);border:1.5px solid #2a1f38;border-radius:8px;overflow-x:auto;margin:14px 0}
+  .tabla table{border-collapse:collapse;width:100%;min-width:480px}
+  .tabla th{background:#120c1c;color:var(--accent);font-family:'Fira Code',monospace;font-size:11px;padding:9px 16px;text-align:left;border-bottom:1px solid #2a1f38}
+  .tabla td{font-family:'Fira Code',monospace;font-size:11px;padding:8px 16px;border-bottom:1px solid rgba(42,31,56,0.5);color:#d4c5e8}
+  .tabla tr:last-child td{border-bottom:none}
+  .tabla tr:nth-child(even) td{background:rgba(255,255,255,0.02)}
+  .hl{color:#c084fc;font-weight:600}
+  .hl2{color:#86efac}
+  .hl3{color:#fde68a}
+
+  /* CHECK */
+  .check-btn{margin-top:18px;display:inline-flex;align-items:center;gap:8px;font-family:'Inter',sans-serif;font-size:.83rem;font-weight:600;padding:9px 20px;border-radius:6px;background:rgba(25,135,84,0.08);border:1.5px solid rgba(25,135,84,0.28);color:var(--ok);cursor:pointer;transition:all .15s}
+  .check-btn:hover{background:rgba(25,135,84,0.14)}
+
+  footer{text-align:center;padding:32px;color:var(--text-muted);font-family:'Fira Code',monospace;font-size:.72rem;border-top:1.5px solid var(--border)}
+
+  @media(max-width:600px){
+    header{padding:40px 18px}
+    .nav-pills,.progress-wrap{padding:10px 12px}
+    main{padding:20px 10px 60px}
+    .step-header{padding:14px}
+    .step-body{padding:0 14px 18px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge-top">Bootstrap 5.3 · CEFIT-SENA · Docs oficiales</div>
+  <h1>Bootstrap 5.3<br><em>De cero al proyecto</em></h1>
+  <p>Guía completa basada en la documentación oficial de getbootstrap.com/docs/5.3 — Grid, Utilidades, Formularios, Componentes, JavaScript y proyecto final.</p>
+</header>
+
+<div class="progress-wrap">
+  <span class="progress-label">PROGRESO</span>
+  <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+  <span class="progress-count" id="progressCount">0 / 10</span>
+</div>
+
+<div class="nav-pills">
+  <a class="nav-pill" href="#p1">1. Instalación</a>
+  <a class="nav-pill" href="#p2">2. Grid</a>
+  <a class="nav-pill" href="#p3">3. Utilidades</a>
+  <a class="nav-pill" href="#p4">4. Tipografía</a>
+  <a class="nav-pill" href="#p5">5. Formularios</a>
+  <a class="nav-pill" href="#p6">6. Componentes base</a>
+  <a class="nav-pill" href="#p7">7. Componentes avanzados</a>
+  <a class="nav-pill" href="#p8">8. JavaScript</a>
+  <a class="nav-pill" href="#p9">9. Personalización</a>
+  <a class="nav-pill" href="#p10">10. Proyecto completo</a>
+</div>
+
+<main>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PASO 1 -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="step-card" id="p1">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">01</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Instalación — CDN, npm y Vite con Laravel</div>
+      <div class="step-meta">CDN · npm · Vite · viewport meta · estructura base</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Bootstrap 5.3 se puede usar de tres maneras según el contexto del proyecto. La más rápida para aprender es el CDN; la correcta para producción con Laravel es Vite.</p>
+
+    <h3>Opción A — CDN (rápido, sin instalación)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">HTML — Plantilla base con CDN</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="tag">&lt;!DOCTYPE html&gt;</span>
+<span class="tag">&lt;html</span> <span class="atr">lang</span>=<span class="val">"es"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;head&gt;</span>
+  <span class="tag">&lt;meta</span> <span class="atr">charset</span>=<span class="val">"UTF-8"</span><span class="tag">&gt;</span>
+  <span class="cmt">&lt;!-- Viewport obligatorio para responsive --&gt;</span>
+  <span class="tag">&lt;meta</span> <span class="atr">name</span>=<span class="val">"viewport"</span> <span class="atr">content</span>=<span class="val">"width=device-width, initial-scale=1"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;title&gt;</span>Mi página<span class="tag">&lt;/title&gt;</span>
+
+  <span class="cmt">&lt;!-- Bootstrap 5.3 CSS --&gt;</span>
+  <span class="tag">&lt;link</span> <span class="atr">href</span>=<span class="val">"https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"</span>
+        <span class="atr">rel</span>=<span class="val">"stylesheet"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;/head&gt;</span>
+<span class="tag">&lt;body&gt;</span>
+
+  <span class="tag">&lt;h1&gt;</span>¡Hola Bootstrap!<span class="tag">&lt;/h1&gt;</span>
+
+  <span class="cmt">&lt;!-- Bootstrap 5.3 JS (con Popper incluido) --&gt;</span>
+  <span class="cmt">&lt;!-- Siempre AL FINAL del body, antes de &lt;/body&gt; --&gt;</span>
+  <span class="tag">&lt;script</span> <span class="atr">src</span>=<span class="val">"https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"</span><span class="tag">&gt;&lt;/script&gt;</span>
+<span class="tag">&lt;/body&gt;</span>
+<span class="tag">&lt;/html&gt;</span></pre>
+    </div>
+
+    <h3>Opción B — npm (proyectos sin Laravel)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Instalar Bootstrap con npm</span>
+npm install bootstrap@5.3.3
+
+<span class="cm"># Importar en tu archivo JS principal</span>
+<span class="cm"># import 'bootstrap/dist/css/bootstrap.min.css';</span>
+<span class="cm"># import 'bootstrap/dist/js/bootstrap.bundle.min.js';</span></pre>
+    </div>
+
+    <h3>Opción C — Vite con Laravel (recomendado en el curso)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal — Laravel + Bootstrap</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Instalar Bootstrap y dependencias</span>
+npm install bootstrap @popperjs/core
+
+<span class="cm"># En resources/js/app.js — agregar:</span>
+<span class="cm"># import 'bootstrap';</span>
+
+<span class="cm"># En resources/sass/app.scss — agregar:</span>
+<span class="cm"># @import 'bootstrap/scss/bootstrap';</span>
+
+<span class="cm"># Compilar</span>
+npm run dev</pre>
+    </div>
+
+    <div class="info-box warn">
+      <span class="icon">⚠️</span>
+      <div>El <code>&lt;meta name="viewport"&gt;</code> es <strong>obligatorio</strong>. Sin él, Bootstrap no funciona correctamente en móviles aunque el CSS esté cargado.</div>
+    </div>
+
+    <div class="info-box new">
+      <span class="icon">🆕</span>
+      <div><strong>Bootstrap 5.3</strong> eliminó jQuery como dependencia. No necesitas incluirlo. El JS de Bootstrap es puro vanilla JavaScript con Popper.js incluido en el bundle.</div>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p1')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PASO 2 -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="step-card" id="p2">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">02</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Sistema de Grid — 12 columnas responsive</div>
+      <div class="step-meta">container · row · col · breakpoints · offset · order</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>El grid de Bootstrap usa <strong>flexbox</strong> y se basa en 12 columnas. Siempre necesitas la jerarquía: <code>container → row → col</code>.</p>
+
+    <h3>Breakpoints oficiales de Bootstrap 5.3</h3>
+    <div class="tabla">
+      <table>
+        <tr><th>Breakpoint</th><th>Clase prefijo</th><th>Ancho mínimo</th><th>Container máx.</th></tr>
+        <tr><td>Extra small</td><td class="hl">col-</td><td>&lt; 576px</td><td>100%</td></tr>
+        <tr><td>Small</td><td class="hl">col-sm-</td><td>≥ 576px</td><td>540px</td></tr>
+        <tr><td>Medium</td><td class="hl">col-md-</td><td>≥ 768px</td><td>720px</td></tr>
+        <tr><td>Large</td><td class="hl">col-lg-</td><td>≥ 992px</td><td>960px</td></tr>
+        <tr><td>Extra large</td><td class="hl">col-xl-</td><td>≥ 1200px</td><td>1140px</td></tr>
+        <tr><td>XXL</td><td class="hl">col-xxl-</td><td>≥ 1400px</td><td>1320px</td></tr>
+      </table>
+    </div>
+
+    <h3>Ejemplos de grid</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">HTML — Grid básico</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">&lt;!-- Container: centra el contenido con padding lateral --&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"container"</span><span class="tag">&gt;</span>
+
+  <span class="cmt">&lt;!-- Row: agrupa columnas, aplica gutter negativo --&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"row"</span><span class="tag">&gt;</span>
+
+    <span class="cmt">&lt;!-- 3 columnas iguales (4+4+4 = 12) --&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"col-md-4"</span><span class="tag">&gt;</span>Columna 1<span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"col-md-4"</span><span class="tag">&gt;</span>Columna 2<span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"col-md-4"</span><span class="tag">&gt;</span>Columna 3<span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+
+  <span class="cmt">&lt;!-- Columnas responsive: full en móvil, mitad en tablet, tercio en desktop --&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"row"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"col-12 col-sm-6 col-lg-4"</span><span class="tag">&gt;</span>Responsive<span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"col-12 col-sm-6 col-lg-4"</span><span class="tag">&gt;</span>Responsive<span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"col-12 col-sm-6 col-lg-4"</span><span class="tag">&gt;</span>Responsive<span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+
+  <span class="cmt">&lt;!-- Auto-layout: columnas de ancho igual --&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"row"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"col"</span><span class="tag">&gt;</span>Auto<span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"col"</span><span class="tag">&gt;</span>Auto<span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"col"</span><span class="tag">&gt;</span>Auto<span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+
+  <span class="cmt">&lt;!-- Offset: desplazar una columna a la derecha --&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"row"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"col-md-4 offset-md-4"</span><span class="tag">&gt;</span>Centrado<span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+
+  <span class="cmt">&lt;!-- Gutters: espacio entre columnas --&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"row g-3"</span><span class="tag">&gt;</span>       <span class="cmt">&lt;!-- g-0 a g-5 --&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"col-6"</span><span class="tag">&gt;</span>Con gutter<span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"col-6"</span><span class="tag">&gt;</span>Con gutter<span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+
+<span class="tag">&lt;/div&gt;</span></pre>
+    </div>
+
+    <div class="preview">
+      <span class="preview-label">Vista previa — Grid visual</span>
+      <div class="prev-grid">
+        <div class="prev-col">col-4</div>
+        <div class="prev-col">col-4</div>
+        <div class="prev-col">col-4</div>
+      </div>
+      <div class="prev-grid" style="margin-top:8px">
+        <div class="prev-col" style="flex:2">col-8</div>
+        <div class="prev-col">col-4</div>
+      </div>
+      <div class="prev-grid" style="margin-top:8px">
+        <div class="prev-col" style="flex:1;opacity:.3"></div>
+        <div class="prev-col" style="flex:2">col-4 offset-4</div>
+        <div class="prev-col" style="flex:1;opacity:.3"></div>
+      </div>
+    </div>
+
+    <div class="info-box info">
+      <span class="icon">💡</span>
+      <div>Los tipos de container son: <code>container</code> (ancho máximo por breakpoint), <code>container-fluid</code> (100% del viewport siempre), y <code>container-{sm|md|lg|xl|xxl}</code> (fluid hasta ese breakpoint).</div>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p2')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PASO 3 -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="step-card" id="p3">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">03</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Utilidades — el motor de Bootstrap 5</div>
+      <div class="step-meta">spacing · colors · display · flex · shadow · border · sizing</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Las utilidades son clases de una sola propiedad CSS. Bootstrap 5.3 tiene cientos. Estas son las más usadas en el día a día.</p>
+
+    <h3>Spacing — margin y padding</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">HTML — Spacing</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">&lt;!-- Formato: {propiedad}{lado}-{tamaño} --&gt;</span>
+<span class="cmt">&lt;!-- Propiedades: m=margin, p=padding --&gt;</span>
+<span class="cmt">&lt;!-- Lados: t=top, b=bottom, s=start(left), e=end(right), x=horizontal, y=vertical --&gt;</span>
+<span class="cmt">&lt;!-- Tamaños: 0, 1(4px), 2(8px), 3(16px), 4(24px), 5(48px), auto --&gt;</span>
+
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"mt-3"</span><span class="tag">&gt;</span>margin-top: 16px<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"mb-4"</span><span class="tag">&gt;</span>margin-bottom: 24px<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"px-3"</span><span class="tag">&gt;</span>padding-left y right: 16px<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"py-5"</span><span class="tag">&gt;</span>padding-top y bottom: 48px<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"p-4"</span><span class="tag">&gt;</span>padding todos lados: 24px<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"mx-auto"</span><span class="tag">&gt;</span>centrar horizontalmente<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"ms-auto"</span><span class="tag">&gt;</span>empujar a la derecha (flex)<span class="tag">&lt;/div&gt;</span>
+
+<span class="cmt">&lt;!-- Responsive: aplica solo desde ese breakpoint --&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"mt-2 mt-md-5"</span><span class="tag">&gt;</span>mt-2 en móvil, mt-5 en tablet<span class="tag">&lt;/div&gt;</span></pre>
+    </div>
+
+    <h3>Colores de texto y fondo</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">HTML — Colors</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">&lt;!-- Colores de texto --&gt;</span>
+<span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"text-primary"</span><span class="tag">&gt;</span>Azul primario<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"text-success"</span><span class="tag">&gt;</span>Verde éxito<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"text-danger"</span><span class="tag">&gt;</span>Rojo peligro<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"text-warning"</span><span class="tag">&gt;</span>Amarillo advertencia<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"text-muted"</span><span class="tag">&gt;</span>Gris atenuado<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"text-body-secondary"</span><span class="tag">&gt;</span>Secundario (5.3+)<span class="tag">&lt;/p&gt;</span>
+
+<span class="cmt">&lt;!-- Colores de fondo --&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"bg-primary text-white p-3"</span><span class="tag">&gt;</span>Fondo azul<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"bg-light p-3"</span><span class="tag">&gt;</span>Fondo claro<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"bg-dark text-white p-3"</span><span class="tag">&gt;</span>Fondo oscuro<span class="tag">&lt;/div&gt;</span>
+
+<span class="cmt">&lt;!-- Color mode (Bootstrap 5.3 -- dark mode nativo) --&gt;</span>
+<span class="tag">&lt;html</span> <span class="atr">data-bs-theme</span>=<span class="val">"dark"</span><span class="tag">&gt;</span>  <span class="cmt">&lt;!-- activa modo oscuro global --&gt;</span></pre>
+    </div>
+
+    <h3>Display, Flex y Sizing</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">HTML — Display, Flex, Sizing</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">&lt;!-- Display --&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"d-none"</span><span class="tag">&gt;</span>Oculto<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"d-block"</span><span class="tag">&gt;</span>Bloque<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"d-none d-md-block"</span><span class="tag">&gt;</span>Oculto en móvil, visible desde tablet<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"d-md-none"</span><span class="tag">&gt;</span>Solo en móvil<span class="tag">&lt;/div&gt;</span>
+
+<span class="cmt">&lt;!-- Flexbox --&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"d-flex justify-content-between align-items-center"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;span&gt;</span>Izquierda<span class="tag">&lt;/span&gt;</span>
+  <span class="tag">&lt;span&gt;</span>Derecha<span class="tag">&lt;/span&gt;</span>
+<span class="tag">&lt;/div&gt;</span>
+
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"d-flex flex-column gap-3"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div&gt;</span>Item 1<span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;div&gt;</span>Item 2<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/div&gt;</span>
+
+<span class="cmt">&lt;!-- Sizing --&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"w-100"</span><span class="tag">&gt;</span>100% ancho<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"w-50"</span><span class="tag">&gt;</span>50% ancho<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"h-100"</span><span class="tag">&gt;</span>100% alto<span class="tag">&lt;/div&gt;</span>
+
+<span class="cmt">&lt;!-- Borders y Shadow --&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"border border-primary rounded p-3"</span><span class="tag">&gt;</span>Borde primario redondeado<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"rounded-circle"</span><span class="tag">&gt;</span>Círculo<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"shadow-sm"</span><span class="tag">&gt;</span>Sombra pequeña<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"shadow-lg"</span><span class="tag">&gt;</span>Sombra grande<span class="tag">&lt;/div&gt;</span></pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p3')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PASO 4 -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="step-card" id="p4">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">04</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Tipografía y tablas</div>
+      <div class="step-meta">display · lead · headings · text-align · table-striped · table-hover</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">HTML — Tipografía</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">&lt;!-- Display headings — muy grandes, para heroes --&gt;</span>
+<span class="tag">&lt;h1</span> <span class="atr">class</span>=<span class="val">"display-1"</span><span class="tag">&gt;</span>Display 1<span class="tag">&lt;/h1&gt;</span>  <span class="cmt">&lt;!-- display-1 a display-6 --&gt;</span>
+
+<span class="cmt">&lt;!-- Lead — párrafo destacado --&gt;</span>
+<span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"lead"</span><span class="tag">&gt;</span>Texto introductorio más grande.<span class="tag">&lt;/p&gt;</span>
+
+<span class="cmt">&lt;!-- Alineación --&gt;</span>
+<span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"text-start"</span><span class="tag">&gt;</span>Izquierda<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"text-center"</span><span class="tag">&gt;</span>Centrado<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"text-end"</span><span class="tag">&gt;</span>Derecha<span class="tag">&lt;/p&gt;</span>
+
+<span class="cmt">&lt;!-- Transformaciones --&gt;</span>
+<span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"text-uppercase"</span><span class="tag">&gt;</span>mayúsculas<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"text-lowercase"</span><span class="tag">&gt;</span>MINÚSCULAS<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"text-capitalize"</span><span class="tag">&gt;</span>primera en mayúscula<span class="tag">&lt;/p&gt;</span>
+
+<span class="cmt">&lt;!-- Peso y estilo --&gt;</span>
+<span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"fw-bold"</span><span class="tag">&gt;</span>Negrita<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"fw-light"</span><span class="tag">&gt;</span>Ligero<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"fst-italic"</span><span class="tag">&gt;</span>Cursiva<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"fs-1"</span><span class="tag">&gt;</span>Font size 1 (más grande)<span class="tag">&lt;/p&gt;</span> <span class="cmt">&lt;!-- fs-1 a fs-6 --&gt;</span></pre>
+    </div>
+
+    <h3>Tablas responsive</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">HTML — Tablas Bootstrap</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">&lt;!-- Tabla básica responsive --&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"table-responsive"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;table</span> <span class="atr">class</span>=<span class="val">"table table-striped table-hover table-bordered"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;thead</span> <span class="atr">class</span>=<span class="val">"table-dark"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;tr&gt;</span>
+        <span class="tag">&lt;th&gt;</span>#<span class="tag">&lt;/th&gt;</span>
+        <span class="tag">&lt;th&gt;</span>Nombre<span class="tag">&lt;/th&gt;</span>
+        <span class="tag">&lt;th&gt;</span>Estado<span class="tag">&lt;/th&gt;</span>
+      <span class="tag">&lt;/tr&gt;</span>
+    <span class="tag">&lt;/thead&gt;</span>
+    <span class="tag">&lt;tbody&gt;</span>
+      <span class="tag">&lt;tr&gt;</span>
+        <span class="tag">&lt;td&gt;</span>1<span class="tag">&lt;/td&gt;</span>
+        <span class="tag">&lt;td&gt;</span>Ana Gómez<span class="tag">&lt;/td&gt;</span>
+        <span class="tag">&lt;td&gt;&lt;span</span> <span class="atr">class</span>=<span class="val">"badge bg-success"</span><span class="tag">&gt;</span>Activo<span class="tag">&lt;/span&gt;&lt;/td&gt;</span>
+      <span class="tag">&lt;/tr&gt;</span>
+      <span class="tag">&lt;tr</span> <span class="atr">class</span>=<span class="val">"table-warning"</span><span class="tag">&gt;</span>  <span class="cmt">&lt;!-- fila coloreada --&gt;</span>
+        <span class="tag">&lt;td&gt;</span>2<span class="tag">&lt;/td&gt;</span>
+        <span class="tag">&lt;td&gt;</span>Luis Torres<span class="tag">&lt;/td&gt;</span>
+        <span class="tag">&lt;td&gt;&lt;span</span> <span class="atr">class</span>=<span class="val">"badge bg-warning text-dark"</span><span class="tag">&gt;</span>Pendiente<span class="tag">&lt;/span&gt;&lt;/td&gt;</span>
+      <span class="tag">&lt;/tr&gt;</span>
+    <span class="tag">&lt;/tbody&gt;</span>
+  <span class="tag">&lt;/table&gt;</span>
+<span class="tag">&lt;/div&gt;</span>
+
+<span class="cmt">&lt;!-- Modificadores de tabla:
+  table-striped    → filas alternas coloreadas
+  table-hover      → resalta al pasar el mouse
+  table-bordered   → bordes en todas las celdas
+  table-borderless → sin bordes
+  table-sm         → celdas más compactas
+  table-dark       → tema oscuro
+--&gt;</span></pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p4')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PASO 5 -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="step-card" id="p5">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">05</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Formularios completos</div>
+      <div class="step-meta">form-control · form-label · input-group · floating-label · validación</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">HTML — Formulario completo Bootstrap 5.3</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="tag">&lt;form</span> <span class="atr">class</span>=<span class="val">"needs-validation"</span> <span class="atr">novalidate</span><span class="tag">&gt;</span>
+
+  <span class="cmt">&lt;!-- Campo de texto estándar --&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"mb-3"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;label</span> <span class="atr">for</span>=<span class="val">"nombre"</span> <span class="atr">class</span>=<span class="val">"form-label"</span><span class="tag">&gt;</span>Nombre *<span class="tag">&lt;/label&gt;</span>
+    <span class="tag">&lt;input</span> <span class="atr">type</span>=<span class="val">"text"</span> <span class="atr">class</span>=<span class="val">"form-control"</span> <span class="atr">id</span>=<span class="val">"nombre"</span> <span class="atr">required</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"valid-feedback"</span><span class="tag">&gt;</span>¡Correcto!<span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"invalid-feedback"</span><span class="tag">&gt;</span>El nombre es obligatorio.<span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+
+  <span class="cmt">&lt;!-- Select --&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"mb-3"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;label</span> <span class="atr">for</span>=<span class="val">"nivel"</span> <span class="atr">class</span>=<span class="val">"form-label"</span><span class="tag">&gt;</span>Nivel<span class="tag">&lt;/label&gt;</span>
+    <span class="tag">&lt;select</span> <span class="atr">class</span>=<span class="val">"form-select"</span> <span class="atr">id</span>=<span class="val">"nivel"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;option</span> <span class="atr">value</span>=<span class="val">""</span><span class="tag">&gt;</span>-- Selecciona --<span class="tag">&lt;/option&gt;</span>
+      <span class="tag">&lt;option</span><span class="tag">&gt;</span>Básico<span class="tag">&lt;/option&gt;</span>
+      <span class="tag">&lt;option</span><span class="tag">&gt;</span>Intermedio<span class="tag">&lt;/option&gt;</span>
+      <span class="tag">&lt;option</span><span class="tag">&gt;</span>Avanzado<span class="tag">&lt;/option&gt;</span>
+    <span class="tag">&lt;/select&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+
+  <span class="cmt">&lt;!-- Input group — icono + campo --&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"mb-3"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;label</span> <span class="atr">class</span>=<span class="val">"form-label"</span><span class="tag">&gt;</span>Precio<span class="tag">&lt;/label&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"input-group"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;span</span> <span class="atr">class</span>=<span class="val">"input-group-text"</span><span class="tag">&gt;</span>$<span class="tag">&lt;/span&gt;</span>
+      <span class="tag">&lt;input</span> <span class="atr">type</span>=<span class="val">"number"</span> <span class="atr">class</span>=<span class="val">"form-control"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;span</span> <span class="atr">class</span>=<span class="val">"input-group-text"</span><span class="tag">&gt;</span>COP<span class="tag">&lt;/span&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+
+  <span class="cmt">&lt;!-- Floating label (Bootstrap 5+) --&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"form-floating mb-3"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;input</span> <span class="atr">type</span>=<span class="val">"email"</span> <span class="atr">class</span>=<span class="val">"form-control"</span> <span class="atr">id</span>=<span class="val">"correo"</span> <span class="atr">placeholder</span>=<span class="val">"correo@ejemplo.com"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;label</span> <span class="atr">for</span>=<span class="val">"correo"</span><span class="tag">&gt;</span>Correo electrónico<span class="tag">&lt;/label&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+
+  <span class="cmt">&lt;!-- Checkbox y Radio --&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"mb-3"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"form-check"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;input</span> <span class="atr">class</span>=<span class="val">"form-check-input"</span> <span class="atr">type</span>=<span class="val">"checkbox"</span> <span class="atr">id</span>=<span class="val">"activo"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;label</span> <span class="atr">class</span>=<span class="val">"form-check-label"</span> <span class="atr">for</span>=<span class="val">"activo"</span><span class="tag">&gt;</span>Activo<span class="tag">&lt;/label&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+    <span class="cmt">&lt;!-- Switch (checkbox con apariencia de toggle) --&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"form-check form-switch"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;input</span> <span class="atr">class</span>=<span class="val">"form-check-input"</span> <span class="atr">type</span>=<span class="val">"checkbox"</span> <span class="atr">id</span>=<span class="val">"notif"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;label</span> <span class="atr">class</span>=<span class="val">"form-check-label"</span> <span class="atr">for</span>=<span class="val">"notif"</span><span class="tag">&gt;</span>Notificaciones<span class="tag">&lt;/label&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+
+  <span class="cmt">&lt;!-- Tamaños de inputs --&gt;</span>
+  <span class="tag">&lt;input</span> <span class="atr">class</span>=<span class="val">"form-control form-control-lg"</span> <span class="atr">type</span>=<span class="val">"text"</span> <span class="atr">placeholder</span>=<span class="val">"Grande"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;input</span> <span class="atr">class</span>=<span class="val">"form-control form-control-sm"</span> <span class="atr">type</span>=<span class="val">"text"</span> <span class="atr">placeholder</span>=<span class="val">"Pequeño"</span><span class="tag">&gt;</span>
+
+  <span class="tag">&lt;button</span> <span class="atr">type</span>=<span class="val">"submit"</span> <span class="atr">class</span>=<span class="val">"btn btn-primary"</span><span class="tag">&gt;</span>Guardar<span class="tag">&lt;/button&gt;</span>
+<span class="tag">&lt;/form&gt;</span>
+
+<span class="cmt">&lt;!-- Validación con JS nativo --&gt;</span>
+<span class="tag">&lt;script&gt;</span>
+  <span class="kw">document</span>.<span class="fn">querySelectorAll</span>(<span class="str">'.needs-validation'</span>).<span class="fn">forEach</span>(form => {
+    form.<span class="fn">addEventListener</span>(<span class="str">'submit'</span>, e => {
+      <span class="kw">if</span> (!form.<span class="fn">checkValidity</span>()) {
+        e.<span class="fn">preventDefault</span>();
+        e.<span class="fn">stopPropagation</span>();
+      }
+      form.classList.<span class="fn">add</span>(<span class="str">'was-validated'</span>);
+    });
+  });
+<span class="tag">&lt;/script&gt;</span></pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p5')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PASO 6 -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="step-card" id="p6">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">06</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Componentes base — Buttons, Alerts, Badge, Card, Navbar</div>
+      <div class="step-meta">btn · alert · badge · card · navbar · pagination · breadcrumb</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+
+    <h3>Botones</h3>
+    <div class="preview">
+      <span class="preview-label">Vista previa — Botones</span>
+      <button class="prev-btn prev-btn-primary">Primary</button>
+      <button class="prev-btn prev-btn-secondary">Secondary</button>
+      <button class="prev-btn prev-btn-success">Success</button>
+      <button class="prev-btn prev-btn-danger">Danger</button>
+      <button class="prev-btn prev-btn-warning">Warning</button>
+      <button class="prev-btn prev-btn-dark">Dark</button>
+      <button class="prev-btn prev-btn-outline">Outline</button>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">HTML — Buttons</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">&lt;!-- Sólidos --&gt;</span>
+<span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"btn btn-primary"</span><span class="tag">&gt;</span>Primary<span class="tag">&lt;/button&gt;</span>
+<span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"btn btn-secondary"</span><span class="tag">&gt;</span>Secondary<span class="tag">&lt;/button&gt;</span>
+<span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"btn btn-success"</span><span class="tag">&gt;</span>Success<span class="tag">&lt;/button&gt;</span>
+<span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"btn btn-danger"</span><span class="tag">&gt;</span>Danger<span class="tag">&lt;/button&gt;</span>
+
+<span class="cmt">&lt;!-- Outline --&gt;</span>
+<span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"btn btn-outline-primary"</span><span class="tag">&gt;</span>Outline<span class="tag">&lt;/button&gt;</span>
+
+<span class="cmt">&lt;!-- Tamaños --&gt;</span>
+<span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"btn btn-primary btn-lg"</span><span class="tag">&gt;</span>Grande<span class="tag">&lt;/button&gt;</span>
+<span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"btn btn-primary btn-sm"</span><span class="tag">&gt;</span>Pequeño<span class="tag">&lt;/button&gt;</span>
+
+<span class="cmt">&lt;!-- Ancho completo --&gt;</span>
+<span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"btn btn-primary w-100"</span><span class="tag">&gt;</span>Full width<span class="tag">&lt;/button&gt;</span>
+
+<span class="cmt">&lt;!-- También funciona en &lt;a&gt; y &lt;input&gt; --&gt;</span>
+<span class="tag">&lt;a</span> <span class="atr">href</span>=<span class="val">"#"</span> <span class="atr">class</span>=<span class="val">"btn btn-success"</span><span class="tag">&gt;</span>Enlace botón<span class="tag">&lt;/a&gt;</span></pre>
+    </div>
+
+    <h3>Alerts y Badges</h3>
+    <div class="preview">
+      <span class="preview-label">Alerts y Badges</span>
+      <div class="prev-alert prev-alert-success">✅ Operación completada correctamente.</div>
+      <div class="prev-alert prev-alert-danger">❌ Ocurrió un error al procesar.</div>
+      <div class="prev-alert prev-alert-warning">⚠️ Esta acción no se puede deshacer.</div>
+      <div style="margin-top:10px">
+        <span class="prev-badge" style="background:#0d6efd;color:#fff">Nuevo</span>
+        <span class="prev-badge" style="background:#198754;color:#fff">Activo</span>
+        <span class="prev-badge" style="background:#dc3545;color:#fff">Error</span>
+        <span class="prev-badge" style="background:#6c757d;color:#fff">14</span>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">HTML — Alerts y Badges</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">&lt;!-- Alerts --&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"alert alert-success"</span><span class="tag">&gt;</span>Operación exitosa.<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"alert alert-danger"</span><span class="tag">&gt;</span>Hubo un error.<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"alert alert-warning alert-dismissible fade show"</span><span class="tag">&gt;</span>
+  Advertencia con botón de cerrar.
+  <span class="tag">&lt;button</span> <span class="atr">type</span>=<span class="val">"button"</span> <span class="atr">class</span>=<span class="val">"btn-close"</span> <span class="atr">data-bs-dismiss</span>=<span class="val">"alert"</span><span class="tag">&gt;&lt;/button&gt;</span>
+<span class="tag">&lt;/div&gt;</span>
+
+<span class="cmt">&lt;!-- Badges --&gt;</span>
+<span class="tag">&lt;span</span> <span class="atr">class</span>=<span class="val">"badge bg-primary"</span><span class="tag">&gt;</span>Nuevo<span class="tag">&lt;/span&gt;</span>
+<span class="tag">&lt;span</span> <span class="atr">class</span>=<span class="val">"badge bg-success"</span><span class="tag">&gt;</span>Activo<span class="tag">&lt;/span&gt;</span>
+<span class="tag">&lt;span</span> <span class="atr">class</span>=<span class="val">"badge rounded-pill bg-danger"</span><span class="tag">&gt;</span>99+<span class="tag">&lt;/span&gt;</span>
+
+<span class="cmt">&lt;!-- Badge dentro de botón (notificación) --&gt;</span>
+<span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"btn btn-primary position-relative"</span><span class="tag">&gt;</span>
+  Mensajes
+  <span class="tag">&lt;span</span> <span class="atr">class</span>=<span class="val">"position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"</span><span class="tag">&gt;</span>5<span class="tag">&lt;/span&gt;</span>
+<span class="tag">&lt;/button&gt;</span></pre>
+    </div>
+
+    <h3>Card</h3>
+    <div class="preview">
+      <span class="preview-label">Card</span>
+      <div class="prev-card">
+        <div class="prev-card-header">📚 Bases de Datos</div>
+        <div class="prev-card-body">
+          <div class="prev-card-title">SQL desde cero</div>
+          <div class="prev-card-text">Aprende a crear y consultar bases de datos relacionales con MySQL y PostgreSQL.</div>
+          <div style="margin-top:10px">
+            <button class="prev-btn prev-btn-primary" style="font-size:12px;padding:4px 12px">Ver curso</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">HTML — Card</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"card"</span> <span class="atr">style</span>=<span class="val">"max-width: 300px"</span><span class="tag">&gt;</span>
+  <span class="cmt">&lt;!-- Imagen opcional --&gt;</span>
+  <span class="tag">&lt;img</span> <span class="atr">src</span>=<span class="val">"..."</span> <span class="atr">class</span>=<span class="val">"card-img-top"</span> <span class="atr">alt</span>=<span class="val">"..."</span><span class="tag">&gt;</span>
+
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"card-header"</span><span class="tag">&gt;</span>Bases de Datos<span class="tag">&lt;/div&gt;</span>
+
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"card-body"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;h5</span> <span class="atr">class</span>=<span class="val">"card-title"</span><span class="tag">&gt;</span>SQL desde cero<span class="tag">&lt;/h5&gt;</span>
+    <span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"card-text"</span><span class="tag">&gt;</span>Descripción del curso.<span class="tag">&lt;/p&gt;</span>
+    <span class="tag">&lt;a</span> <span class="atr">href</span>=<span class="val">"#"</span> <span class="atr">class</span>=<span class="val">"btn btn-primary"</span><span class="tag">&gt;</span>Ver curso<span class="tag">&lt;/a&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"card-footer text-muted"</span><span class="tag">&gt;</span>40 horas<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/div&gt;</span>
+
+<span class="cmt">&lt;!-- Grid de cards --&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"row row-cols-1 row-cols-md-3 g-4"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"col"</span><span class="tag">&gt;&lt;div</span> <span class="atr">class</span>=<span class="val">"card h-100"</span><span class="tag">&gt;</span>...<span class="tag">&lt;/div&gt;&lt;/div&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"col"</span><span class="tag">&gt;&lt;div</span> <span class="atr">class</span>=<span class="val">"card h-100"</span><span class="tag">&gt;</span>...<span class="tag">&lt;/div&gt;&lt;/div&gt;</span>
+<span class="tag">&lt;/div&gt;</span></pre>
+    </div>
+
+    <h3>Navbar responsive</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">HTML — Navbar completa</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="tag">&lt;nav</span> <span class="atr">class</span>=<span class="val">"navbar navbar-expand-lg bg-dark navbar-dark"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"container"</span><span class="tag">&gt;</span>
+
+    <span class="cmt">&lt;!-- Logo / Marca --&gt;</span>
+    <span class="tag">&lt;a</span> <span class="atr">class</span>=<span class="val">"navbar-brand"</span> <span class="atr">href</span>=<span class="val">"/"</span><span class="tag">&gt;</span>EduCode<span class="tag">&lt;/a&gt;</span>
+
+    <span class="cmt">&lt;!-- Botón hamburguesa (visible en móvil) --&gt;</span>
+    <span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"navbar-toggler"</span> <span class="atr">type</span>=<span class="val">"button"</span>
+            <span class="atr">data-bs-toggle</span>=<span class="val">"collapse"</span>
+            <span class="atr">data-bs-target</span>=<span class="val">"#navMenu"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;span</span> <span class="atr">class</span>=<span class="val">"navbar-toggler-icon"</span><span class="tag">&gt;&lt;/span&gt;</span>
+    <span class="tag">&lt;/button&gt;</span>
+
+    <span class="cmt">&lt;!-- Menú colapsable --&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"collapse navbar-collapse"</span> <span class="atr">id</span>=<span class="val">"navMenu"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;ul</span> <span class="atr">class</span>=<span class="val">"navbar-nav me-auto"</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;li</span> <span class="atr">class</span>=<span class="val">"nav-item"</span><span class="tag">&gt;</span>
+          <span class="tag">&lt;a</span> <span class="atr">class</span>=<span class="val">"nav-link active"</span> <span class="atr">href</span>=<span class="val">"/"</span><span class="tag">&gt;</span>Inicio<span class="tag">&lt;/a&gt;</span>
+        <span class="tag">&lt;/li&gt;</span>
+        <span class="tag">&lt;li</span> <span class="atr">class</span>=<span class="val">"nav-item"</span><span class="tag">&gt;</span>
+          <span class="tag">&lt;a</span> <span class="atr">class</span>=<span class="val">"nav-link"</span> <span class="atr">href</span>=<span class="val">"/cursos"</span><span class="tag">&gt;</span>Cursos<span class="tag">&lt;/a&gt;</span>
+        <span class="tag">&lt;/li&gt;</span>
+        <span class="cmt">&lt;!-- Dropdown en Navbar --&gt;</span>
+        <span class="tag">&lt;li</span> <span class="atr">class</span>=<span class="val">"nav-item dropdown"</span><span class="tag">&gt;</span>
+          <span class="tag">&lt;a</span> <span class="atr">class</span>=<span class="val">"nav-link dropdown-toggle"</span> <span class="atr">data-bs-toggle</span>=<span class="val">"dropdown"</span><span class="tag">&gt;</span>Más<span class="tag">&lt;/a&gt;</span>
+          <span class="tag">&lt;ul</span> <span class="atr">class</span>=<span class="val">"dropdown-menu"</span><span class="tag">&gt;</span>
+            <span class="tag">&lt;li&gt;&lt;a</span> <span class="atr">class</span>=<span class="val">"dropdown-item"</span> <span class="atr">href</span>=<span class="val">"#"</span><span class="tag">&gt;</span>Opción 1<span class="tag">&lt;/a&gt;&lt;/li&gt;</span>
+            <span class="tag">&lt;li&gt;&lt;hr</span> <span class="atr">class</span>=<span class="val">"dropdown-divider"</span><span class="tag">&gt;&lt;/li&gt;</span>
+            <span class="tag">&lt;li&gt;&lt;a</span> <span class="atr">class</span>=<span class="val">"dropdown-item"</span> <span class="atr">href</span>=<span class="val">"#"</span><span class="tag">&gt;</span>Opción 2<span class="tag">&lt;/a&gt;&lt;/li&gt;</span>
+          <span class="tag">&lt;/ul&gt;</span>
+        <span class="tag">&lt;/li&gt;</span>
+      <span class="tag">&lt;/ul&gt;</span>
+      <span class="tag">&lt;a</span> <span class="atr">href</span>=<span class="val">"/login"</span> <span class="atr">class</span>=<span class="val">"btn btn-outline-light btn-sm"</span><span class="tag">&gt;</span>Iniciar sesión<span class="tag">&lt;/a&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+
+  <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/nav&gt;</span></pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p6')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PASO 7 -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="step-card" id="p7">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">07</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Componentes avanzados — Modal, Accordion, Tabs, Offcanvas, Toast</div>
+      <div class="step-meta">data-bs-toggle · data-bs-target · data-bs-dismiss · fade · show</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+
+    <h3>Modal</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">HTML — Modal completo</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">&lt;!-- Botón que abre el modal --&gt;</span>
+<span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"btn btn-primary"</span>
+        <span class="atr">data-bs-toggle</span>=<span class="val">"modal"</span>
+        <span class="atr">data-bs-target</span>=<span class="val">"#miModal"</span><span class="tag">&gt;</span>
+  Abrir Modal
+<span class="tag">&lt;/button&gt;</span>
+
+<span class="cmt">&lt;!-- Estructura del modal --&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"modal fade"</span> <span class="atr">id</span>=<span class="val">"miModal"</span> <span class="atr">tabindex</span>=<span class="val">"-1"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"modal-dialog"</span><span class="tag">&gt;</span>   <span class="cmt">&lt;!-- modal-dialog-centered modal-lg modal-sm --&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"modal-content"</span><span class="tag">&gt;</span>
+
+      <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"modal-header"</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;h5</span> <span class="atr">class</span>=<span class="val">"modal-title"</span><span class="tag">&gt;</span>Confirmar acción<span class="tag">&lt;/h5&gt;</span>
+        <span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"btn-close"</span> <span class="atr">data-bs-dismiss</span>=<span class="val">"modal"</span><span class="tag">&gt;&lt;/button&gt;</span>
+      <span class="tag">&lt;/div&gt;</span>
+
+      <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"modal-body"</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;p&gt;</span>¿Estás seguro de que quieres eliminar este registro?<span class="tag">&lt;/p&gt;</span>
+      <span class="tag">&lt;/div&gt;</span>
+
+      <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"modal-footer"</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"btn btn-secondary"</span> <span class="atr">data-bs-dismiss</span>=<span class="val">"modal"</span><span class="tag">&gt;</span>Cancelar<span class="tag">&lt;/button&gt;</span>
+        <span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"btn btn-danger"</span><span class="tag">&gt;</span>Sí, eliminar<span class="tag">&lt;/button&gt;</span>
+      <span class="tag">&lt;/div&gt;</span>
+
+    <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/div&gt;</span></pre>
+    </div>
+
+    <h3>Accordion</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">HTML — Accordion</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"accordion"</span> <span class="atr">id</span>=<span class="val">"faq"</span><span class="tag">&gt;</span>
+
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"accordion-item"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;h2</span> <span class="atr">class</span>=<span class="val">"accordion-header"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"accordion-button"</span>
+              <span class="atr">data-bs-toggle</span>=<span class="val">"collapse"</span>
+              <span class="atr">data-bs-target</span>=<span class="val">"#item1"</span><span class="tag">&gt;</span>
+        ¿Qué es Bootstrap?
+      <span class="tag">&lt;/button&gt;</span>
+    <span class="tag">&lt;/h2&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">id</span>=<span class="val">"item1"</span> <span class="atr">class</span>=<span class="val">"accordion-collapse collapse show"</span>
+         <span class="atr">data-bs-parent</span>=<span class="val">"#faq"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"accordion-body"</span><span class="tag">&gt;</span>
+        Bootstrap es el framework CSS más popular del mundo.
+      <span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+
+  <span class="cmt">&lt;!-- Repetir .accordion-item para más preguntas --&gt;</span>
+<span class="tag">&lt;/div&gt;</span></pre>
+    </div>
+
+    <h3>Tabs (Navs y Tabs)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">HTML — Tabs</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">&lt;!-- Pestañas --&gt;</span>
+<span class="tag">&lt;ul</span> <span class="atr">class</span>=<span class="val">"nav nav-tabs"</span> <span class="atr">id</span>=<span class="val">"misTabs"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;li</span> <span class="atr">class</span>=<span class="val">"nav-item"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"nav-link active"</span>
+            <span class="atr">data-bs-toggle</span>=<span class="val">"tab"</span>
+            <span class="atr">data-bs-target</span>=<span class="val">"#tab1"</span><span class="tag">&gt;</span>PHP<span class="tag">&lt;/button&gt;</span>
+  <span class="tag">&lt;/li&gt;</span>
+  <span class="tag">&lt;li</span> <span class="atr">class</span>=<span class="val">"nav-item"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"nav-link"</span>
+            <span class="atr">data-bs-toggle</span>=<span class="val">"tab"</span>
+            <span class="atr">data-bs-target</span>=<span class="val">"#tab2"</span><span class="tag">&gt;</span>Laravel<span class="tag">&lt;/button&gt;</span>
+  <span class="tag">&lt;/li&gt;</span>
+<span class="tag">&lt;/ul&gt;</span>
+
+<span class="cmt">&lt;!-- Contenido de los tabs --&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"tab-content mt-3"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"tab-pane fade show active"</span> <span class="atr">id</span>=<span class="val">"tab1"</span><span class="tag">&gt;</span>
+    Contenido de PHP
+  <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"tab-pane fade"</span> <span class="atr">id</span>=<span class="val">"tab2"</span><span class="tag">&gt;</span>
+    Contenido de Laravel
+  <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/div&gt;</span></pre>
+    </div>
+
+    <h3>Offcanvas (menú lateral deslizable)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">HTML — Offcanvas</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"btn btn-primary"</span>
+        <span class="atr">data-bs-toggle</span>=<span class="val">"offcanvas"</span>
+        <span class="atr">data-bs-target</span>=<span class="val">"#miMenu"</span><span class="tag">&gt;</span>
+  Abrir menú
+<span class="tag">&lt;/button&gt;</span>
+
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"offcanvas offcanvas-start"</span> <span class="atr">id</span>=<span class="val">"miMenu"</span><span class="tag">&gt;</span>
+  <span class="cmt">&lt;!-- offcanvas-start=izq, end=der, top, bottom --&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"offcanvas-header"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;h5</span> <span class="atr">class</span>=<span class="val">"offcanvas-title"</span><span class="tag">&gt;</span>Menú lateral<span class="tag">&lt;/h5&gt;</span>
+    <span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"btn-close"</span> <span class="atr">data-bs-dismiss</span>=<span class="val">"offcanvas"</span><span class="tag">&gt;&lt;/button&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"offcanvas-body"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;nav</span> <span class="atr">class</span>=<span class="val">"nav flex-column"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;a</span> <span class="atr">class</span>=<span class="val">"nav-link"</span> <span class="atr">href</span>=<span class="val">"/"</span><span class="tag">&gt;</span>Inicio<span class="tag">&lt;/a&gt;</span>
+      <span class="tag">&lt;a</span> <span class="atr">class</span>=<span class="val">"nav-link"</span> <span class="atr">href</span>=<span class="val">"/cursos"</span><span class="tag">&gt;</span>Cursos<span class="tag">&lt;/a&gt;</span>
+    <span class="tag">&lt;/nav&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/div&gt;</span></pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p7')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PASO 8 -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="step-card" id="p8">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">08</div>
+    <div class="step-title-wrap">
+      <div class="step-title">JavaScript de Bootstrap</div>
+      <div class="step-meta">data-bs-* · API JS · eventos · Modal.getInstance · Toast</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Bootstrap 5.3 expone una API JavaScript para controlar los componentes desde código, sin depender solo de los atributos <code>data-bs-*</code>.</p>
+
+    <h3>Dos maneras de controlar componentes</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">JS — API de Bootstrap</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">// ─── FORMA 1: Atributos data-bs (sin JS) ─────────────</span>
+<span class="cmt">// Solo HTML, Bootstrap hace el resto automáticamente</span>
+<span class="cmt">// data-bs-toggle="modal" data-bs-target="#id"</span>
+
+<span class="cmt">// ─── FORMA 2: API JavaScript ─────────────────────────</span>
+
+<span class="cmt">// Modal — abrir/cerrar desde JS</span>
+<span class="kw">const</span> modalEl = <span class="kw">document</span>.<span class="fn">getElementById</span>(<span class="str">'miModal'</span>);
+<span class="kw">const</span> modal = <span class="kw">new</span> bootstrap.<span class="fn">Modal</span>(modalEl);
+modal.<span class="fn">show</span>();
+modal.<span class="fn">hide</span>();
+
+<span class="cmt">// Obtener instancia existente</span>
+<span class="kw">const</span> inst = bootstrap.Modal.<span class="fn">getInstance</span>(modalEl);
+
+<span class="cmt">// Toast — notificación temporal</span>
+<span class="kw">const</span> toastEl = <span class="kw">document</span>.<span class="fn">getElementById</span>(<span class="str">'miToast'</span>);
+<span class="kw">const</span> toast = <span class="kw">new</span> bootstrap.<span class="fn">Toast</span>(toastEl, {
+  delay: <span class="num">3000</span>,       <span class="cmt">// milisegundos</span>
+  autohide: <span class="kw">true</span>
+});
+toast.<span class="fn">show</span>();
+
+<span class="cmt">// Tooltip — inicializar todos los tooltips</span>
+<span class="kw">document</span>.<span class="fn">querySelectorAll</span>(<span class="str">'[data-bs-toggle="tooltip"]'</span>)
+  .<span class="fn">forEach</span>(el => <span class="kw">new</span> bootstrap.<span class="fn">Tooltip</span>(el));
+
+<span class="cmt">// Escuchar eventos de Bootstrap</span>
+modalEl.<span class="fn">addEventListener</span>(<span class="str">'shown.bs.modal'</span>, () => {
+  <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">'Modal abierto'</span>);
+});
+
+modalEl.<span class="fn">addEventListener</span>(<span class="str">'hidden.bs.modal'</span>, () => {
+  <span class="kw">console</span>.<span class="fn">log</span>(<span class="str">'Modal cerrado'</span>);
+});</pre>
+    </div>
+
+    <h3>Toast — notificación no intrusiva</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">HTML + JS — Toast</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">&lt;!-- Contenedor posicionado --&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"toast-container position-fixed bottom-0 end-0 p-3"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">id</span>=<span class="val">"miToast"</span> <span class="atr">class</span>=<span class="val">"toast align-items-center text-bg-success"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"d-flex"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"toast-body"</span><span class="tag">&gt;</span>
+        ✅ Guardado correctamente.
+      <span class="tag">&lt;/div&gt;</span>
+      <span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"btn-close btn-close-white me-2 m-auto"</span>
+              <span class="atr">data-bs-dismiss</span>=<span class="val">"toast"</span><span class="tag">&gt;&lt;/button&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/div&gt;</span>
+
+<span class="cmt">&lt;!-- Mostrar el toast desde JS --&gt;</span>
+<span class="tag">&lt;script&gt;</span>
+  <span class="kw">function</span> <span class="fn">mostrarToast</span>() {
+    <span class="kw">const</span> t = <span class="kw">new</span> bootstrap.<span class="fn">Toast</span>(
+      <span class="kw">document</span>.<span class="fn">getElementById</span>(<span class="str">'miToast'</span>)
+    );
+    t.<span class="fn">show</span>();
+  }
+<span class="tag">&lt;/script&gt;</span></pre>
+    </div>
+
+    <div class="info-box tip">
+      <span class="icon">✅</span>
+      <div>Integración con Laravel Blade: muestra un Toast automáticamente si hay un mensaje flash de sesión: <code>@if(session('success')) &lt;script&gt;mostrarToast()&lt;/script&gt; @endif</code></div>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p8')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PASO 9 -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="step-card" id="p9">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">09</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Personalización — Variables CSS y Sass</div>
+      <div class="step-meta">--bs-primary · data-bs-theme · override Sass · color-mode</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Bootstrap 5.3 usa variables CSS nativas que puedes sobreescribir sin tocar el código fuente. Para personalizaciones profundas, usa Sass.</p>
+
+    <h3>Opción A — Variables CSS (rápida, sin build)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">CSS — Sobreescribir variables Bootstrap</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">/* En tu CSS después del CDN de Bootstrap */</span>
+:root {
+  <span class="cmt">/* Cambiar el color primario */</span>
+  --bs-primary:         #7952b3;
+  --bs-primary-rgb:     121, 82, 179;
+
+  <span class="cmt">/* Cambiar fuente principal */</span>
+  --bs-font-sans-serif: 'Inter', sans-serif;
+
+  <span class="cmt">/* Cambiar border radius global */</span>
+  --bs-border-radius:   8px;
+  --bs-border-radius-lg: 12px;
+
+  <span class="cmt">/* Cambiar sombras */</span>
+  --bs-box-shadow:      0 4px 20px rgba(0, 0, 0, 0.08);
+
+  <span class="cmt">/* Cambiar colores de fondo */</span>
+  --bs-body-bg:         #f8f5f0;
+  --bs-body-color:      #1a1218;
+}</pre>
+    </div>
+
+    <h3>Dark Mode nativo — Bootstrap 5.3</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">HTML + JS — Color modes</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">&lt;!-- Activar modo oscuro globalmente --&gt;</span>
+<span class="tag">&lt;html</span> <span class="atr">lang</span>=<span class="val">"es"</span> <span class="atr">data-bs-theme</span>=<span class="val">"dark"</span><span class="tag">&gt;</span>
+
+<span class="cmt">&lt;!-- Solo en una sección --&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">data-bs-theme</span>=<span class="val">"dark"</span><span class="tag">&gt;</span>
+  <span class="cmt">&lt;!-- Todo dentro de aquí usa tema oscuro --&gt;</span>
+<span class="tag">&lt;/div&gt;</span>
+
+<span class="cmt">&lt;!-- Toggle desde JS --&gt;</span>
+<span class="tag">&lt;button</span> <span class="atr">onclick</span>=<span class="val">"toggleTheme()"</span> <span class="atr">class</span>=<span class="val">"btn btn-secondary"</span><span class="tag">&gt;</span>🌙 Modo oscuro<span class="tag">&lt;/button&gt;</span>
+
+<span class="tag">&lt;script&gt;</span>
+  <span class="kw">function</span> <span class="fn">toggleTheme</span>() {
+    <span class="kw">const</span> html = <span class="kw">document</span>.documentElement;
+    <span class="kw">const</span> current = html.<span class="fn">getAttribute</span>(<span class="str">'data-bs-theme'</span>);
+    html.<span class="fn">setAttribute</span>(<span class="str">'data-bs-theme'</span>, current === <span class="str">'dark'</span> ? <span class="str">'light'</span> : <span class="str">'dark'</span>);
+  }
+<span class="tag">&lt;/script&gt;</span></pre>
+    </div>
+
+    <h3>Opción B — Sass (personalización profunda con Vite)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">SCSS — resources/sass/app.scss</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cmt">// 1. Sobreescribir variables ANTES de importar Bootstrap</span>
+$primary:       #7952b3;
+$secondary:     #6c757d;
+$success:       #198754;
+$font-family-base: 'Inter', sans-serif;
+$border-radius: 8px;
+$border-radius-lg: 12px;
+
+<span class="cmt">// 2. Importar Bootstrap completo</span>
+@import 'bootstrap/scss/bootstrap';
+
+<span class="cmt">// O importar solo lo que necesitas:</span>
+@import 'bootstrap/scss/functions';
+@import 'bootstrap/scss/variables';
+@import 'bootstrap/scss/mixins';
+@import 'bootstrap/scss/grid';
+@import 'bootstrap/scss/utilities';
+@import 'bootstrap/scss/buttons';
+<span class="cmt">// ... solo los módulos que uses</span></pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p9')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PASO 10 -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="step-card" id="p10">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">10</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Proyecto completo — Landing + Formulario + Tabla</div>
+      <div class="step-meta">navbar · hero · cards · formulario + validación · tabla + modal</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Página completa que combina todo lo aprendido: Navbar responsive, sección hero, grid de cards, formulario con validación y tabla con modal de confirmación de eliminación.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">HTML — Proyecto completo (index.html)</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="tag">&lt;!DOCTYPE html&gt;</span>
+<span class="tag">&lt;html</span> <span class="atr">lang</span>=<span class="val">"es"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;head&gt;</span>
+  <span class="tag">&lt;meta</span> <span class="atr">charset</span>=<span class="val">"UTF-8"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;meta</span> <span class="atr">name</span>=<span class="val">"viewport"</span> <span class="atr">content</span>=<span class="val">"width=device-width, initial-scale=1"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;title&gt;</span>EduCode — Cursos<span class="tag">&lt;/title&gt;</span>
+  <span class="tag">&lt;link</span> <span class="atr">href</span>=<span class="val">"https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"</span> <span class="atr">rel</span>=<span class="val">"stylesheet"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;style&gt;</span>
+    .hero { background: linear-gradient(135deg, #7952b3, #0d6efd); color: #fff; }
+  <span class="tag">&lt;/style&gt;</span>
+<span class="tag">&lt;/head&gt;</span>
+<span class="tag">&lt;body&gt;</span>
+
+<span class="cmt">&lt;!-- ① NAVBAR --&gt;</span>
+<span class="tag">&lt;nav</span> <span class="atr">class</span>=<span class="val">"navbar navbar-expand-lg bg-dark navbar-dark sticky-top"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"container"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;a</span> <span class="atr">class</span>=<span class="val">"navbar-brand fw-bold"</span> <span class="atr">href</span>=<span class="val">"#"</span><span class="tag">&gt;</span>EduCode<span class="tag">&lt;/a&gt;</span>
+    <span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"navbar-toggler"</span> <span class="atr">data-bs-toggle</span>=<span class="val">"collapse"</span> <span class="atr">data-bs-target</span>=<span class="val">"#nav"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;span</span> <span class="atr">class</span>=<span class="val">"navbar-toggler-icon"</span><span class="tag">&gt;&lt;/span&gt;</span>
+    <span class="tag">&lt;/button&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"collapse navbar-collapse"</span> <span class="atr">id</span>=<span class="val">"nav"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;ul</span> <span class="atr">class</span>=<span class="val">"navbar-nav me-auto"</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;li</span> <span class="atr">class</span>=<span class="val">"nav-item"</span><span class="tag">&gt;&lt;a</span> <span class="atr">class</span>=<span class="val">"nav-link active"</span> <span class="atr">href</span>=<span class="val">"#"</span><span class="tag">&gt;</span>Inicio<span class="tag">&lt;/a&gt;&lt;/li&gt;</span>
+        <span class="tag">&lt;li</span> <span class="atr">class</span>=<span class="val">"nav-item"</span><span class="tag">&gt;&lt;a</span> <span class="atr">class</span>=<span class="val">"nav-link"</span> <span class="atr">href</span>=<span class="val">"#cursos"</span><span class="tag">&gt;</span>Cursos<span class="tag">&lt;/a&gt;&lt;/li&gt;</span>
+        <span class="tag">&lt;li</span> <span class="atr">class</span>=<span class="val">"nav-item"</span><span class="tag">&gt;&lt;a</span> <span class="atr">class</span>=<span class="val">"nav-link"</span> <span class="atr">href</span>=<span class="val">"#registro"</span><span class="tag">&gt;</span>Registro<span class="tag">&lt;/a&gt;&lt;/li&gt;</span>
+      <span class="tag">&lt;/ul&gt;</span>
+      <span class="tag">&lt;a</span> <span class="atr">href</span>=<span class="val">"#"</span> <span class="atr">class</span>=<span class="val">"btn btn-outline-light btn-sm"</span><span class="tag">&gt;</span>Iniciar sesión<span class="tag">&lt;/a&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/nav&gt;</span>
+
+<span class="cmt">&lt;!-- ② HERO --&gt;</span>
+<span class="tag">&lt;section</span> <span class="atr">class</span>=<span class="val">"hero py-5"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"container text-center py-4"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;h1</span> <span class="atr">class</span>=<span class="val">"display-4 fw-black mb-3"</span><span class="tag">&gt;</span>Aprende a programar<span class="tag">&lt;/h1&gt;</span>
+    <span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"lead mb-4 opacity-75"</span><span class="tag">&gt;</span>Cursos prácticos de PHP, Laravel y Bootstrap para CEFIT-SENA<span class="tag">&lt;/p&gt;</span>
+    <span class="tag">&lt;a</span> <span class="atr">href</span>=<span class="val">"#cursos"</span> <span class="atr">class</span>=<span class="val">"btn btn-light btn-lg px-5"</span><span class="tag">&gt;</span>Ver cursos →<span class="tag">&lt;/a&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/section&gt;</span>
+
+<span class="cmt">&lt;!-- ③ GRID DE CARDS --&gt;</span>
+<span class="tag">&lt;section</span> <span class="atr">id</span>=<span class="val">"cursos"</span> <span class="atr">class</span>=<span class="val">"py-5 bg-light"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"container"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;h2</span> <span class="atr">class</span>=<span class="val">"mb-4"</span><span class="tag">&gt;</span>Cursos disponibles<span class="tag">&lt;/h2&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"row row-cols-1 row-cols-md-3 g-4"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"col"</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"card h-100 shadow-sm"</span><span class="tag">&gt;</span>
+          <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"card-body"</span><span class="tag">&gt;</span>
+            <span class="tag">&lt;h5</span> <span class="atr">class</span>=<span class="val">"card-title"</span><span class="tag">&gt;</span>Bases de Datos<span class="tag">&lt;/h5&gt;</span>
+            <span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"card-text text-muted"</span><span class="tag">&gt;</span>SQL, MySQL y modelado relacional.<span class="tag">&lt;/p&gt;</span>
+            <span class="tag">&lt;span</span> <span class="atr">class</span>=<span class="val">"badge bg-primary"</span><span class="tag">&gt;</span>40h<span class="tag">&lt;/span&gt;</span>
+            <span class="tag">&lt;span</span> <span class="atr">class</span>=<span class="val">"badge bg-success"</span><span class="tag">&gt;</span>Básico<span class="tag">&lt;/span&gt;</span>
+          <span class="tag">&lt;/div&gt;</span>
+          <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"card-footer"</span><span class="tag">&gt;</span>
+            <span class="tag">&lt;a</span> <span class="atr">href</span>=<span class="val">"#"</span> <span class="atr">class</span>=<span class="val">"btn btn-primary btn-sm w-100"</span><span class="tag">&gt;</span>Ver curso<span class="tag">&lt;/a&gt;</span>
+          <span class="tag">&lt;/div&gt;</span>
+        <span class="tag">&lt;/div&gt;</span>
+      <span class="tag">&lt;/div&gt;</span>
+      <span class="cmt">&lt;!-- Repetir .col para más cursos --&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/section&gt;</span>
+
+<span class="cmt">&lt;!-- ④ TABLA + MODAL de confirmación --&gt;</span>
+<span class="tag">&lt;section</span> <span class="atr">class</span>=<span class="val">"py-5"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"container"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"d-flex justify-content-between align-items-center mb-3"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;h2&gt;</span>Listado de Cursos<span class="tag">&lt;/h2&gt;</span>
+      <span class="tag">&lt;a</span> <span class="atr">href</span>=<span class="val">"#"</span> <span class="atr">class</span>=<span class="val">"btn btn-success"</span><span class="tag">&gt;</span>+ Nuevo<span class="tag">&lt;/a&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"table-responsive"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;table</span> <span class="atr">class</span>=<span class="val">"table table-striped table-hover align-middle"</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;thead</span> <span class="atr">class</span>=<span class="val">"table-dark"</span><span class="tag">&gt;</span>
+          <span class="tag">&lt;tr&gt;&lt;th&gt;</span>Nombre<span class="tag">&lt;/th&gt;&lt;th&gt;</span>Instructor<span class="tag">&lt;/th&gt;&lt;th&gt;</span>Nivel<span class="tag">&lt;/th&gt;&lt;th&gt;</span>Acciones<span class="tag">&lt;/th&gt;&lt;/tr&gt;</span>
+        <span class="tag">&lt;/thead&gt;</span>
+        <span class="tag">&lt;tbody&gt;</span>
+          <span class="tag">&lt;tr&gt;</span>
+            <span class="tag">&lt;td&gt;</span>Bases de Datos<span class="tag">&lt;/td&gt;&lt;td&gt;</span>James<span class="tag">&lt;/td&gt;</span>
+            <span class="tag">&lt;td&gt;&lt;span</span> <span class="atr">class</span>=<span class="val">"badge bg-success"</span><span class="tag">&gt;</span>Básico<span class="tag">&lt;/span&gt;&lt;/td&gt;</span>
+            <span class="tag">&lt;td&gt;</span>
+              <span class="tag">&lt;a</span> <span class="atr">href</span>=<span class="val">"#"</span> <span class="atr">class</span>=<span class="val">"btn btn-sm btn-warning"</span><span class="tag">&gt;</span>Editar<span class="tag">&lt;/a&gt;</span>
+              <span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"btn btn-sm btn-danger ms-1"</span>
+                      <span class="atr">data-bs-toggle</span>=<span class="val">"modal"</span>
+                      <span class="atr">data-bs-target</span>=<span class="val">"#modalEliminar"</span><span class="tag">&gt;</span>
+                Eliminar
+              <span class="tag">&lt;/button&gt;</span>
+            <span class="tag">&lt;/td&gt;</span>
+          <span class="tag">&lt;/tr&gt;</span>
+        <span class="tag">&lt;/tbody&gt;</span>
+      <span class="tag">&lt;/table&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/section&gt;</span>
+
+<span class="cmt">&lt;!-- Modal de confirmación --&gt;</span>
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"modal fade"</span> <span class="atr">id</span>=<span class="val">"modalEliminar"</span> <span class="atr">tabindex</span>=<span class="val">"-1"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"modal-dialog modal-dialog-centered"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"modal-content"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"modal-header bg-danger text-white"</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;h5</span> <span class="atr">class</span>=<span class="val">"modal-title"</span><span class="tag">&gt;</span>⚠️ Confirmar eliminación<span class="tag">&lt;/h5&gt;</span>
+        <span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"btn-close btn-close-white"</span> <span class="atr">data-bs-dismiss</span>=<span class="val">"modal"</span><span class="tag">&gt;&lt;/button&gt;</span>
+      <span class="tag">&lt;/div&gt;</span>
+      <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"modal-body"</span><span class="tag">&gt;</span>
+        ¿Estás seguro de que quieres eliminar este curso? Esta acción no se puede deshacer.
+      <span class="tag">&lt;/div&gt;</span>
+      <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"modal-footer"</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"btn btn-secondary"</span> <span class="atr">data-bs-dismiss</span>=<span class="val">"modal"</span><span class="tag">&gt;</span>Cancelar<span class="tag">&lt;/button&gt;</span>
+        <span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"btn btn-danger"</span><span class="tag">&gt;</span>Sí, eliminar<span class="tag">&lt;/button&gt;</span>
+      <span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/div&gt;</span>
+
+<span class="cmt">&lt;!-- ⑤ FOOTER --&gt;</span>
+<span class="tag">&lt;footer</span> <span class="atr">class</span>=<span class="val">"bg-dark text-white py-4 mt-5"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"container text-center"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"mb-0 text-muted"</span><span class="tag">&gt;</span>© 2025 EduCode · CEFIT-SENA · Bootstrap 5.3<span class="tag">&lt;/p&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/footer&gt;</span>
+
+<span class="tag">&lt;script</span> <span class="atr">src</span>=<span class="val">"https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"</span><span class="tag">&gt;&lt;/script&gt;</span>
+<span class="tag">&lt;/body&gt;</span>
+<span class="tag">&lt;/html&gt;</span></pre>
+    </div>
+
+    <div class="info-box tip">
+      <span class="icon">🚀</span>
+      <div>Este proyecto funciona copiando el HTML en un archivo <code>.html</code> y abriéndolo en el navegador. No necesita servidor, Node.js ni nada adicional gracias al CDN. Para integrarlo con Laravel, reemplaza el CDN por <code>@vite</code> y convierte las secciones en plantillas Blade.</div>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p10')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+</main>
+<footer>CEFIT-SENA · Bootstrap 5.3 · Documentación oficial: getbootstrap.com/docs/5.3</footer>
+
+<script>
+const TOTAL=10;
+function toggle(h){const c=h.closest('.step-card');const o=c.classList.contains('open');document.querySelectorAll('.step-card.open').forEach(x=>x.classList.remove('open'));if(!o)c.classList.add('open')}
+function copyCode(btn){const pre=btn.closest('.code-block').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='✓ Copiado';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copiar';btn.classList.remove('copied')},2000)})}
+function markDone(btn,id){const c=document.getElementById(id);c.classList.toggle('done');const d=c.classList.contains('done');btn.textContent=d?'✓  Completado':'✓  Marcar como completado';update()}
+function update(){const d=document.querySelectorAll('.step-card.done').length;document.getElementById('progressBar').style.width=(d/TOTAL*100)+'%';document.getElementById('progressCount').textContent=d+' / '+TOTAL}
+document.querySelector('.step-card .step-header').click();
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const id=e.target.id;document.querySelectorAll('.nav-pill').forEach(p=>p.classList.toggle('active',p.getAttribute('href')==='#'+id))}}),{threshold:.4});
+document.querySelectorAll('.step-card').forEach(c=>obs.observe(c));
+</script>
+</body>
+</html>

@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moonshine 4.x — Del panel al proyecto real</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #02040a;
+    --surface: #060c1a;
+    --surface2: #0a1428;
+    --border: #0f2040;
+    --accent: #3b82f6;
+    --accent2: #8b5cf6;
+    --accent3: #06b6d4;
+    --ok: #10b981;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --text-dim: #7ea8c4;
+    --text-muted: #1e3a58;
+    --code-bg: #010308;
+    --moon: rgba(59,130,246,0.06);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Bricolage Grotesque',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+  /* Stars background */
+  body::before{
+    content:'';
+    position:fixed;inset:0;
+    background-image:
+      radial-gradient(1px 1px at 15% 25%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 65% 15%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 85% 55%, rgba(255,255,255,0.35) 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 75%, rgba(255,255,255,0.25) 0%, transparent 100%),
+      radial-gradient(1px 1px at 75% 85%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 50% 40%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(2px 2px at 90% 10%, rgba(59,130,246,0.6) 0%, transparent 100%),
+      radial-gradient(2px 2px at 10% 90%, rgba(139,92,246,0.5) 0%, transparent 100%);
+    pointer-events:none;
+    z-index:0;
+  }
+
+  header{
+    position:relative;
+    padding:72px 40px 60px;
+    text-align:center;
+    overflow:hidden;
+    border-bottom:1px solid var(--border);
+    z-index:1;
+  }
+
+  header::before{
+    content:'';
+    position:absolute;inset:0;
+    background:
+      radial-gradient(ellipse 70% 60% at 50% -10%, rgba(59,130,246,0.14), transparent),
+      radial-gradient(ellipse 50% 40% at 0% 100%, rgba(139,92,246,0.1), transparent),
+      radial-gradient(ellipse 40% 50% at 100% 50%, rgba(6,182,212,0.07), transparent);
+  }
+
+  .moon-icon{font-size:2.5rem;margin-bottom:16px;display:block;filter:drop-shadow(0 0 20px rgba(59,130,246,0.6))}
+
+  .badge{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--accent3);background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.25);padding:5px 14px;border-radius:20px;margin-bottom:20px;text-transform:uppercase}
+
+  h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;line-height:1.1;position:relative}
+  h1 em{font-style:normal;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  header p{margin-top:14px;font-size:1rem;color:var(--text-dim);font-weight:300;max-width:520px;margin-inline:auto;line-height:1.7;position:relative}
+
+  .progress-wrap{padding:16px 40px;background:rgba(6,12,26,0.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:14px}
+  .progress-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-muted);white-space:nowrap}
+  .progress-bar-outer{flex:1;height:3px;background:var(--border);border-radius:10px;overflow:hidden}
+  .progress-bar-inner{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:10px;transition:width .4s ease}
+  .progress-count{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent);white-space:nowrap}
+
+  .nav-pills{display:flex;gap:6px;flex-wrap:wrap;padding:14px 40px;background:rgba(6,12,26,0.9);border-bottom:1px solid var(--border)}
+  .nav-pill{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 12px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);cursor:pointer;transition:all .2s;text-decoration:none}
+  .nav-pill:hover,.nav-pill.active{background:rgba(59,130,246,0.12);border-color:var(--accent);color:var(--accent)}
+
+  main{max-width:900px;margin:0 auto;padding:44px 24px 80px;position:relative;z-index:1}
+
+  .step-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:26px;overflow:hidden;transition:border-color .3s;scroll-margin-top:100px;animation:fadeUp .4s ease both}
+  .step-card.done{border-color:rgba(16,185,129,0.4)}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+  .step-header{display:flex;align-items:center;gap:14px;padding:20px 26px;cursor:pointer;user-select:none;transition:background .2s}
+  .step-header:hover{background:var(--surface2)}
+
+  .step-num{width:38px;height:38px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--text-muted);flex-shrink:0;transition:all .3s}
+  .step-card.done .step-num{background:rgba(16,185,129,0.15);border-color:var(--ok);color:var(--ok)}
+
+  .step-title-wrap{flex:1}
+  .step-title{font-size:.98rem;font-weight:700}
+  .step-meta{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--text-muted);margin-top:3px}
+  .step-toggle{font-size:14px;color:var(--text-muted);transition:transform .3s;flex-shrink:0}
+  .step-card.open .step-toggle{transform:rotate(180deg)}
+
+  .step-body{display:none;padding:0 26px 26px;border-top:1px solid var(--border)}
+  .step-card.open .step-body{display:block}
+  .step-body p,.step-body li{color:var(--text-dim);line-height:1.8;font-size:.91rem}
+  .step-body ul,.step-body ol{padding-left:20px;margin:10px 0}
+  .step-body li{margin-bottom:5px}
+  .step-body h3{font-family:'IBM Plex Mono',monospace;font-size:.7rem;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);margin:20px 0 10px;border-bottom:1px solid var(--border);padding-bottom:6px}
+
+  .info-box{border-radius:10px;padding:12px 16px;margin:14px 0;font-size:.87rem;line-height:1.7;display:flex;gap:10px;align-items:flex-start}
+  .info-box .icon{font-size:16px;flex-shrink:0;margin-top:1px}
+  .info-box.tip{background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.2);color:#6ee7b7}
+  .info-box.warn{background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);color:#fcd34d}
+  .info-box.info{background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.2);color:#93c5fd}
+  .info-box.new{background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.2);color:#c4b5fd}
+
+  .code-block{margin:16px 0;border-radius:10px;overflow:hidden;border:1px solid rgba(15,32,64,0.8)}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:#030810;border-bottom:1px solid rgba(15,32,64,0.8)}
+  .code-lang{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent3);letter-spacing:2px;text-transform:uppercase}
+  .copy-btn{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:3px 10px;border-radius:5px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);color:var(--accent);cursor:pointer;transition:all .15s}
+  .copy-btn:hover{background:rgba(59,130,246,0.2)}
+  .copy-btn.copied{color:var(--ok);border-color:var(--ok)}
+  pre{background:var(--code-bg);padding:18px 20px;overflow-x:auto;font-family:'IBM Plex Mono',monospace;font-size:12.5px;line-height:1.75;color:#cbd5e1}
+
+  .kw{color:#60a5fa;font-weight:600}
+  .fn{color:#34d399}
+  .str{color:#fbbf24}
+  .num{color:#a78bfa}
+  .cm{color:#1e3a58;font-style:italic}
+  .type{color:#f87171}
+  .var{color:#94a3b8}
+  .cls{color:#6ee7b7;font-weight:600}
+  .tag{color:#60a5fa}
+  .atr{color:#34d399}
+  .val{color:#fbbf24}
+
+  .tabla{background:var(--code-bg);border:1px solid rgba(15,32,64,0.8);border-radius:10px;overflow-x:auto;margin:14px 0}
+  .tabla table{border-collapse:collapse;width:100%;min-width:500px}
+  .tabla th{background:#030810;color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:11px;padding:9px 16px;text-align:left;border-bottom:1px solid rgba(15,32,64,0.8)}
+  .tabla td{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:8px 16px;border-bottom:1px solid rgba(15,32,64,0.5);color:#94a3b8}
+  .tabla tr:last-child td{border-bottom:none}
+  .tabla tr:nth-child(even) td{background:rgba(255,255,255,0.01)}
+  .hl{color:var(--accent);font-weight:600}
+  .hl2{color:var(--ok)}
+  .hl3{color:#f87171}
+
+  .check-btn{margin-top:18px;display:inline-flex;align-items:center;gap:8px;font-family:'Bricolage Grotesque',sans-serif;font-size:.84rem;font-weight:600;padding:9px 20px;border-radius:8px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);color:var(--ok);cursor:pointer;transition:all .2s}
+  .check-btn:hover{background:rgba(16,185,129,0.15)}
+
+  /* Project showcase */
+  .project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:16px 0}
+  .project-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+  .project-card .icon{font-size:24px;margin-bottom:8px;display:block}
+  .project-card .label{font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:4px}
+  .project-card .desc{font-size:.7rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace}
+
+  footer{text-align:center;padding:36px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.72rem;border-top:1px solid var(--border);position:relative;z-index:1}
+
+  @media(max-width:600px){
+    header{padding:40px 18px}
+    .nav-pills,.progress-wrap{padding:12px 14px}
+    main{padding:20px 10px 60px}
+    .step-header{padding:14px}
+    .step-body{padding:0 14px 18px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="moon-icon">🌙</span>
+  <div class="badge">Moonshine 4.x · Laravel 13 · CEFIT-SENA</div>
+  <h1><em>Moonshine 4.x</em><br>Panel admin sin límites</h1>
+  <p>Desde la instalación y configuración básica con 2-3 módulos, hasta un proyecto real con 5 módulos completos. Basado en la documentación oficial getmoonshine.app/en/docs/4.x.</p>
+</header>
+
+<div class="progress-wrap">
+  <span class="progress-label">PROGRESO</span>
+  <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+  <span class="progress-count" id="progressCount">0 / 9</span>
+</div>
+
+<div class="nav-pills">
+  <a class="nav-pill" href="#p1">1. Instalación</a>
+  <a class="nav-pill" href="#p2">2. Config</a>
+  <a class="nav-pill" href="#p3">3. Primer Resource</a>
+  <a class="nav-pill" href="#p4">4. Fields</a>
+  <a class="nav-pill" href="#p5">5. Menú</a>
+  <a class="nav-pill" href="#p6">6. Filtros</a>
+  <a class="nav-pill" href="#p7">7. Relaciones</a>
+  <a class="nav-pill" href="#p8">8. Proyecto 5 módulos</a>
+  <a class="nav-pill" href="#p9">9. Deploy</a>
+</div>
+
+<main>
+
+<!-- PASO 1 -->
+<div class="step-card" id="p1">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">01</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Instalación de Moonshine 4.x</div>
+      <div class="step-meta">composer · moonshine:install · moonshine_users · /admin</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Moonshine 4.x es el panel de administración para Laravel 13. Genera un sistema completo con su propio sistema de auth, UI reactiva y componentes CRUD listos en minutos.</p>
+
+    <div class="info-box new">
+      <span class="icon">🌙</span>
+      <div><strong>Moonshine 4.x</strong> funciona sobre <strong>Laravel 13 + PHP 8.3</strong>. Tiene su propia tabla <code>moonshine_users</code> separada de la tabla <code>users</code> de la app. El admin del panel y los usuarios de la app son independientes.</div>
+    </div>
+
+    <h3>Instalar el paquete</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># 1. Instalar el paquete</span>
+composer require moonshine/moonshine
+
+<span class="cm"># 2. Ejecutar el instalador interactivo</span>
+php artisan moonshine:install
+
+<span class="cm"># El instalador te preguntará:
+# ✓ ¿Instalar migraciones de Moonshine? → yes
+# ✓ ¿Crear usuario administrador? → yes
+# ✓ Nombre del admin → Tu nombre
+# ✓ Email del admin → tu@correo.com
+# ✓ Password → ********</span>
+
+<span class="cm"># 3. Ejecutar migraciones</span>
+php artisan migrate
+
+<span class="cm"># 4. Compilar assets de Moonshine</span>
+php artisan moonshine:publish
+
+<span class="cm"># 5. Acceder al panel</span>
+<span class="cm"># http://tu-dominio.test/admin</span></pre>
+    </div>
+
+    <h3>Archivos generados por moonshine:install</h3>
+    <div class="tabla">
+      <table>
+        <tr><th>Archivo / Carpeta</th><th>Propósito</th></tr>
+        <tr><td class="hl">config/moonshine.php</td><td>Configuración central: ruta, título, logo, tema, colores</td></tr>
+        <tr><td class="hl">app/MoonShine/MoonShineServiceProvider.php</td><td>Registro de Resources y construcción del menú</td></tr>
+        <tr><td class="hl">app/MoonShine/Resources/</td><td>Carpeta donde van todos tus ModelResources</td></tr>
+        <tr><td class="hl">app/MoonShine/Pages/</td><td>Páginas personalizadas del panel (Dashboard, etc.)</td></tr>
+      </table>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p1')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 2 -->
+<div class="step-card" id="p2">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">02</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Configuración del panel</div>
+      <div class="step-meta">config/moonshine.php · título · colores · prefix · locale</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — config/moonshine.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">return</span> [
+    <span class="cm">// Título que aparece en la barra lateral y el browser tab</span>
+    <span class="str">'title'</span>  => <span class="str">'EduCode Admin'</span>,
+
+    <span class="cm">// Logo — archivo en public/</span>
+    <span class="str">'logo'</span>   => <span class="str">'/img/logo.svg'</span>,
+
+    <span class="cm">// Prefijo de la URL del panel</span>
+    <span class="str">'prefix'</span> => <span class="str">'admin'</span>,    <span class="cm">// → /admin</span>
+
+    <span class="cm">// Idioma del panel</span>
+    <span class="str">'locale'</span> => <span class="str">'es'</span>,
+
+    <span class="cm">// Middleware aplicado a todas las rutas del panel</span>
+    <span class="str">'middleware'</span> => [
+        <span class="str">'web'</span>,
+        \<span class="cls">MoonShine\Http\Middleware\Authenticate</span>::class,
+    ],
+
+    <span class="cm">// Colores del panel (usa hex o tailwind)</span>
+    <span class="str">'colors'</span> => [
+        <span class="str">'primary'</span>   => <span class="str">'#3b82f6'</span>,   <span class="cm">// azul principal</span>
+        <span class="str">'secondary'</span> => <span class="str">'#8b5cf6'</span>,   <span class="cm">// violeta</span>
+    ],
+
+    <span class="cm">// Usuario administrador de Moonshine</span>
+    <span class="str">'auth'</span> => [
+        <span class="str">'guard'</span>      => <span class="str">'moonshine'</span>,
+        <span class="str">'model'</span>      => \<span class="cls">MoonShine\Models\MoonshineUser</span>::class,
+        <span class="str">'enable'</span>     => <span class="kw">true</span>,
+    ],
+];</pre>
+    </div>
+
+    <div class="info-box info">
+      <span class="icon">🎨</span>
+      <div>Moonshine 4.x incluye un <strong>generador de paletas</strong> en <code>getmoonshine.app/palette-generator</code>. Genera el array de colores listo para pegar en config y personaliza todo el panel visualmente.</div>
+    </div>
+
+    <h3>Crear usuario admin adicional desde terminal</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Crear nuevo usuario administrador de Moonshine</span>
+php artisan moonshine:user
+
+<span class="cm"># Publicar traducciones al español</span>
+php artisan vendor:publish --tag=moonshine-lang</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p2')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 3 -->
+<div class="step-card" id="p3">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">03</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Primer ModelResource — CRUD completo</div>
+      <div class="step-meta">moonshine:resource · ModelResource · fields() · column</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Un <strong>ModelResource</strong> en Moonshine 4.x genera automáticamente listado, creación, edición y eliminación para un modelo Eloquent. Es el equivalente a un CRUD completo en un solo archivo.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Crear resource para el modelo Curso</span>
+php artisan moonshine:resource CursoResource --model=Curso
+
+<span class="cm"># Ver todos los comandos de Moonshine</span>
+php artisan moonshine:list</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — app/MoonShine/Resources/CursoResource.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">&lt;?php</span>
+<span class="kw">namespace</span> <span class="cls">App\MoonShine\Resources</span>;
+
+<span class="kw">use</span> <span class="cls">App\Models\Curso</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Laravel\Resources\ModelResource</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\ID</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\Text</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\Number</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\Select</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\Switcher</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\Textarea</span>;
+
+<span class="kw">class</span> <span class="cls">CursoResource</span> <span class="kw">extends</span> <span class="cls">ModelResource</span>
+{
+    <span class="cm">// Modelo Eloquent asociado</span>
+    <span class="kw">protected</span> <span class="type">string</span> <span class="var">$model</span> = <span class="cls">Curso</span>::class;
+
+    <span class="cm">// Título en el panel</span>
+    <span class="kw">protected</span> <span class="type">string</span> <span class="var">$title</span> = <span class="str">'Cursos'</span>;
+
+    <span class="cm">// Columna que se usa para representar el registro</span>
+    <span class="cm">// (en dropdowns de relaciones)</span>
+    <span class="kw">protected</span> <span class="type">string</span> <span class="var">$column</span> = <span class="str">'nombre'</span>;
+
+    <span class="cm">// Campos del listado Y del formulario</span>
+    <span class="kw">protected function</span> <span class="fn">indexFields</span>(): <span class="type">iterable</span>
+    {
+        <span class="kw">return</span> [
+            <span class="cls">ID</span>::<span class="fn">make</span>()-><span class="fn">sortable</span>(),
+            <span class="cls">Text</span>::<span class="fn">make</span>(<span class="str">'Nombre'</span>, <span class="str">'nombre'</span>)-><span class="fn">sortable</span>(),
+            <span class="cls">Text</span>::<span class="fn">make</span>(<span class="str">'Instructor'</span>, <span class="str">'instructor'</span>),
+            <span class="cls">Number</span>::<span class="fn">make</span>(<span class="str">'Horas'</span>, <span class="str">'horas'</span>)-><span class="fn">sortable</span>(),
+            <span class="cls">Select</span>::<span class="fn">make</span>(<span class="str">'Nivel'</span>, <span class="str">'nivel'</span>)
+                -><span class="fn">options</span>([
+                    <span class="str">'basico'</span>      => <span class="str">'Básico'</span>,
+                    <span class="str">'intermedio'</span>  => <span class="str">'Intermedio'</span>,
+                    <span class="str">'avanzado'</span>    => <span class="str">'Avanzado'</span>,
+                ]),
+            <span class="cls">Switcher</span>::<span class="fn">make</span>(<span class="str">'Activo'</span>, <span class="str">'activo'</span>),
+        ];
+    }
+
+    <span class="cm">// Campos del formulario (crear/editar)</span>
+    <span class="kw">protected function</span> <span class="fn">formFields</span>(): <span class="type">iterable</span>
+    {
+        <span class="kw">return</span> [
+            <span class="cls">ID</span>::<span class="fn">make</span>(),
+            <span class="cls">Text</span>::<span class="fn">make</span>(<span class="str">'Nombre'</span>, <span class="str">'nombre'</span>)
+                -><span class="fn">required</span>()
+                -><span class="fn">placeholder</span>(<span class="str">'Ej: Bases de Datos'</span>),
+            <span class="cls">Text</span>::<span class="fn">make</span>(<span class="str">'Instructor'</span>, <span class="str">'instructor'</span>)
+                -><span class="fn">required</span>(),
+            <span class="cls">Number</span>::<span class="fn">make</span>(<span class="str">'Horas'</span>, <span class="str">'horas'</span>)
+                -><span class="fn">min</span>(<span class="num">1</span>)-><span class="fn">default</span>(<span class="num">40</span>),
+            <span class="cls">Select</span>::<span class="fn">make</span>(<span class="str">'Nivel'</span>, <span class="str">'nivel'</span>)
+                -><span class="fn">options</span>([
+                    <span class="str">'basico'</span>     => <span class="str">'Básico'</span>,
+                    <span class="str">'intermedio'</span> => <span class="str">'Intermedio'</span>,
+                    <span class="str">'avanzado'</span>   => <span class="str">'Avanzado'</span>,
+                ])-><span class="fn">required</span>(),
+            <span class="cls">Textarea</span>::<span class="fn">make</span>(<span class="str">'Descripción'</span>, <span class="str">'descripcion'</span>)
+                -><span class="fn">nullable</span>(),
+            <span class="cls">Switcher</span>::<span class="fn">make</span>(<span class="str">'Activo'</span>, <span class="str">'activo'</span>)
+                -><span class="fn">default</span>(<span class="kw">true</span>),
+        ];
+    }
+}</pre>
+    </div>
+
+    <div class="info-box new">
+      <span class="icon">🌙</span>
+      <div><strong>Moonshine 4.x</strong> separó <code>indexFields()</code> (campos en la tabla listado) de <code>formFields()</code> (campos en el formulario). Esto da control total sobre qué se muestra en cada vista.</div>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p3')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 4 -->
+<div class="step-card" id="p4">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">04</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Fields disponibles en Moonshine 4.x</div>
+      <div class="step-meta">Text · Select · Image · TinyMce · Enum · Date · Slug · Json</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <h3>Tabla completa de Fields — Moonshine 4.x</h3>
+    <div class="tabla">
+      <table>
+        <tr><th>Field</th><th>Tipo de dato</th><th>Uso típico</th></tr>
+        <tr><td class="hl">ID</td><td>BIGINT PK</td><td>Siempre primero en la lista</td></tr>
+        <tr><td class="hl">Text</td><td>VARCHAR</td><td>Nombres, títulos, campos cortos</td></tr>
+        <tr><td class="hl">Textarea</td><td>TEXT</td><td>Descripciones largas sin formato</td></tr>
+        <tr><td class="hl2">TinyMce</td><td>LONGTEXT</td><td>Contenido HTML enriquecido (editor visual)</td></tr>
+        <tr><td class="hl2">Markdown</td><td>TEXT</td><td>Contenido en Markdown</td></tr>
+        <tr><td class="hl">Number</td><td>INT / DECIMAL</td><td>Precios, cantidades, horas</td></tr>
+        <tr><td class="hl">Select</td><td>ENUM / FK</td><td>Opciones fijas o dinámicas</td></tr>
+        <tr><td class="hl">Enum</td><td>ENUM PHP 8.1+</td><td>Enums de PHP vinculados a columna</td></tr>
+        <tr><td class="hl">Switcher</td><td>BOOLEAN</td><td>Activo/Inactivo, toggles</td></tr>
+        <tr><td class="hl">Date</td><td>DATE / DATETIME</td><td>Fechas con selector visual</td></tr>
+        <tr><td class="hl">DateRange</td><td>DATE range</td><td>Rango de fechas (en filtros)</td></tr>
+        <tr><td class="hl2">Image</td><td>VARCHAR (path)</td><td>Subida de imágenes únicas</td></tr>
+        <tr><td class="hl2">File</td><td>VARCHAR (path)</td><td>Subida de archivos (PDF, ZIP…)</td></tr>
+        <tr><td class="hl">Slug</td><td>VARCHAR</td><td>URLs amigables auto-generadas</td></tr>
+        <tr><td class="hl">Email</td><td>VARCHAR</td><td>Correo con validación</td></tr>
+        <tr><td class="hl">Phone</td><td>VARCHAR</td><td>Teléfono con máscara</td></tr>
+        <tr><td class="hl">Password</td><td>VARCHAR (hash)</td><td>Contraseña con hash automático</td></tr>
+        <tr><td class="hl2">Json</td><td>JSON</td><td>Datos estructurados complejos</td></tr>
+        <tr><td class="hl2">Position</td><td>INT</td><td>Orden arrastrable (drag & drop)</td></tr>
+        <tr><td class="hl">RangeSlider</td><td>INT range</td><td>Filtro por rango numérico</td></tr>
+        <tr><td class="hl">Code</td><td>TEXT</td><td>Editor de código con syntax highlighting</td></tr>
+        <tr><td class="hl">Color</td><td>VARCHAR</td><td>Selector de color visual</td></tr>
+        <tr><td class="hl">Hidden</td><td>any</td><td>Campo oculto en formulario</td></tr>
+      </table>
+    </div>
+
+    <h3>Ejemplo: Fields con métodos avanzados</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — Fields con modificadores</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\Image</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\TinyMce</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\Slug</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\Select</span>;
+
+<span class="cm">// Imagen con disco y carpeta</span>
+<span class="cls">Image</span>::<span class="fn">make</span>(<span class="str">'Portada'</span>, <span class="str">'imagen'</span>)
+    -><span class="fn">disk</span>(<span class="str">'public'</span>)
+    -><span class="fn">dir</span>(<span class="str">'cursos'</span>)
+    -><span class="fn">nullable</span>()
+    -><span class="fn">hideOnIndex</span>(),
+
+<span class="cm">// Editor de contenido enriquecido</span>
+<span class="cls">TinyMce</span>::<span class="fn">make</span>(<span class="str">'Contenido'</span>, <span class="str">'contenido'</span>)
+    -><span class="fn">hideOnIndex</span>(),
+
+<span class="cm">// Slug que se genera desde el nombre</span>
+<span class="cls">Slug</span>::<span class="fn">make</span>(<span class="str">'URL'</span>, <span class="str">'slug'</span>)
+    -><span class="fn">from</span>(<span class="str">'nombre'</span>)  <span class="cm">// genera slug desde campo 'nombre'</span>
+    -><span class="fn">unique</span>(),
+
+<span class="cm">// Select con badge de colores</span>
+<span class="cls">Select</span>::<span class="fn">make</span>(<span class="str">'Estado'</span>, <span class="str">'estado'</span>)
+    -><span class="fn">options</span>([
+        <span class="str">'pendiente'</span>  => <span class="str">'Pendiente'</span>,
+        <span class="str">'activo'</span>     => <span class="str">'Activo'</span>,
+        <span class="str">'cancelado'</span>  => <span class="str">'Cancelado'</span>,
+    ])
+    -><span class="fn">badge</span>(<span class="kw">fn</span>(<span class="var">$val</span>) => <span class="kw">match</span>(<span class="var">$val</span>) {
+        <span class="str">'pendiente'</span> => <span class="str">'warning'</span>,
+        <span class="str">'activo'</span>    => <span class="str">'success'</span>,
+        <span class="str">'cancelado'</span> => <span class="str">'danger'</span>,
+        <span class="kw">default</span>     => <span class="str">'default'</span>,
+    }),
+
+<span class="cm">// Mostrar / ocultar según contexto</span>
+<span class="cls">Text</span>::<span class="fn">make</span>(<span class="str">'Nombre'</span>, <span class="str">'nombre'</span>)
+    -><span class="fn">showOnIndex</span>()      <span class="cm">// visible en el listado</span>
+    -><span class="fn">showOnForm</span>()       <span class="cm">// visible en crear/editar</span>
+    -><span class="fn">hideOnDetail</span>()     <span class="cm">// oculto en la vista detalle</span>
+    -><span class="fn">sortable</span>()
+    -><span class="fn">searchable</span>(),</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p4')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 5 -->
+<div class="step-card" id="p5">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">05</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Menú lateral — registrar Resources</div>
+      <div class="step-meta">MoonShineServiceProvider · MenuItem · MenuGroup · icons</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>El menú del panel se define en el <code>MoonShineServiceProvider</code>. Puedes crear grupos, separadores y asignar íconos de Heroicons.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — app/MoonShine/MoonShineServiceProvider.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">&lt;?php</span>
+<span class="kw">namespace</span> <span class="cls">App\MoonShine</span>;
+
+<span class="kw">use</span> <span class="cls">MoonShine\Laravel\DependencyInjection\MoonShineConfigurator</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\Laravel\DependencyInjection\ConfiguratorContract</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\MenuManager\MenuItem</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\MenuManager\MenuGroup</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\MenuManager\MenuDivider</span>;
+
+<span class="cm">// Importar todos los resources</span>
+<span class="kw">use</span> <span class="cls">App\MoonShine\Resources\CursoResource</span>;
+<span class="kw">use</span> <span class="cls">App\MoonShine\Resources\EstudianteResource</span>;
+<span class="kw">use</span> <span class="cls">App\MoonShine\Resources\InstructorResource</span>;
+<span class="kw">use</span> <span class="cls">App\MoonShine\Resources\MatriculaResource</span>;
+<span class="kw">use</span> <span class="cls">App\MoonShine\Resources\NotaResource</span>;
+
+<span class="kw">class</span> <span class="cls">MoonShineServiceProvider</span>
+{
+    <span class="kw">public function</span> <span class="fn">__invoke</span>(
+        <span class="cls">ConfiguratorContract</span> <span class="var">$config</span>
+    ): <span class="cls">ConfiguratorContract</span> {
+
+        <span class="kw">return</span> <span class="var">$config</span>
+            -><span class="fn">menu</span>([
+
+                <span class="cls">MenuItem</span>::<span class="fn">make</span>(
+                    <span class="str">'Dashboard'</span>,
+                    <span class="kw">static fn</span>() => <span class="kw">new</span> \<span class="cls">App\MoonShine\Pages\Dashboard</span>(),
+                    <span class="str">'heroicons.home'</span>
+                ),
+
+                <span class="cls">MenuDivider</span>::<span class="fn">make</span>(),
+
+                <span class="cls">MenuGroup</span>::<span class="fn">make</span>(<span class="str">'Académico'</span>, [
+                    <span class="cls">MenuItem</span>::<span class="fn">make</span>(
+                        <span class="str">'Cursos'</span>,
+                        <span class="kw">static fn</span>() => <span class="kw">new</span> <span class="cls">CursoResource</span>(),
+                        <span class="str">'heroicons.academic-cap'</span>
+                    ),
+                    <span class="cls">MenuItem</span>::<span class="fn">make</span>(
+                        <span class="str">'Instructores'</span>,
+                        <span class="kw">static fn</span>() => <span class="kw">new</span> <span class="cls">InstructorResource</span>(),
+                        <span class="str">'heroicons.user'</span>
+                    ),
+                ]),
+
+                <span class="cls">MenuGroup</span>::<span class="fn">make</span>(<span class="str">'Estudiantes'</span>, [
+                    <span class="cls">MenuItem</span>::<span class="fn">make</span>(
+                        <span class="str">'Estudiantes'</span>,
+                        <span class="kw">static fn</span>() => <span class="kw">new</span> <span class="cls">EstudianteResource</span>(),
+                        <span class="str">'heroicons.users'</span>
+                    ),
+                    <span class="cls">MenuItem</span>::<span class="fn">make</span>(
+                        <span class="str">'Matrículas'</span>,
+                        <span class="kw">static fn</span>() => <span class="kw">new</span> <span class="cls">MatriculaResource</span>(),
+                        <span class="str">'heroicons.clipboard-document-list'</span>
+                    ),
+                    <span class="cls">MenuItem</span>::<span class="fn">make</span>(
+                        <span class="str">'Notas'</span>,
+                        <span class="kw">static fn</span>() => <span class="kw">new</span> <span class="cls">NotaResource</span>(),
+                        <span class="str">'heroicons.star'</span>
+                    ),
+                ]),
+
+            ]);
+    }
+}</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p5')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 6 -->
+<div class="step-card" id="p6">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">06</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Filtros y búsqueda</div>
+      <div class="step-meta">filters() · search · $search · RangeSlider · DateRange</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — Búsqueda y Filtros en Resource</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\RangeSlider</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\DateRange</span>;
+
+<span class="kw">class</span> <span class="cls">CursoResource</span> <span class="kw">extends</span> <span class="cls">ModelResource</span>
+{
+    <span class="cm">// Columnas buscables (barra de búsqueda del listado)</span>
+    <span class="kw">protected</span> <span class="type">array</span> <span class="var">$search</span> = [<span class="str">'nombre'</span>, <span class="str">'instructor'</span>, <span class="str">'descripcion'</span>];
+
+    <span class="cm">// Panel de filtros laterales</span>
+    <span class="kw">protected function</span> <span class="fn">filters</span>(): <span class="type">iterable</span>
+    {
+        <span class="kw">return</span> [
+            <span class="cls">Text</span>::<span class="fn">make</span>(<span class="str">'Instructor'</span>, <span class="str">'instructor'</span>)
+                -><span class="fn">like</span>(<span class="str">'instructor'</span>),   <span class="cm">// LIKE %valor%</span>
+
+            <span class="cls">Select</span>::<span class="fn">make</span>(<span class="str">'Nivel'</span>, <span class="str">'nivel'</span>)
+                -><span class="fn">options</span>([
+                    <span class="str">'basico'</span>     => <span class="str">'Básico'</span>,
+                    <span class="str">'intermedio'</span> => <span class="str">'Intermedio'</span>,
+                    <span class="str">'avanzado'</span>   => <span class="str">'Avanzado'</span>,
+                ])-><span class="fn">nullable</span>(),
+
+            <span class="cls">RangeSlider</span>::<span class="fn">make</span>(<span class="str">'Horas'</span>, <span class="str">'horas'</span>)
+                -><span class="fn">fromTo</span>(<span class="str">'horas_min'</span>, <span class="str">'horas_max'</span>)
+                -><span class="fn">min</span>(<span class="num">0</span>)-><span class="fn">max</span>(<span class="num">200</span>),
+
+            <span class="cls">DateRange</span>::<span class="fn">make</span>(<span class="str">'Creado'</span>, <span class="str">'created_at'</span>)
+                -><span class="fn">fromTo</span>(<span class="str">'desde'</span>, <span class="str">'hasta'</span>),
+
+            <span class="cls">Switcher</span>::<span class="fn">make</span>(<span class="str">'Solo activos'</span>, <span class="str">'activo'</span>),
+        ];
+    }
+
+    <span class="cm">// Ordenamiento por defecto</span>
+    <span class="kw">protected function</span> <span class="fn">modifyQueryBuilder</span>(\<span class="cls">Illuminate\Database\Eloquent\Builder</span> <span class="var">$query</span>): \<span class="cls">Illuminate\Database\Eloquent\Builder</span>
+    {
+        <span class="kw">return</span> <span class="var">$query</span>-><span class="fn">orderBy</span>(<span class="str">'nombre'</span>, <span class="str">'asc'</span>);
+    }
+}</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p6')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 7 -->
+<div class="step-card" id="p7">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">07</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Relaciones en Moonshine 4.x</div>
+      <div class="step-meta">BelongsTo · HasMany · BelongsToMany · RelationRepeater</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — Relaciones en formFields()</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\Relationships\BelongsTo</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\Relationships\HasMany</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\Relationships\BelongsToMany</span>;
+<span class="kw">use</span> <span class="cls">MoonShine\UI\Fields\Relationships\RelationRepeater</span>;
+
+<span class="cm">// BelongsTo — Matrícula pertenece a un Estudiante</span>
+<span class="cls">BelongsTo</span>::<span class="fn">make</span>(
+    <span class="str">'Estudiante'</span>,
+    <span class="str">'estudiante'</span>,
+    <span class="kw">static fn</span>() => <span class="kw">new</span> <span class="cls">EstudianteResource</span>()
+)
+-><span class="fn">required</span>()
+-><span class="fn">searchable</span>(),   <span class="cm">// búsqueda AJAX en dropdown</span>
+
+<span class="cm">// BelongsTo — Matrícula pertenece a un Curso</span>
+<span class="cls">BelongsTo</span>::<span class="fn">make</span>(
+    <span class="str">'Curso'</span>,
+    <span class="str">'curso'</span>,
+    <span class="kw">static fn</span>() => <span class="kw">new</span> <span class="cls">CursoResource</span>()
+)
+-><span class="fn">required</span>()
+-><span class="fn">searchable</span>(),
+
+<span class="cm">// HasMany — Curso tiene muchas matrículas</span>
+<span class="cm">// (se muestra en la página de detalle del Curso)</span>
+<span class="cls">HasMany</span>::<span class="fn">make</span>(
+    <span class="str">'Matrículas'</span>,
+    <span class="str">'matriculas'</span>,
+    <span class="kw">static fn</span>() => <span class="kw">new</span> <span class="cls">MatriculaResource</span>()
+)
+-><span class="fn">hideOnIndex</span>()   <span class="cm">// solo en la vista detalle</span>
+-><span class="fn">hideOnForm</span>(),
+
+<span class="cm">// BelongsToMany — Estudiante ↔ Cursos (tabla pivot)</span>
+<span class="cls">BelongsToMany</span>::<span class="fn">make</span>(
+    <span class="str">'Cursos'</span>,
+    <span class="str">'cursos'</span>,
+    <span class="kw">static fn</span>() => <span class="kw">new</span> <span class="cls">CursoResource</span>()
+)
+-><span class="fn">searchable</span>(),</pre>
+    </div>
+
+    <div class="info-box tip">
+      <span class="icon">✅</span>
+      <div><code>->searchable()</code> en un BelongsTo activa búsqueda por AJAX — indispensable cuando tienes cientos de registros. Sin él, carga todos los registros en el dropdown.</div>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p7')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 8 -->
+<div class="step-card" id="p8">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">08</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Proyecto real — Sistema académico con 5 módulos</div>
+      <div class="step-meta">Cursos · Instructores · Estudiantes · Matrículas · Notas</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Construimos un sistema académico completo desde cero. 5 módulos con sus relaciones, resources y menú organizado.</p>
+
+    <h3>Los 5 módulos del proyecto</h3>
+    <div class="project-grid">
+      <div class="project-card">
+        <span class="icon">📚</span>
+        <div class="label">Cursos</div>
+        <div class="desc">nombre, horas, nivel, instructor_id, activo</div>
+      </div>
+      <div class="project-card">
+        <span class="icon">👨‍🏫</span>
+        <div class="label">Instructores</div>
+        <div class="desc">nombre, especialidad, correo, activo</div>
+      </div>
+      <div class="project-card">
+        <span class="icon">👨‍🎓</span>
+        <div class="label">Estudiantes</div>
+        <div class="desc">nombre, documento, ficha, programa, activo</div>
+      </div>
+      <div class="project-card">
+        <span class="icon">📋</span>
+        <div class="label">Matrículas</div>
+        <div class="desc">estudiante_id, curso_id, fecha, estado</div>
+      </div>
+      <div class="project-card">
+        <span class="icon">⭐</span>
+        <div class="label">Notas</div>
+        <div class="desc">matricula_id, nota, periodo, observacion</div>
+      </div>
+    </div>
+
+    <h3>Paso 1 — Crear modelos y migraciones</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Crear todos los modelos con migración</span>
+php artisan make:model Instructor -m
+php artisan make:model Curso -m
+php artisan make:model Estudiante -m
+php artisan make:model Matricula -m
+php artisan make:model Nota -m</pre>
+    </div>
+
+    <h3>Paso 2 — Migraciones en orden correcto (padre → hijo)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — Migraciones de los 5 módulos</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm">// 1. instructores (sin FK)</span>
+<span class="var">$table</span>-><span class="fn">id</span>();
+<span class="var">$table</span>-><span class="fn">string</span>(<span class="str">'nombre'</span>, <span class="num">100</span>);
+<span class="var">$table</span>-><span class="fn">string</span>(<span class="str">'especialidad'</span>, <span class="num">100</span>);
+<span class="var">$table</span>-><span class="fn">string</span>(<span class="str">'correo'</span>)-><span class="fn">unique</span>();
+<span class="var">$table</span>-><span class="fn">boolean</span>(<span class="str">'activo'</span>)-><span class="fn">default</span>(<span class="kw">true</span>);
+<span class="var">$table</span>-><span class="fn">timestamps</span>();
+
+<span class="cm">// 2. cursos (FK → instructores)</span>
+<span class="var">$table</span>-><span class="fn">id</span>();
+<span class="var">$table</span>-><span class="fn">string</span>(<span class="str">'nombre'</span>, <span class="num">100</span>);
+<span class="var">$table</span>-><span class="fn">text</span>(<span class="str">'descripcion'</span>)-><span class="fn">nullable</span>();
+<span class="var">$table</span>-><span class="fn">unsignedInteger</span>(<span class="str">'horas'</span>)-><span class="fn">default</span>(<span class="num">40</span>);
+<span class="var">$table</span>-><span class="fn">enum</span>(<span class="str">'nivel'</span>, [<span class="str">'basico'</span>,<span class="str">'intermedio'</span>,<span class="str">'avanzado'</span>])-><span class="fn">default</span>(<span class="str">'basico'</span>);
+<span class="var">$table</span>-><span class="fn">foreignId</span>(<span class="str">'instructor_id'</span>)-><span class="fn">constrained</span>(<span class="str">'instructores'</span>)-><span class="fn">restrictOnDelete</span>();
+<span class="var">$table</span>-><span class="fn">boolean</span>(<span class="str">'activo'</span>)-><span class="fn">default</span>(<span class="kw">true</span>);
+<span class="var">$table</span>-><span class="fn">timestamps</span>();
+
+<span class="cm">// 3. estudiantes (sin FK)</span>
+<span class="var">$table</span>-><span class="fn">id</span>();
+<span class="var">$table</span>-><span class="fn">string</span>(<span class="str">'nombre'</span>, <span class="num">150</span>);
+<span class="var">$table</span>-><span class="fn">string</span>(<span class="str">'documento'</span>, <span class="num">20</span>)-><span class="fn">unique</span>();
+<span class="var">$table</span>-><span class="fn">string</span>(<span class="str">'ficha'</span>, <span class="num">20</span>)-><span class="fn">nullable</span>();
+<span class="var">$table</span>-><span class="fn">string</span>(<span class="str">'programa'</span>, <span class="num">100</span>)-><span class="fn">nullable</span>();
+<span class="var">$table</span>-><span class="fn">boolean</span>(<span class="str">'activo'</span>)-><span class="fn">default</span>(<span class="kw">true</span>);
+<span class="var">$table</span>-><span class="fn">timestamps</span>();
+
+<span class="cm">// 4. matriculas (FK → estudiantes + cursos)</span>
+<span class="var">$table</span>-><span class="fn">id</span>();
+<span class="var">$table</span>-><span class="fn">foreignId</span>(<span class="str">'estudiante_id'</span>)-><span class="fn">constrained</span>(<span class="str">'estudiantes'</span>)-><span class="fn">cascadeOnDelete</span>();
+<span class="var">$table</span>-><span class="fn">foreignId</span>(<span class="str">'curso_id'</span>)-><span class="fn">constrained</span>(<span class="str">'cursos'</span>)-><span class="fn">restrictOnDelete</span>();
+<span class="var">$table</span>-><span class="fn">date</span>(<span class="str">'fecha_matricula'</span>);
+<span class="var">$table</span>-><span class="fn">enum</span>(<span class="str">'estado'</span>,[<span class="str">'activa'</span>,<span class="str">'retirada'</span>,<span class="str">'finalizada'</span>])-><span class="fn">default</span>(<span class="str">'activa'</span>);
+<span class="var">$table</span>-><span class="fn">timestamps</span>();
+
+<span class="cm">// 5. notas (FK → matriculas)</span>
+<span class="var">$table</span>-><span class="fn">id</span>();
+<span class="var">$table</span>-><span class="fn">foreignId</span>(<span class="str">'matricula_id'</span>)-><span class="fn">constrained</span>(<span class="str">'matriculas'</span>)-><span class="fn">cascadeOnDelete</span>();
+<span class="var">$table</span>-><span class="fn">decimal</span>(<span class="str">'nota'</span>, <span class="num">4</span>, <span class="num">1</span>);
+<span class="var">$table</span>-><span class="fn">string</span>(<span class="str">'periodo'</span>, <span class="num">20</span>); <span class="cm">// Ej: "2024-1"</span>
+<span class="var">$table</span>-><span class="fn">text</span>(<span class="str">'observacion'</span>)-><span class="fn">nullable</span>();
+<span class="var">$table</span>-><span class="fn">timestamps</span>();</pre>
+    </div>
+
+    <h3>Paso 3 — Crear los 5 Resources</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>php artisan moonshine:resource InstructorResource --model=Instructor
+php artisan moonshine:resource CursoResource      --model=Curso
+php artisan moonshine:resource EstudianteResource --model=Estudiante
+php artisan moonshine:resource MatriculaResource  --model=Matricula
+php artisan moonshine:resource NotaResource       --model=Nota</pre>
+    </div>
+
+    <h3>Paso 4 — NotaResource con relaciones completas</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — NotaResource.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">class</span> <span class="cls">NotaResource</span> <span class="kw">extends</span> <span class="cls">ModelResource</span>
+{
+    <span class="kw">protected</span> <span class="type">string</span> <span class="var">$model</span> = <span class="cls">Nota</span>::class;
+    <span class="kw">protected</span> <span class="type">string</span> <span class="var">$title</span> = <span class="str">'Notas'</span>;
+    <span class="kw">protected</span> <span class="type">array</span>  <span class="var">$search</span> = [<span class="str">'matricula.estudiante.nombre'</span>, <span class="str">'periodo'</span>];
+
+    <span class="kw">protected function</span> <span class="fn">indexFields</span>(): <span class="type">iterable</span>
+    {
+        <span class="kw">return</span> [
+            <span class="cls">ID</span>::<span class="fn">make</span>()-><span class="fn">sortable</span>(),
+            <span class="cls">BelongsTo</span>::<span class="fn">make</span>(
+                <span class="str">'Matrícula'</span>, <span class="str">'matricula'</span>,
+                <span class="kw">static fn</span>() => <span class="kw">new</span> <span class="cls">MatriculaResource</span>()
+            ),
+            <span class="cls">Number</span>::<span class="fn">make</span>(<span class="str">'Nota'</span>, <span class="str">'nota'</span>)-><span class="fn">sortable</span>(),
+            <span class="cls">Text</span>::<span class="fn">make</span>(<span class="str">'Período'</span>, <span class="str">'periodo'</span>),
+        ];
+    }
+
+    <span class="kw">protected function</span> <span class="fn">formFields</span>(): <span class="type">iterable</span>
+    {
+        <span class="kw">return</span> [
+            <span class="cls">ID</span>::<span class="fn">make</span>(),
+            <span class="cls">BelongsTo</span>::<span class="fn">make</span>(
+                <span class="str">'Matrícula'</span>, <span class="str">'matricula'</span>,
+                <span class="kw">static fn</span>() => <span class="kw">new</span> <span class="cls">MatriculaResource</span>()
+            )-><span class="fn">required</span>()-><span class="fn">searchable</span>(),
+            <span class="cls">Number</span>::<span class="fn">make</span>(<span class="str">'Nota'</span>, <span class="str">'nota'</span>)
+                -><span class="fn">required</span>()-><span class="fn">min</span>(<span class="num">0</span>)-><span class="fn">max</span>(<span class="num">5</span>)-><span class="fn">step</span>(<span class="num">0.1</span>),
+            <span class="cls">Text</span>::<span class="fn">make</span>(<span class="str">'Período'</span>, <span class="str">'periodo'</span>)
+                -><span class="fn">required</span>()
+                -><span class="fn">placeholder</span>(<span class="str">'Ej: 2024-1'</span>),
+            <span class="cls">Textarea</span>::<span class="fn">make</span>(<span class="str">'Observación'</span>, <span class="str">'observacion'</span>)-><span class="fn">nullable</span>(),
+        ];
+    }
+}</pre>
+    </div>
+
+    <h3>Paso 5 — Ejecutar todo</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>php artisan migrate:fresh
+php artisan moonshine:user   <span class="cm"># si necesitas otro admin</span>
+php artisan moonshine:publish</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p8')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 9 -->
+<div class="step-card" id="p9">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">09</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Deploy del panel en Railway</div>
+      <div class="step-meta">railway up · moonshine:user · storage:link · assets</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal — Checklist de deploy</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># 1. Subir el código a Railway</span>
+railway up
+
+<span class="cm"># 2. Migrar en producción</span>
+railway run php artisan migrate --force
+
+<span class="cm"># 3. Crear usuario admin de Moonshine en producción</span>
+railway run php artisan moonshine:user
+
+<span class="cm"># 4. Publicar assets de Moonshine</span>
+railway run php artisan moonshine:publish
+
+<span class="cm"># 5. Vincular storage para imágenes subidas</span>
+railway run php artisan storage:link
+
+<span class="cm"># 6. Cachear para producción</span>
+railway run php artisan config:cache
+railway run php artisan route:cache
+railway run php artisan view:cache</pre>
+    </div>
+
+    <h3>Variables de entorno en Railway</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">ENV — Railway Variables</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>APP_ENV=production
+APP_DEBUG=false
+APP_KEY=             <span class="cm"># railway run php artisan key:generate --show</span>
+APP_URL=https://tu-proyecto.up.railway.app
+
+DB_CONNECTION=pgsql
+DB_HOST=             <span class="cm"># host interno Railway PostgreSQL</span>
+DB_PORT=5432
+DB_DATABASE=railway
+DB_USERNAME=postgres
+DB_PASSWORD=         <span class="cm"># password generada por Railway</span>
+
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=contaeducolombia@gmail.com
+MAIL_PASSWORD=       <span class="cm"># App Password NUEVA (la anterior fue expuesta)</span>
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=contaeducolombia@gmail.com
+MAIL_FROM_NAME="EduCode CEFIT"</pre>
+    </div>
+
+    <div class="info-box warn">
+      <span class="icon">⚠️</span>
+      <div>Railway no persiste el filesystem entre deploys. Las imágenes subidas desde Moonshine se perderán al hacer un nuevo deploy. Para producción seria usa <strong>S3 o Cloudinary</strong> como disco de almacenamiento.</div>
+    </div>
+
+    <div class="info-box tip">
+      <span class="icon">✅</span>
+      <div>El panel queda en <code>https://tu-dominio.up.railway.app/admin</code>. Cambia el prefijo con la clave <code>'prefix'</code> en <code>config/moonshine.php</code> si quieres una ruta diferente.</div>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p9')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+</main>
+<footer>CEFIT-SENA · Moonshine 4.x · Docs: getmoonshine.app/en/docs/4.x</footer>
+
+<script>
+const TOTAL=9;
+function toggle(h){const c=h.closest('.step-card');const o=c.classList.contains('open');document.querySelectorAll('.step-card.open').forEach(x=>x.classList.remove('open'));if(!o)c.classList.add('open')}
+function copyCode(btn){const pre=btn.closest('.code-block').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='✓ Copiado';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copiar';btn.classList.remove('copied')},2000)})}
+function markDone(btn,id){const c=document.getElementById(id);c.classList.toggle('done');const d=c.classList.contains('done');btn.textContent=d?'✓  Completado':'✓  Marcar como completado';update()}
+function update(){const d=document.querySelectorAll('.step-card.done').length;document.getElementById('progressBar').style.width=(d/TOTAL*100)+'%';document.getElementById('progressCount').textContent=d+' / '+TOTAL}
+document.querySelector('.step-card .step-header').click();
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const id=e.target.id;document.querySelectorAll('.nav-pill').forEach(p=>p.classList.toggle('active',p.getAttribute('href')==='#'+id))}}),{threshold:.4});
+document.querySelectorAll('.step-card').forEach(c=>obs.observe(c));
+</script>
+</body>
+</html>

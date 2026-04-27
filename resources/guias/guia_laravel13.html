@@ -1,0 +1,1267 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laravel 13 — Landing a CRUD completo</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fafaf8;
+    --surface: #ffffff;
+    --surface2: #f4f4f0;
+    --border: #e8e8e2;
+    --accent: #e8471d;
+    --accent2: #1a1a1a;
+    --ok: #1a7f4b;
+    --warn: #b45309;
+    --text: #1a1a1a;
+    --text-dim: #4a4a4a;
+    --text-muted: #9a9a9a;
+    --code-bg: #1a1a1a;
+    --code-text: #e8e8e0;
+    --red-light: rgba(232,71,29,0.08);
+    --red-border: rgba(232,71,29,0.25);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--accent2);
+    color: #fff;
+    padding: 70px 40px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.04) 39px, rgba(255,255,255,0.04) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.04) 39px, rgba(255,255,255,0.04) 40px);
+  }
+
+  header::after {
+    content: '13';
+    position: absolute;
+    right: 40px;
+    bottom: -30px;
+    font-family: 'Space Mono', monospace;
+    font-size: 18rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.04);
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .badge {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    background: rgba(232,71,29,0.15);
+    border: 1px solid rgba(232,71,29,0.4);
+    padding: 5px 14px;
+    border-radius: 4px;
+    margin-bottom: 22px;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    font-weight: 800;
+    line-height: 1.05;
+    position: relative;
+    max-width: 700px;
+  }
+
+  h1 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  header p {
+    margin-top: 16px;
+    font-size: 1.05rem;
+    color: rgba(255,255,255,0.6);
+    font-weight: 300;
+    max-width: 520px;
+    line-height: 1.7;
+    position: relative;
+  }
+
+  /* PROGRESS */
+  .progress-wrap {
+    padding: 16px 40px;
+    background: var(--accent2);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .progress-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    white-space: nowrap;
+  }
+
+  .progress-bar-outer {
+    flex: 1;
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .progress-bar-inner {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: 10px;
+    transition: width .4s ease;
+  }
+
+  .progress-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  /* NAV */
+  .nav-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 14px 40px;
+    background: var(--surface);
+    border-bottom: 2px solid var(--border);
+  }
+
+  .nav-pill {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 4px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all .15s;
+    text-decoration: none;
+  }
+
+  .nav-pill:hover, .nav-pill.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  /* MAIN */
+  main { max-width: 880px; margin: 0 auto; padding: 44px 24px 80px; }
+
+  /* STEP CARD */
+  .step-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 24px;
+    overflow: hidden;
+    scroll-margin-top: 110px;
+    animation: fadeUp .35s ease both;
+    transition: border-color .2s;
+  }
+
+  .step-card.done { border-color: var(--ok); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 24px;
+    cursor: pointer;
+    user-select: none;
+    transition: background .15s;
+  }
+
+  .step-header:hover { background: var(--surface2); }
+
+  .step-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    width: 36px; height: 36px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all .2s;
+  }
+
+  .step-card.done .step-num {
+    background: var(--ok);
+    border-color: var(--ok);
+    color: #fff;
+  }
+
+  .step-title { font-size: .98rem; font-weight: 700; flex: 1; }
+  .step-meta { font-family: 'Space Mono', monospace; font-size: .7rem; color: var(--text-muted); margin-top: 3px; }
+  .step-toggle { font-size: 14px; color: var(--text-muted); transition: transform .3s; flex-shrink: 0; }
+  .step-card.open .step-toggle { transform: rotate(180deg); }
+
+  .step-body {
+    display: none;
+    padding: 0 24px 24px;
+    border-top: 1.5px solid var(--border);
+  }
+
+  .step-card.open .step-body { display: block; }
+
+  .step-body p, .step-body li {
+    color: var(--text-dim);
+    line-height: 1.8;
+    font-size: .91rem;
+  }
+
+  .step-body ul, .step-body ol { padding-left: 20px; margin: 10px 0; }
+  .step-body li { margin-bottom: 5px; }
+
+  .step-body h3 {
+    font-family: 'Space Mono', monospace;
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    margin: 20px 0 10px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+  }
+
+  /* INFO BOXES */
+  .info-box {
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: .87rem;
+    line-height: 1.7;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .info-box .icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .info-box.tip { background: rgba(26,127,75,0.07); border: 1px solid rgba(26,127,75,0.2); color: #166534; }
+  .info-box.warn { background: rgba(180,83,9,0.07); border: 1px solid rgba(180,83,9,0.2); color: #92400e; }
+  .info-box.info { background: var(--red-light); border: 1px solid var(--red-border); color: #9a2c12; }
+  .info-box.new { background: rgba(30,64,175,0.07); border: 1px solid rgba(30,64,175,0.2); color: #1e3a8a; }
+
+  /* CODE */
+  .code-block {
+    margin: 16px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1.5px solid #2a2a2a;
+  }
+
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background: #111;
+    border-bottom: 1px solid #2a2a2a;
+  }
+
+  .code-lang {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .copy-btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    background: rgba(232,71,29,0.15);
+    border: 1px solid rgba(232,71,29,0.35);
+    color: var(--accent);
+    cursor: pointer;
+    transition: all .15s;
+  }
+
+  .copy-btn:hover { background: rgba(232,71,29,0.25); }
+  .copy-btn.copied { color: #4ade80; border-color: #4ade80; }
+
+  pre {
+    background: var(--code-bg);
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-family: 'Space Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.75;
+    color: var(--code-text);
+  }
+
+  /* syntax */
+  .kw  { color: #f97316; font-weight: 600; }
+  .fn  { color: #86efac; }
+  .str { color: #fbbf24; }
+  .num { color: #93c5fd; }
+  .cm  { color: #4a4a40; font-style: italic; }
+  .type{ color: #c4b5fd; }
+  .var { color: #fca5a5; }
+  .cls { color: #6ee7b7; font-weight: 600; }
+  .tag { color: #f97316; }
+  .atr { color: #86efac; }
+  .val { color: #fbbf24; }
+
+  /* TABLE */
+  .tabla {
+    background: var(--code-bg);
+    border: 1.5px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 0;
+    margin: 14px 0;
+    overflow-x: auto;
+  }
+
+  .tabla table { border-collapse: collapse; width: 100%; min-width: 480px; }
+
+  .tabla th {
+    background: #111;
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1px solid #2a2a2a;
+  }
+
+  .tabla td {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 8px 16px;
+    border-bottom: 1px solid #2a2a2a;
+    color: #cbd5e1;
+  }
+
+  .tabla tr:last-child td { border-bottom: none; }
+  .tabla tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .hl { color: #f97316; }
+  .hl2 { color: #86efac; }
+
+  /* CHECK BTN */
+  .check-btn {
+    margin-top: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .83rem;
+    font-weight: 600;
+    padding: 9px 20px;
+    border-radius: 6px;
+    background: rgba(26,127,75,0.08);
+    border: 1.5px solid rgba(26,127,75,0.3);
+    color: var(--ok);
+    cursor: pointer;
+    transition: all .15s;
+  }
+
+  .check-btn:hover { background: rgba(26,127,75,0.15); }
+
+  footer {
+    text-align: center;
+    padding: 32px;
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+    font-size: .75rem;
+    border-top: 1.5px solid var(--border);
+  }
+
+  @media(max-width:600px) {
+    header { padding: 40px 18px; }
+    .nav-pills, .progress-wrap { padding: 12px 14px; }
+    main { padding: 20px 12px 60px; }
+    .step-header { padding: 14px; }
+    .step-body { padding: 0 14px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Laravel 13 · PHP 8.3+</div>
+  <h1>De la <em>Landing</em><br>al CRUD completo</h1>
+  <p>Guía paso a paso basada en la documentación oficial de Laravel 13: instala, configura, crea una landing con welcome.blade.php y construye tu primer CRUD funcional.</p>
+</header>
+
+<div class="progress-wrap">
+  <span class="progress-label">PROGRESO</span>
+  <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+  <span class="progress-count" id="progressCount">0 / 10</span>
+</div>
+
+<div class="nav-pills">
+  <a class="nav-pill" href="#p1">1. Instalación</a>
+  <a class="nav-pill" href="#p2">2. Configuración</a>
+  <a class="nav-pill" href="#p3">3. Estructura</a>
+  <a class="nav-pill" href="#p4">4. Landing</a>
+  <a class="nav-pill" href="#p5">5. Rutas</a>
+  <a class="nav-pill" href="#p6">6. Migración</a>
+  <a class="nav-pill" href="#p7">7. Modelo</a>
+  <a class="nav-pill" href="#p8">8. Controlador</a>
+  <a class="nav-pill" href="#p9">9. Vistas CRUD</a>
+  <a class="nav-pill" href="#p10">10. Validación</a>
+</div>
+
+<main>
+
+<!-- PASO 1 -->
+<div class="step-card" id="p1">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">01</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Instalación de Laravel 13</div>
+      <div class="step-meta">PHP 8.3+ · composer · laravel new · Herd en Windows</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Laravel 13 requiere <strong>PHP 8.3 o superior</strong>. Con Laravel Herd en Windows el proceso es automático y no necesitas configurar Apache ni Nginx.</p>
+
+    <div class="info-box new">
+      <span class="icon">🆕</span>
+      <div><strong>Laravel 13 (lanzado 17 marzo 2026)</strong> — Mínimo PHP 8.3, incluye Laravel AI SDK estable, JSON:API resources, soporte nativo de passkeys y atributos PHP en lugar de propiedades de clase.</div>
+    </div>
+
+    <h3>Verificar requisitos</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Verificar versiones instaladas</span>
+php --version      <span class="cm"># Debe ser 8.3 o superior</span>
+composer --version
+node --version
+npm --version</pre>
+    </div>
+
+    <h3>Crear proyecto Laravel 13</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Opción A: con el instalador de Laravel (recomendado)</span>
+laravel new mi-proyecto
+
+<span class="cm"># Opción B: con Composer explícito en Laravel 13</span>
+composer create-project laravel/laravel:^13.0 mi-proyecto
+
+<span class="cm"># Entrar al directorio</span>
+cd mi-proyecto
+
+<span class="cm"># Levantar servidor de desarrollo</span>
+php artisan serve
+<span class="cm"># Disponible en: http://127.0.0.1:8000</span></pre>
+    </div>
+
+    <div class="info-box tip">
+      <span class="icon">✅</span>
+      <div>Con <strong>Laravel Herd en Windows</strong>: crea el proyecto dentro de <code>C:\Users\TuUsuario\Herd\</code> y queda disponible en <code>http://mi-proyecto.test</code> automáticamente. No necesitas <code>php artisan serve</code>.</div>
+    </div>
+
+    <h3>Confirmar versión instalada</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>php artisan --version
+<span class="cm"># Laravel Framework 13.x.x</span></pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p1')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 2 -->
+<div class="step-card" id="p2">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">02</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Configuración del proyecto</div>
+      <div class="step-meta">.env · APP_KEY · DB · bootstrap/app.php</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Toda la configuración de entorno vive en el archivo <code>.env</code>. Laravel 13 usa <code>bootstrap/app.php</code> para registrar middleware y providers, reemplazando el antiguo <code>Kernel.php</code>.</p>
+
+    <h3>Archivo .env — configuración mínima</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">.env</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>APP_NAME="Programando la Web"
+APP_ENV=local
+APP_KEY=                    <span class="cm"># se genera automáticamente</span>
+APP_DEBUG=true
+APP_URL=http://programando.test
+
+APP_LOCALE=es
+APP_FALLBACK_LOCALE=es
+APP_FAKER_LOCALE=es_Col
+
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=programando
+DB_USERNAME=postgres
+DB_PASSWORD=base1234
+
+SESSION_DRIVER=file
+CACHE_STORE=database
+QUEUE_CONNECTION=database</pre>
+    </div>
+
+    <h3>Generar APP_KEY si no existe</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>php artisan key:generate</pre>
+    </div>
+
+    <h3>bootstrap/app.php — nuevo en Laravel 11+</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — bootstrap/app.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">use</span> <span class="cls">Illuminate\Foundation\Application</span>;
+<span class="kw">use</span> <span class="cls">Illuminate\Foundation\Configuration\Exceptions</span>;
+<span class="kw">use</span> <span class="cls">Illuminate\Foundation\Configuration\Middleware</span>;
+
+<span class="kw">return</span> <span class="cls">Application</span>::<span class="fn">configure</span>(<span class="fn">basePath</span>: dirname(__DIR__))
+    -><span class="fn">withRouting</span>(
+        web: __DIR__.<span class="str">'/../routes/web.php'</span>,
+        commands: __DIR__.<span class="str">'/../routes/console.php'</span>,
+        health: <span class="str">'/up'</span>,
+    )
+    -><span class="fn">withMiddleware</span>(<span class="kw">function</span> (<span class="cls">Middleware</span> <span class="var">$middleware</span>) {
+        <span class="cm">// Registrar middleware personalizado aquí</span>
+    })
+    -><span class="fn">withExceptions</span>(<span class="kw">function</span> (<span class="cls">Exceptions</span> <span class="var">$exceptions</span>) {
+        <span class="cm">// Manejo de excepciones personalizado</span>
+    })-><span class="fn">create</span>();</pre>
+    </div>
+
+    <div class="info-box warn">
+      <span class="icon">⚠️</span>
+      <div>El archivo <code>.env</code> nunca va en Git. Está en <code>.gitignore</code> por defecto. Las variables de producción van directamente en Railway o en el servidor.</div>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p2')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 3 -->
+<div class="step-card" id="p3">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">03</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Estructura del proyecto</div>
+      <div class="step-meta">app/ · routes/ · resources/ · database/ · public/</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="tabla">
+      <table>
+        <tr><th>Carpeta / Archivo</th><th>Qué contiene</th></tr>
+        <tr><td class="hl">app/Models/</td><td>Modelos Eloquent — representan tablas de BD</td></tr>
+        <tr><td class="hl">app/Http/Controllers/</td><td>Lógica de negocio — recibe request, retorna respuesta</td></tr>
+        <tr><td class="hl">app/Http/Requests/</td><td>Form Requests — validación separada del controlador</td></tr>
+        <tr><td class="hl">routes/web.php</td><td>Rutas web (con sesión, CSRF, cookies)</td></tr>
+        <tr><td class="hl">routes/console.php</td><td>Comandos Artisan de la app</td></tr>
+        <tr><td class="hl2">resources/views/</td><td>Plantillas Blade (.blade.php)</td></tr>
+        <tr><td class="hl2">resources/css/ y js/</td><td>Assets compilados por Vite</td></tr>
+        <tr><td class="hl">database/migrations/</td><td>Scripts de creación de tablas</td></tr>
+        <tr><td class="hl">database/seeders/</td><td>Datos de prueba</td></tr>
+        <tr><td class="hl">database/factories/</td><td>Fábricas para generar datos falsos</td></tr>
+        <tr><td class="hl">public/</td><td>Único directorio público (index.php, assets compilados)</td></tr>
+        <tr><td class="hl">bootstrap/app.php</td><td>Punto de entrada — registra middleware y providers</td></tr>
+        <tr><td class="hl">.env</td><td>Variables de entorno locales (NO subir a Git)</td></tr>
+      </table>
+    </div>
+
+    <div class="info-box new">
+      <span class="icon">🆕</span>
+      <div><strong>Laravel 13:</strong> soporta atributos PHP (#[Table], #[Fillable], #[Hidden]) como alternativa a las propiedades de clase en los modelos. Las propiedades tradicionales siguen funcionando.</div>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p3')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 4 -->
+<div class="step-card" id="p4">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">04</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Landing con welcome.blade.php</div>
+      <div class="step-meta">Blade · layout · @vite · botón al CRUD · Tailwind</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>El <code>welcome.blade.php</code> es la vista de la ruta raíz <code>/</code>. La usamos como <strong>landing page</strong> pública que presenta la app y enlaza al CRUD (que puede ser protegido o público).</p>
+
+    <h3>Instalar Breeze para Tailwind + auth (opcional pero recomendado)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Instalar Breeze con Blade</span>
+composer require laravel/breeze --dev
+php artisan breeze:install blade
+npm install && npm run dev
+php artisan migrate</pre>
+    </div>
+
+    <h3>resources/views/welcome.blade.php — Landing completa</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Blade</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="tag">&lt;!DOCTYPE html&gt;</span>
+<span class="tag">&lt;html</span> <span class="atr">lang</span>=<span class="val">"es"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;head&gt;</span>
+    <span class="tag">&lt;meta</span> <span class="atr">charset</span>=<span class="val">"UTF-8"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;title&gt;</span>{{ config('app.name') }}<span class="tag">&lt;/title&gt;</span>
+    <span class="tag">&lt;meta</span> <span class="atr">name</span>=<span class="val">"viewport"</span> <span class="atr">content</span>=<span class="val">"width=device-width, initial-scale=1"</span><span class="tag">&gt;</span>
+    <span class="kw">@vite</span>(['resources/css/app.css', 'resources/js/app.js'])
+<span class="tag">&lt;/head&gt;</span>
+<span class="tag">&lt;body</span> <span class="atr">class</span>=<span class="val">"bg-white text-gray-900"</span><span class="tag">&gt;</span>
+
+    <span class="cm">{{-- Navbar --}}</span>
+    <span class="tag">&lt;nav</span> <span class="atr">class</span>=<span class="val">"flex justify-between items-center px-8 py-5 border-b"</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;span</span> <span class="atr">class</span>=<span class="val">"font-bold text-lg"</span><span class="tag">&gt;</span>{{ config('app.name') }}<span class="tag">&lt;/span&gt;</span>
+        <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"flex gap-3"</span><span class="tag">&gt;</span>
+            <span class="kw">@auth</span>
+                <span class="tag">&lt;a</span> <span class="atr">href</span>=<span class="val">"{{ route('dashboard') }}"</span>
+                   <span class="atr">class</span>=<span class="val">"px-4 py-2 bg-black text-white rounded text-sm"</span><span class="tag">&gt;</span>
+                   Dashboard
+                <span class="tag">&lt;/a&gt;</span>
+            <span class="kw">@else</span>
+                <span class="tag">&lt;a</span> <span class="atr">href</span>=<span class="val">"{{ route('login') }}"</span>
+                   <span class="atr">class</span>=<span class="val">"text-sm text-gray-600 hover:text-black"</span><span class="tag">&gt;</span>Iniciar sesión<span class="tag">&lt;/a&gt;</span>
+            <span class="kw">@endauth</span>
+        <span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;/nav&gt;</span>
+
+    <span class="cm">{{-- Hero --}}</span>
+    <span class="tag">&lt;section</span> <span class="atr">class</span>=<span class="val">"max-w-4xl mx-auto px-8 py-24 text-center"</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;h1</span> <span class="atr">class</span>=<span class="val">"text-5xl font-black leading-tight mb-6"</span><span class="tag">&gt;</span>
+            Aprende Laravel 13<br>
+            <span class="tag">&lt;span</span> <span class="atr">class</span>=<span class="val">"text-red-600"</span><span class="tag">&gt;</span>paso a paso<span class="tag">&lt;/span&gt;</span>
+        <span class="tag">&lt;/h1&gt;</span>
+        <span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"text-xl text-gray-500 mb-10 max-w-lg mx-auto"</span><span class="tag">&gt;</span>
+            Plataforma educativa para estudiantes de EduCode.
+            Guías prácticas, ejercicios y proyectos reales.
+        <span class="tag">&lt;/p&gt;</span>
+
+        <span class="cm">{{-- Botón que apunta al CRUD --}}</span>
+        <span class="tag">&lt;a</span> <span class="atr">href</span>=<span class="val">"{{ route('cursos.index') }}"</span>
+           <span class="atr">class</span>=<span class="val">"inline-block bg-red-600 text-white px-8 py-4
+                  text-lg font-bold rounded-lg hover:bg-red-700 transition"</span><span class="tag">&gt;</span>
+            Ver cursos disponibles →
+        <span class="tag">&lt;/a&gt;</span>
+    <span class="tag">&lt;/section&gt;</span>
+
+    <span class="cm">{{-- Cards de características --}}</span>
+    <span class="tag">&lt;section</span> <span class="atr">class</span>=<span class="val">"max-w-5xl mx-auto px-8 pb-20 grid grid-cols-3 gap-6"</span><span class="tag">&gt;</span>
+        <span class="kw">@foreach</span> ([
+            ['BD & SQL', 'Fundamentos de bases de datos relacionales con MySQL'],
+            ['PHP & Laravel', 'Del PHP puro al framework más elegante'],
+            ['Moonshine', 'Panel admin profesional sin esfuerzo'],
+        ] <span class="kw">as</span> [$titulo, $desc])
+        <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"border rounded-lg p-6"</span><span class="tag">&gt;</span>
+            <span class="tag">&lt;h3</span> <span class="atr">class</span>=<span class="val">"font-bold mb-2"</span><span class="tag">&gt;</span>{{ $titulo }}<span class="tag">&lt;/h3&gt;</span>
+            <span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"text-gray-500 text-sm"</span><span class="tag">&gt;</span>{{ $desc }}<span class="tag">&lt;/p&gt;</span>
+        <span class="tag">&lt;/div&gt;</span>
+        <span class="kw">@endforeach</span>
+    <span class="tag">&lt;/section&gt;</span>
+
+<span class="tag">&lt;/body&gt;</span>
+<span class="tag">&lt;/html&gt;</span></pre>
+    </div>
+
+    <div class="info-box tip">
+      <span class="icon">✅</span>
+      <div><code>@auth / @else / @endauth</code> muestra contenido diferente según si el usuario está autenticado o no. Sin Breeze, elimina esa sección o usa <code>@if(auth()->check())</code>.</div>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p4')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 5 -->
+<div class="step-card" id="p5">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">05</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Definir las rutas</div>
+      <div class="step-meta">Route::resource · Route::get · middleware · route:list</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Todas las rutas web van en <code>routes/web.php</code>. <code>Route::resource</code> genera las 7 rutas CRUD en una sola línea.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — routes/web.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">&lt;?php</span>
+<span class="kw">use</span> <span class="cls">Illuminate\Support\Facades\Route</span>;
+<span class="kw">use</span> <span class="cls">App\Http\Controllers\CursoController</span>;
+
+<span class="cm">// Landing page pública</span>
+<span class="cls">Route</span>::<span class="fn">get</span>(<span class="str">'/'</span>, <span class="kw">function</span> () {
+    <span class="kw">return</span> <span class="fn">view</span>(<span class="str">'welcome'</span>);
+})-><span class="fn">name</span>(<span class="str">'home'</span>);
+
+<span class="cm">// CRUD de cursos — genera 7 rutas automáticamente</span>
+<span class="cm">// Opción A: público (sin login)</span>
+<span class="cls">Route</span>::<span class="fn">resource</span>(<span class="str">'cursos'</span>, <span class="cls">CursoController</span>::class);
+
+<span class="cm">// Opción B: protegido con auth</span>
+<span class="cls">Route</span>::<span class="fn">middleware</span>(<span class="str">'auth'</span>)-><span class="fn">group</span>(<span class="kw">function</span>() {
+    <span class="cls">Route</span>::<span class="fn">resource</span>(<span class="str">'cursos'</span>, <span class="cls">CursoController</span>::class);
+});
+
+<span class="cm">// Verificar rutas generadas</span>
+<span class="cm">// php artisan route:list</span></pre>
+    </div>
+
+    <h3>Las 7 rutas que genera Route::resource('cursos', ...)</h3>
+    <div class="tabla">
+      <table>
+        <tr><th>Método HTTP</th><th>URI</th><th>Método del Controller</th><th>Nombre</th></tr>
+        <tr><td class="hl">GET</td><td>/cursos</td><td>index()</td><td>cursos.index</td></tr>
+        <tr><td class="hl">GET</td><td>/cursos/create</td><td>create()</td><td>cursos.create</td></tr>
+        <tr><td class="hl">POST</td><td>/cursos</td><td>store()</td><td>cursos.store</td></tr>
+        <tr><td class="hl">GET</td><td>/cursos/{curso}</td><td>show()</td><td>cursos.show</td></tr>
+        <tr><td class="hl">GET</td><td>/cursos/{curso}/edit</td><td>edit()</td><td>cursos.edit</td></tr>
+        <tr><td class="hl">PUT/PATCH</td><td>/cursos/{curso}</td><td>update()</td><td>cursos.update</td></tr>
+        <tr><td class="hl">DELETE</td><td>/cursos/{curso}</td><td>destroy()</td><td>cursos.destroy</td></tr>
+      </table>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p5')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 6 -->
+<div class="step-card" id="p6">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">06</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Migración — crear la tabla</div>
+      <div class="step-meta">make:migration · Schema · foreignId · migrate</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Crear la migración</span>
+php artisan make:migration create_cursos_table</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — database/migrations/xxxx_create_cursos_table.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">public function</span> <span class="fn">up</span>(): <span class="type">void</span>
+{
+    <span class="cls">Schema</span>::<span class="fn">create</span>(<span class="str">'cursos'</span>, <span class="kw">function</span> (<span class="cls">Blueprint</span> <span class="var">$table</span>) {
+        <span class="var">$table</span>-><span class="fn">id</span>();                                      <span class="cm">// id BIGINT PK</span>
+        <span class="var">$table</span>-><span class="fn">string</span>(<span class="str">'nombre'</span>, <span class="num">100</span>);
+        <span class="var">$table</span>-><span class="fn">text</span>(<span class="str">'descripcion'</span>)-><span class="fn">nullable</span>();
+        <span class="var">$table</span>-><span class="fn">string</span>(<span class="str">'instructor'</span>, <span class="num">100</span>);
+        <span class="var">$table</span>-><span class="fn">unsignedInteger</span>(<span class="str">'horas'</span>)-><span class="fn">default</span>(<span class="num">40</span>);
+        <span class="var">$table</span>-><span class="fn">enum</span>(<span class="str">'nivel'</span>, [<span class="str">'basico'</span>, <span class="str">'intermedio'</span>, <span class="str">'avanzado'</span>])
+               -><span class="fn">default</span>(<span class="str">'basico'</span>);
+        <span class="var">$table</span>-><span class="fn">boolean</span>(<span class="str">'activo'</span>)-><span class="fn">default</span>(<span class="kw">true</span>);
+        <span class="var">$table</span>-><span class="fn">timestamps</span>();                              <span class="cm">// created_at, updated_at</span>
+    });
+}
+
+<span class="kw">public function</span> <span class="fn">down</span>(): <span class="type">void</span>
+{
+    <span class="cls">Schema</span>::<span class="fn">dropIfExists</span>(<span class="str">'cursos'</span>);
+}</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Ejecutar la migración</span>
+php artisan migrate
+
+<span class="cm"># Si quieres empezar de cero (borra todos los datos)</span>
+php artisan migrate:fresh</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p6')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 7 -->
+<div class="step-card" id="p7">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">07</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Modelo Eloquent</div>
+      <div class="step-meta">make:model · $fillable · casts · atributos PHP 13</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="cm"># Crear modelo solo</span>
+php artisan make:model Curso
+
+<span class="cm"># Crear modelo + migración + controller resource + seeder + factory</span>
+php artisan make:model Curso -mcsf --resource</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — app/Models/Curso.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">&lt;?php</span>
+<span class="kw">namespace</span> <span class="cls">App\Models</span>;
+
+<span class="kw">use</span> <span class="cls">Illuminate\Database\Eloquent\Model</span>;
+
+<span class="kw">class</span> <span class="cls">Curso</span> <span class="kw">extends</span> <span class="cls">Model</span>
+{
+    <span class="cm">// Columnas que se pueden asignar masivamente</span>
+    <span class="kw">protected</span> <span class="var">$fillable</span> = [
+        <span class="str">'nombre'</span>,
+        <span class="str">'descripcion'</span>,
+        <span class="str">'instructor'</span>,
+        <span class="str">'horas'</span>,
+        <span class="str">'nivel'</span>,
+        <span class="str">'activo'</span>,
+    ];
+
+    <span class="cm">// Conversión automática de tipos</span>
+    <span class="kw">protected function</span> <span class="fn">casts</span>(): <span class="type">array</span>
+    {
+        <span class="kw">return</span> [
+            <span class="str">'activo'</span> => <span class="str">'boolean'</span>,
+            <span class="str">'horas'</span>  => <span class="str">'integer'</span>,
+        ];
+    }
+
+    <span class="cm">// Scope: solo cursos activos</span>
+    <span class="kw">public function</span> <span class="fn">scopeActivo</span>(<span class="var">$query</span>)
+    {
+        <span class="kw">return</span> <span class="var">$query</span>-><span class="fn">where</span>(<span class="str">'activo'</span>, <span class="kw">true</span>);
+    }
+}
+
+<span class="cm">/* ALTERNATIVA: atributos PHP de Laravel 13
+#[Table('cursos')]
+#[Fillable('nombre', 'descripcion', 'instructor', 'horas', 'nivel', 'activo')]
+class Curso extends Model {}
+*/</span></pre>
+    </div>
+
+    <div class="info-box new">
+      <span class="icon">🆕</span>
+      <div><strong>Laravel 13:</strong> puedes usar atributos PHP <code>#[Fillable]</code>, <code>#[Hidden]</code>, <code>#[Table]</code> como alternativa moderna a las propiedades de clase. Ambas formas funcionan.</div>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p7')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 8 -->
+<div class="step-card" id="p8">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">08</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Controlador Resource completo</div>
+      <div class="step-meta">index · create · store · show · edit · update · destroy</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>php artisan make:controller CursoController --resource --model=Curso</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — app/Http/Controllers/CursoController.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">&lt;?php</span>
+<span class="kw">namespace</span> <span class="cls">App\Http\Controllers</span>;
+
+<span class="kw">use</span> <span class="cls">App\Models\Curso</span>;
+<span class="kw">use</span> <span class="cls">Illuminate\Http\Request</span>;
+
+<span class="kw">class</span> <span class="cls">CursoController</span> <span class="kw">extends</span> <span class="cls">Controller</span>
+{
+    <span class="cm">// GET /cursos — lista todos los cursos</span>
+    <span class="kw">public function</span> <span class="fn">index</span>()
+    {
+        <span class="var">$cursos</span> = <span class="cls">Curso</span>::<span class="fn">orderBy</span>(<span class="str">'nombre'</span>)-><span class="fn">paginate</span>(<span class="num">10</span>);
+        <span class="kw">return</span> <span class="fn">view</span>(<span class="str">'cursos.index'</span>, <span class="fn">compact</span>(<span class="str">'cursos'</span>));
+    }
+
+    <span class="cm">// GET /cursos/create — formulario de creación</span>
+    <span class="kw">public function</span> <span class="fn">create</span>()
+    {
+        <span class="kw">return</span> <span class="fn">view</span>(<span class="str">'cursos.create'</span>);
+    }
+
+    <span class="cm">// POST /cursos — guardar nuevo curso</span>
+    <span class="kw">public function</span> <span class="fn">store</span>(<span class="cls">Request</span> <span class="var">$request</span>)
+    {
+        <span class="var">$datos</span> = <span class="var">$request</span>-><span class="fn">validate</span>([
+            <span class="str">'nombre'</span>     => <span class="str">'required|string|max:100'</span>,
+            <span class="str">'descripcion'</span>=> <span class="str">'nullable|string'</span>,
+            <span class="str">'instructor'</span> => <span class="str">'required|string|max:100'</span>,
+            <span class="str">'horas'</span>      => <span class="str">'required|integer|min:1'</span>,
+            <span class="str">'nivel'</span>      => <span class="str">'required|in:basico,intermedio,avanzado'</span>,
+        ]);
+
+        <span class="cls">Curso</span>::<span class="fn">create</span>(<span class="var">$datos</span>);
+
+        <span class="kw">return</span> <span class="fn">redirect</span>()
+            -><span class="fn">route</span>(<span class="str">'cursos.index'</span>)
+            -><span class="fn">with</span>(<span class="str">'success'</span>, <span class="str">'Curso creado correctamente.'</span>);
+    }
+
+    <span class="cm">// GET /cursos/{curso} — ver detalle</span>
+    <span class="kw">public function</span> <span class="fn">show</span>(<span class="cls">Curso</span> <span class="var">$curso</span>)  <span class="cm">// Route Model Binding</span>
+    {
+        <span class="kw">return</span> <span class="fn">view</span>(<span class="str">'cursos.show'</span>, <span class="fn">compact</span>(<span class="str">'curso'</span>));
+    }
+
+    <span class="cm">// GET /cursos/{curso}/edit — formulario de edición</span>
+    <span class="kw">public function</span> <span class="fn">edit</span>(<span class="cls">Curso</span> <span class="var">$curso</span>)
+    {
+        <span class="kw">return</span> <span class="fn">view</span>(<span class="str">'cursos.edit'</span>, <span class="fn">compact</span>(<span class="str">'curso'</span>));
+    }
+
+    <span class="cm">// PUT /cursos/{curso} — actualizar</span>
+    <span class="kw">public function</span> <span class="fn">update</span>(<span class="cls">Request</span> <span class="var">$request</span>, <span class="cls">Curso</span> <span class="var">$curso</span>)
+    {
+        <span class="var">$datos</span> = <span class="var">$request</span>-><span class="fn">validate</span>([
+            <span class="str">'nombre'</span>     => <span class="str">'required|string|max:100'</span>,
+            <span class="str">'descripcion'</span>=> <span class="str">'nullable|string'</span>,
+            <span class="str">'instructor'</span> => <span class="str">'required|string|max:100'</span>,
+            <span class="str">'horas'</span>      => <span class="str">'required|integer|min:1'</span>,
+            <span class="str">'nivel'</span>      => <span class="str">'required|in:basico,intermedio,avanzado'</span>,
+            <span class="str">'activo'</span>     => <span class="str">'boolean'</span>,
+        ]);
+
+        <span class="var">$curso</span>-><span class="fn">update</span>(<span class="var">$datos</span>);
+
+        <span class="kw">return</span> <span class="fn">redirect</span>()
+            -><span class="fn">route</span>(<span class="str">'cursos.index'</span>)
+            -><span class="fn">with</span>(<span class="str">'success'</span>, <span class="str">'Curso actualizado.'</span>);
+    }
+
+    <span class="cm">// DELETE /cursos/{curso} — eliminar</span>
+    <span class="kw">public function</span> <span class="fn">destroy</span>(<span class="cls">Curso</span> <span class="var">$curso</span>)
+    {
+        <span class="var">$curso</span>-><span class="fn">delete</span>();
+
+        <span class="kw">return</span> <span class="fn">back</span>()-><span class="fn">with</span>(<span class="str">'success'</span>, <span class="str">'Curso eliminado.'</span>);
+    }
+}</pre>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p8')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 9 -->
+<div class="step-card" id="p9">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">09</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Vistas Blade del CRUD</div>
+      <div class="step-meta">index · create · edit · @csrf · @method · @forelse</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>Crear la carpeta <code>resources/views/cursos/</code> con 3 archivos: <code>index.blade.php</code>, <code>create.blade.php</code> y <code>edit.blade.php</code>.</p>
+
+    <h3>cursos/index.blade.php — listado con paginación</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Blade — cursos/index.blade.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">@extends</span>('layouts.app')
+<span class="kw">@section</span>('content')
+
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"max-w-5xl mx-auto py-10 px-4"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"flex justify-between items-center mb-6"</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;h1</span> <span class="atr">class</span>=<span class="val">"text-2xl font-bold"</span><span class="tag">&gt;</span>Cursos<span class="tag">&lt;/h1&gt;</span>
+        <span class="tag">&lt;a</span> <span class="atr">href</span>=<span class="val">"{{ route('cursos.create') }}"</span>
+           <span class="atr">class</span>=<span class="val">"bg-black text-white px-4 py-2 rounded text-sm"</span><span class="tag">&gt;</span>
+           + Nuevo curso
+        <span class="tag">&lt;/a&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+
+    <span class="cm">{{-- Mensaje flash de éxito --}}</span>
+    <span class="kw">@if</span>(session('success'))
+        <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"bg-green-50 border border-green-200 text-green-800
+                      rounded p-3 mb-4 text-sm"</span><span class="tag">&gt;</span>
+            {{ session('success') }}
+        <span class="tag">&lt;/div&gt;</span>
+    <span class="kw">@endif</span>
+
+    <span class="cm">{{-- Tabla de cursos --}}</span>
+    <span class="tag">&lt;table</span> <span class="atr">class</span>=<span class="val">"w-full border-collapse border"</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;thead</span> <span class="atr">class</span>=<span class="val">"bg-gray-50"</span><span class="tag">&gt;</span>
+            <span class="tag">&lt;tr&gt;</span>
+                <span class="tag">&lt;th</span> <span class="atr">class</span>=<span class="val">"border p-3 text-left text-sm"</span><span class="tag">&gt;</span>Nombre<span class="tag">&lt;/th&gt;</span>
+                <span class="tag">&lt;th</span> <span class="atr">class</span>=<span class="val">"border p-3 text-left text-sm"</span><span class="tag">&gt;</span>Instructor<span class="tag">&lt;/th&gt;</span>
+                <span class="tag">&lt;th</span> <span class="atr">class</span>=<span class="val">"border p-3 text-left text-sm"</span><span class="tag">&gt;</span>Horas<span class="tag">&lt;/th&gt;</span>
+                <span class="tag">&lt;th</span> <span class="atr">class</span>=<span class="val">"border p-3 text-left text-sm"</span><span class="tag">&gt;</span>Nivel<span class="tag">&lt;/th&gt;</span>
+                <span class="tag">&lt;th</span> <span class="atr">class</span>=<span class="val">"border p-3 text-sm"</span><span class="tag">&gt;</span>Acciones<span class="tag">&lt;/th&gt;</span>
+            <span class="tag">&lt;/tr&gt;</span>
+        <span class="tag">&lt;/thead&gt;</span>
+        <span class="tag">&lt;tbody&gt;</span>
+            <span class="kw">@forelse</span>($cursos <span class="kw">as</span> $curso)
+            <span class="tag">&lt;tr&gt;</span>
+                <span class="tag">&lt;td</span> <span class="atr">class</span>=<span class="val">"border p-3 font-medium"</span><span class="tag">&gt;</span>{{ $curso->nombre }}<span class="tag">&lt;/td&gt;</span>
+                <span class="tag">&lt;td</span> <span class="atr">class</span>=<span class="val">"border p-3 text-gray-600"</span><span class="tag">&gt;</span>{{ $curso->instructor }}<span class="tag">&lt;/td&gt;</span>
+                <span class="tag">&lt;td</span> <span class="atr">class</span>=<span class="val">"border p-3"</span><span class="tag">&gt;</span>{{ $curso->horas }}h<span class="tag">&lt;/td&gt;</span>
+                <span class="tag">&lt;td</span> <span class="atr">class</span>=<span class="val">"border p-3 capitalize"</span><span class="tag">&gt;</span>{{ $curso->nivel }}<span class="tag">&lt;/td&gt;</span>
+                <span class="tag">&lt;td</span> <span class="atr">class</span>=<span class="val">"border p-3"</span><span class="tag">&gt;</span>
+                    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"flex gap-2 justify-center"</span><span class="tag">&gt;</span>
+                        <span class="tag">&lt;a</span> <span class="atr">href</span>=<span class="val">"{{ route('cursos.edit', $curso) }}"</span>
+                           <span class="atr">class</span>=<span class="val">"text-blue-600 text-sm hover:underline"</span><span class="tag">&gt;</span>Editar<span class="tag">&lt;/a&gt;</span>
+
+                        <span class="tag">&lt;form</span> <span class="atr">action</span>=<span class="val">"{{ route('cursos.destroy', $curso) }}"</span>
+                              <span class="atr">method</span>=<span class="val">"POST"</span>
+                              <span class="atr">onsubmit</span>=<span class="val">"return confirm('¿Eliminar este curso?')"</span><span class="tag">&gt;</span>
+                            <span class="kw">@csrf</span>
+                            <span class="kw">@method</span>('DELETE')
+                            <span class="tag">&lt;button</span> <span class="atr">class</span>=<span class="val">"text-red-600 text-sm hover:underline"</span><span class="tag">&gt;</span>
+                                Eliminar
+                            <span class="tag">&lt;/button&gt;</span>
+                        <span class="tag">&lt;/form&gt;</span>
+                    <span class="tag">&lt;/div&gt;</span>
+                <span class="tag">&lt;/td&gt;</span>
+            <span class="tag">&lt;/tr&gt;</span>
+            <span class="kw">@empty</span>
+            <span class="tag">&lt;tr&gt;&lt;td</span> <span class="atr">colspan</span>=<span class="val">"5"</span> <span class="atr">class</span>=<span class="val">"border p-6 text-center text-gray-400"</span><span class="tag">&gt;</span>
+                No hay cursos registrados.
+            <span class="tag">&lt;/td&gt;&lt;/tr&gt;</span>
+            <span class="kw">@endforelse</span>
+        <span class="tag">&lt;/tbody&gt;</span>
+    <span class="tag">&lt;/table&gt;</span>
+
+    <span class="cm">{{-- Paginación --}}</span>
+    <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"mt-4"</span><span class="tag">&gt;</span>{{ $cursos->links() }}<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/div&gt;</span>
+
+<span class="kw">@endsection</span></pre>
+    </div>
+
+    <h3>cursos/create.blade.php — formulario de creación</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Blade — cursos/create.blade.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">@extends</span>('layouts.app')
+<span class="kw">@section</span>('content')
+<span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"max-w-2xl mx-auto py-10 px-4"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;h1</span> <span class="atr">class</span>=<span class="val">"text-2xl font-bold mb-6"</span><span class="tag">&gt;</span>Nuevo Curso<span class="tag">&lt;/h1&gt;</span>
+
+    <span class="tag">&lt;form</span> <span class="atr">action</span>=<span class="val">"{{ route('cursos.store') }}"</span> <span class="atr">method</span>=<span class="val">"POST"</span><span class="tag">&gt;</span>
+        <span class="kw">@csrf</span>
+
+        <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"mb-4"</span><span class="tag">&gt;</span>
+            <span class="tag">&lt;label</span> <span class="atr">class</span>=<span class="val">"block text-sm font-medium mb-1"</span><span class="tag">&gt;</span>Nombre *<span class="tag">&lt;/label&gt;</span>
+            <span class="tag">&lt;input</span> <span class="atr">name</span>=<span class="val">"nombre"</span> <span class="atr">type</span>=<span class="val">"text"</span>
+                   <span class="atr">value</span>=<span class="val">"{{ old('nombre') }}"</span>
+                   <span class="atr">class</span>=<span class="val">"w-full border rounded px-3 py-2 @error('nombre') border-red-500 @enderror"</span><span class="tag">&gt;</span>
+            <span class="kw">@error</span>('nombre')
+                <span class="tag">&lt;p</span> <span class="atr">class</span>=<span class="val">"text-red-500 text-xs mt-1"</span><span class="tag">&gt;</span>{{ $message }}<span class="tag">&lt;/p&gt;</span>
+            <span class="kw">@enderror</span>
+        <span class="tag">&lt;/div&gt;</span>
+
+        <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"mb-4"</span><span class="tag">&gt;</span>
+            <span class="tag">&lt;label</span> <span class="atr">class</span>=<span class="val">"block text-sm font-medium mb-1"</span><span class="tag">&gt;</span>Instructor *<span class="tag">&lt;/label&gt;</span>
+            <span class="tag">&lt;input</span> <span class="atr">name</span>=<span class="val">"instructor"</span> <span class="atr">type</span>=<span class="val">"text"</span>
+                   <span class="atr">value</span>=<span class="val">"{{ old('instructor') }}"</span>
+                   <span class="atr">class</span>=<span class="val">"w-full border rounded px-3 py-2"</span><span class="tag">&gt;</span>
+        <span class="tag">&lt;/div&gt;</span>
+
+        <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"grid grid-cols-2 gap-4 mb-4"</span><span class="tag">&gt;</span>
+            <span class="tag">&lt;div&gt;</span>
+                <span class="tag">&lt;label</span> <span class="atr">class</span>=<span class="val">"block text-sm font-medium mb-1"</span><span class="tag">&gt;</span>Horas<span class="tag">&lt;/label&gt;</span>
+                <span class="tag">&lt;input</span> <span class="atr">name</span>=<span class="val">"horas"</span> <span class="atr">type</span>=<span class="val">"number"</span> <span class="atr">min</span>=<span class="val">"1"</span>
+                       <span class="atr">value</span>=<span class="val">"{{ old('horas', 40) }}"</span>
+                       <span class="atr">class</span>=<span class="val">"w-full border rounded px-3 py-2"</span><span class="tag">&gt;</span>
+            <span class="tag">&lt;/div&gt;</span>
+            <span class="tag">&lt;div&gt;</span>
+                <span class="tag">&lt;label</span> <span class="atr">class</span>=<span class="val">"block text-sm font-medium mb-1"</span><span class="tag">&gt;</span>Nivel<span class="tag">&lt;/label&gt;</span>
+                <span class="tag">&lt;select</span> <span class="atr">name</span>=<span class="val">"nivel"</span> <span class="atr">class</span>=<span class="val">"w-full border rounded px-3 py-2"</span><span class="tag">&gt;</span>
+                    <span class="kw">@foreach</span>(['basico','intermedio','avanzado'] <span class="kw">as</span> $n)
+                    <span class="tag">&lt;option</span> <span class="atr">value</span>=<span class="val">"{{ $n }}"</span> <span class="kw">@selected</span>(old('nivel') == $n)>
+                        {{ ucfirst($n) }}
+                    <span class="tag">&lt;/option&gt;</span>
+                    <span class="kw">@endforeach</span>
+                <span class="tag">&lt;/select&gt;</span>
+            <span class="tag">&lt;/div&gt;</span>
+        <span class="tag">&lt;/div&gt;</span>
+
+        <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"mb-6"</span><span class="tag">&gt;</span>
+            <span class="tag">&lt;label</span> <span class="atr">class</span>=<span class="val">"block text-sm font-medium mb-1"</span><span class="tag">&gt;</span>Descripción<span class="tag">&lt;/label&gt;</span>
+            <span class="tag">&lt;textarea</span> <span class="atr">name</span>=<span class="val">"descripcion"</span> <span class="atr">rows</span>=<span class="val">"4"</span>
+                      <span class="atr">class</span>=<span class="val">"w-full border rounded px-3 py-2"</span><span class="tag">&gt;</span>{{ old('descripcion') }}<span class="tag">&lt;/textarea&gt;</span>
+        <span class="tag">&lt;/div&gt;</span>
+
+        <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"flex gap-3"</span><span class="tag">&gt;</span>
+            <span class="tag">&lt;button</span> <span class="atr">type</span>=<span class="val">"submit"</span>
+                    <span class="atr">class</span>=<span class="val">"bg-black text-white px-6 py-2 rounded"</span><span class="tag">&gt;</span>
+                Guardar
+            <span class="tag">&lt;/button&gt;</span>
+            <span class="tag">&lt;a</span> <span class="atr">href</span>=<span class="val">"{{ route('cursos.index') }}"</span>
+               <span class="atr">class</span>=<span class="val">"text-gray-600 px-6 py-2"</span><span class="tag">&gt;</span>Cancelar<span class="tag">&lt;/a&gt;</span>
+        <span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;/form&gt;</span>
+<span class="tag">&lt;/div&gt;</span>
+<span class="kw">@endsection</span></pre>
+    </div>
+
+    <div class="info-box warn">
+      <span class="icon">⚠️</span>
+      <div><code>@csrf</code> es obligatorio en todos los formularios POST/PUT/DELETE. Laravel lo verifica automáticamente y rechaza la petición si no está presente. <code>@method('DELETE')</code> simula el método HTTP que HTML no soporta nativamente.</div>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p9')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+<!-- PASO 10 -->
+<div class="step-card" id="p10">
+  <div class="step-header" onclick="toggle(this)">
+    <div class="step-num">10</div>
+    <div class="step-title-wrap">
+      <div class="step-title">Validación con Form Request</div>
+      <div class="step-meta">make:request · rules() · messages() · @error</div>
+    </div>
+    <div class="step-toggle">▼</div>
+  </div>
+  <div class="step-body">
+    <p>En lugar de validar en el controlador, Laravel permite crear clases <strong>Form Request</strong> dedicadas. Mantiene el controlador limpio y centraliza las reglas.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre>php artisan make:request StoreCursoRequest
+php artisan make:request UpdateCursoRequest</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">PHP — app/Http/Requests/StoreCursoRequest.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+      <pre><span class="kw">&lt;?php</span>
+<span class="kw">namespace</span> <span class="cls">App\Http\Requests</span>;
+<span class="kw">use</span> <span class="cls">Illuminate\Foundation\Http\FormRequest</span>;
+
+<span class="kw">class</span> <span class="cls">StoreCursoRequest</span> <span class="kw">extends</span> <span class="cls">FormRequest</span>
+{
+    <span class="kw">public function</span> <span class="fn">authorize</span>(): <span class="type">bool</span>
+    {
+        <span class="kw">return</span> <span class="kw">true</span>; <span class="cm">// false = solo usuarios autenticados pueden pasar</span>
+    }
+
+    <span class="kw">public function</span> <span class="fn">rules</span>(): <span class="type">array</span>
+    {
+        <span class="kw">return</span> [
+            <span class="str">'nombre'</span>      => [<span class="str">'required'</span>, <span class="str">'string'</span>, <span class="str">'max:100'</span>],
+            <span class="str">'descripcion'</span> => [<span class="str">'nullable'</span>, <span class="str">'string'</span>],
+            <span class="str">'instructor'</span>  => [<span class="str">'required'</span>, <span class="str">'string'</span>, <span class="str">'max:100'</span>],
+            <span class="str">'horas'</span>       => [<span class="str">'required'</span>, <span class="str">'integer'</span>, <span class="str">'min:1'</span>, <span class="str">'max:500'</span>],
+            <span class="str">'nivel'</span>       => [<span class="str">'required'</span>, <span class="str">'in:basico,intermedio,avanzado'</span>],
+        ];
+    }
+
+    <span class="cm">// Mensajes de error en español</span>
+    <span class="kw">public function</span> <span class="fn">messages</span>(): <span class="type">array</span>
+    {
+        <span class="kw">return</span> [
+            <span class="str">'nombre.required'</span>     => <span class="str">'El nombre del curso es obligatorio.'</span>,
+            <span class="str">'instructor.required'</span> => <span class="str">'El instructor es obligatorio.'</span>,
+            <span class="str">'horas.min'</span>           => <span class="str">'El curso debe tener al menos 1 hora.'</span>,
+            <span class="str">'nivel.in'</span>            => <span class="str">'El nivel debe ser básico, intermedio o avanzado.'</span>,
+        ];
+    }
+}
+
+<span class="cm">// Usar en el controlador — reemplaza Request por StoreCursoRequest:</span>
+<span class="cm">// public function store(StoreCursoRequest $request)</span>
+<span class="cm">// {</span>
+<span class="cm">//     Curso::create($request->validated());</span>
+<span class="cm">//     return redirect()->route('cursos.index')->with('success', 'Creado.');</span>
+<span class="cm">// }</span></pre>
+    </div>
+
+    <div class="info-box tip">
+      <span class="icon">✅</span>
+      <div><code>$request->validated()</code> retorna solo los datos que pasaron las reglas, ignorando cualquier campo extra enviado. Es más seguro que <code>$request->all()</code>.</div>
+    </div>
+
+    <h3>Reglas de validación más usadas en Laravel 13</h3>
+    <div class="tabla">
+      <table>
+        <tr><th>Regla</th><th>Significado</th></tr>
+        <tr><td class="hl">required</td><td>Campo obligatorio, no puede estar vacío</td></tr>
+        <tr><td class="hl">nullable</td><td>Puede ser null o no enviarse</td></tr>
+        <tr><td class="hl">string</td><td>Debe ser texto</td></tr>
+        <tr><td class="hl">integer</td><td>Debe ser número entero</td></tr>
+        <tr><td class="hl">email</td><td>Formato de correo válido</td></tr>
+        <tr><td class="hl">min:n / max:n</td><td>Longitud o valor mínimo/máximo</td></tr>
+        <tr><td class="hl">unique:tabla</td><td>No puede repetirse en la BD</td></tr>
+        <tr><td class="hl">unique:tabla,col,{id}</td><td>Único excepto el registro actual (para update)</td></tr>
+        <tr><td class="hl">in:a,b,c</td><td>Debe ser uno de los valores listados</td></tr>
+        <tr><td class="hl">confirmed</td><td>Debe coincidir con campo _confirmation</td></tr>
+        <tr><td class="hl">exists:tabla,col</td><td>Debe existir en la BD</td></tr>
+        <tr><td class="hl">image</td><td>Debe ser imagen (jpg, png, gif...)</td></tr>
+      </table>
+    </div>
+
+    <button class="check-btn" onclick="markDone(this,'p10')">✓ &nbsp;Marcar como completado</button>
+  </div>
+</div>
+
+</main>
+<footer>EduCode · Laravel 13 · Documentación oficial: laravel.com/docs/13.x</footer>
+
+<script>
+const TOTAL=10;
+function toggle(h){const c=h.closest('.step-card');const o=c.classList.contains('open');document.querySelectorAll('.step-card.open').forEach(x=>x.classList.remove('open'));if(!o)c.classList.add('open')}
+function copyCode(btn){const pre=btn.closest('.code-block').querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='✓ Copiado';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copiar';btn.classList.remove('copied')},2000)})}
+function markDone(btn,id){const c=document.getElementById(id);c.classList.toggle('done');const d=c.classList.contains('done');btn.textContent=d?'✓  Completado':'✓  Marcar como completado';update()}
+function update(){const d=document.querySelectorAll('.step-card.done').length;document.getElementById('progressBar').style.width=(d/TOTAL*100)+'%';document.getElementById('progressCount').textContent=d+' / '+TOTAL}
+document.querySelector('.step-card .step-header').click();
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const id=e.target.id;document.querySelectorAll('.nav-pill').forEach(p=>p.classList.toggle('active',p.getAttribute('href')==='#'+id))}}),{threshold:.4});
+document.querySelectorAll('.step-card').forEach(c=>obs.observe(c));
+</script>
+</body>
+</html>

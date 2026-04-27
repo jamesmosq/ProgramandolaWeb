@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\GuiaController;
 use App\Http\Controllers\LeccionController;
 use App\Http\Controllers\ModuloController;
 use App\Http\Controllers\ProfileController;
@@ -47,6 +48,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/modulos/{modulo}', [ModuloController::class, 'show'])->name('modulos.show');
     Route::get('/modulos/{modulo}/lecciones/{leccion}', [LeccionController::class, 'show'])->name('lecciones.show');
     Route::post('/modulos/{modulo}/lecciones/{leccion}/completar', [LeccionController::class, 'completar'])->name('lecciones.completar');
+
+    Route::get('/guias/{nombre}', [GuiaController::class, 'guia'])->name('guias.show');
+    Route::get('/talleres/{nombre}', [GuiaController::class, 'taller'])->name('talleres.show');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

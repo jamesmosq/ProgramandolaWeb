@@ -14,24 +14,36 @@
                 </div>
             </div>
             @php
-                $talleres = [1=>'taller_01_bases_de_datos',2=>'taller_02_php_puro',3=>'taller_03_html_css',4=>'taller_04_laravel',5=>'taller_05_moonshine'];
-                $guias    = [1=>'guia_sql_mysql',2=>'guia_php',3=>null,4=>'guia_laravel',5=>'guia_moonshine'];
-                $taller   = $talleres[$modulo->orden] ?? null;
-                $guia     = $guias[$modulo->orden] ?? null;
+                $talleres = [
+                    1 => 'taller_01_bases_de_datos',
+                    2 => 'taller_02_php_puro',
+                    3 => 'taller_03_html_css',
+                    4 => 'taller_04_laravel',
+                    5 => 'taller_05_moonshine',
+                ];
+                $guias = [
+                    1 => [['nombre'=>'guia_sql_mysql',  'label'=>'SQL / MySQL']],
+                    2 => [['nombre'=>'guia_php',         'label'=>'PHP Puro']],
+                    3 => [['nombre'=>'guia_bootstrap',   'label'=>'Bootstrap 5']],
+                    4 => [['nombre'=>'guia_laravel',     'label'=>'Laravel 11'], ['nombre'=>'guia_laravel13','label'=>'Laravel 13']],
+                    5 => [['nombre'=>'guia_moonshine',   'label'=>'Moonshine 3'], ['nombre'=>'guia_moonshine4','label'=>'Moonshine 4']],
+                ];
+                $taller      = $talleres[$modulo->orden] ?? null;
+                $guiasModulo = $guias[$modulo->orden] ?? [];
             @endphp
-            <div class="flex items-center gap-2 flex-shrink-0">
+            <div class="flex flex-wrap items-center gap-2 flex-shrink-0">
                 @if($taller)
-                <a href="/talleres/{{ $taller }}.html" target="_blank"
+                <a href="{{ route('talleres.show', $taller) }}"
                    class="flex items-center gap-1.5 mono text-xs px-3 py-1.5 bg-cyan-400/10 text-cyan-400 border border-cyan-400/20 rounded-xl hover:bg-cyan-400/20 transition-colors">
                     📋 Taller
                 </a>
                 @endif
-                @if($guia)
-                <a href="/guias/{{ $guia }}.html" target="_blank"
+                @foreach($guiasModulo as $g)
+                <a href="{{ route('guias.show', $g['nombre']) }}"
                    class="flex items-center gap-1.5 mono text-xs px-3 py-1.5 bg-violet-400/10 text-violet-400 border border-violet-400/20 rounded-xl hover:bg-violet-400/20 transition-colors">
-                    📖 Guía
+                    📖 {{ $g['label'] }}
                 </a>
-                @endif
+                @endforeach
             </div>
         </div>
     </x-slot>
