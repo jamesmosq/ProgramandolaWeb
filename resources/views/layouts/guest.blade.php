@@ -1,30 +1,49 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="es" class="dark">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ config('app.name', 'EduCode') }}</title>
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
-        <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-900">
-            <div>
-                <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
-                </a>
-            </div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white dark:bg-gray-800 shadow-md overflow-hidden sm:rounded-lg">
+        <style>
+            body { font-family: 'Sora', sans-serif; }
+            .mono { font-family: 'JetBrains Mono', monospace; }
+        </style>
+    </head>
+    <body class="bg-gray-950 text-gray-100 antialiased min-h-screen">
+
+        <div class="min-h-screen flex flex-col items-center justify-center px-4 py-4"
+             style="background: radial-gradient(ellipse 70% 50% at 20% 10%, rgba(6,182,212,0.06) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 80%, rgba(124,58,237,0.06) 0%, transparent 60%);">
+
+            {{-- Logo --}}
+            <a href="/" class="flex items-center gap-2.5 mb-5">
+                <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center text-sm font-bold text-white shadow-lg">
+                    E
+                </div>
+                <div>
+                    <span class="font-bold text-base tracking-tight">{{ config('app.name', 'EduCode') }}</span>
+                    <span class="mono text-xs font-normal text-gray-500 ml-1.5">CEFIT</span>
+                </div>
+            </a>
+
+            {{-- Card --}}
+            <div class="w-full max-w-md bg-gray-900 border border-white/8 rounded-3xl shadow-2xl px-7 py-6"
+                 style="box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 24px 48px rgba(0,0,0,0.5);">
                 {{ $slot }}
             </div>
+
+            {{-- Footer --}}
+            <p class="mono text-xs text-gray-700 mt-4">
+                {{ config('app.name') }} · CEFIT-SENA
+            </p>
         </div>
+
     </body>
 </html>

@@ -1,52 +1,93 @@
 <x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
+
+    <h1 class="text-xl font-bold mb-1">Crear cuenta</h1>
+    <p class="text-gray-500 text-sm mb-4">Únete a EduCode y empieza a programar hoy.</p>
+
+    <form method="POST" action="{{ route('register') }}" class="space-y-4">
         @csrf
 
-        <!-- Name -->
+        {{-- Nombre --}}
         <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+            <label for="name" class="block text-sm font-medium text-gray-300 mb-1">
+                Nombre completo
+            </label>
+            <input id="name" type="text" name="name" value="{{ old('name') }}"
+                   required autofocus autocomplete="name"
+                   placeholder="Tu nombre"
+                   class="w-full bg-gray-800 border border-white/10 text-white placeholder-gray-600
+                          rounded-xl px-4 py-2.5 text-sm
+                          focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500
+                          transition-colors @error('name') border-red-500 @enderror">
+            @error('name')
+                <p class="mt-1.5 mono text-xs text-red-400">{{ $message }}</p>
+            @enderror
         </div>
 
-        <!-- Email Address -->
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        {{-- Email --}}
+        <div>
+            <label for="email" class="block text-sm font-medium text-gray-300 mb-1">
+                Correo electrónico
+            </label>
+            <input id="email" type="email" name="email" value="{{ old('email') }}"
+                   required autocomplete="username"
+                   placeholder="tu@correo.com"
+                   class="w-full bg-gray-800 border border-white/10 text-white placeholder-gray-600
+                          rounded-xl px-4 py-2.5 text-sm
+                          focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500
+                          transition-colors @error('email') border-red-500 @enderror">
+            @error('email')
+                <p class="mt-1.5 mono text-xs text-red-400">{{ $message }}</p>
+            @enderror
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        {{-- Password --}}
+        <div>
+            <label for="password" class="block text-sm font-medium text-gray-300 mb-1">
+                Contraseña
+            </label>
+            <input id="password" type="password" name="password"
+                   required autocomplete="new-password"
+                   placeholder="Mínimo 8 caracteres"
+                   class="w-full bg-gray-800 border border-white/10 text-white placeholder-gray-600
+                          rounded-xl px-4 py-2.5 text-sm
+                          focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500
+                          transition-colors @error('password') border-red-500 @enderror">
+            @error('password')
+                <p class="mt-1.5 mono text-xs text-red-400">{{ $message }}</p>
+            @enderror
         </div>
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                            type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+        {{-- Confirmar password --}}
+        <div>
+            <label for="password_confirmation" class="block text-sm font-medium text-gray-300 mb-1">
+                Confirmar contraseña
+            </label>
+            <input id="password_confirmation" type="password" name="password_confirmation"
+                   required autocomplete="new-password"
+                   placeholder="Repite tu contraseña"
+                   class="w-full bg-gray-800 border border-white/10 text-white placeholder-gray-600
+                          rounded-xl px-4 py-2.5 text-sm
+                          focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500
+                          transition-colors @error('password_confirmation') border-red-500 @enderror">
+            @error('password_confirmation')
+                <p class="mt-1.5 mono text-xs text-red-400">{{ $message }}</p>
+            @enderror
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
-            </a>
-
-            <x-primary-button class="ms-4">
-                {{ __('Register') }}
-            </x-primary-button>
-        </div>
+        {{-- Submit --}}
+        <button type="submit"
+                class="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-white font-bold rounded-xl
+                       transition-colors text-sm shadow-lg shadow-cyan-500/20">
+            Crear cuenta gratis →
+        </button>
     </form>
+
+    {{-- Login link --}}
+    <p class="text-center text-sm text-gray-500 mt-4">
+        ¿Ya tienes cuenta?
+        <a href="{{ route('login') }}" class="text-cyan-400 hover:text-cyan-300 transition-colors font-medium">
+            Ingresar
+        </a>
+    </p>
+
 </x-guest-layout>
