@@ -23,6 +23,14 @@
                             Módulos
                         </a>
                     </li>
+                    @if(Auth::user()->isAdmin())
+                    <li>
+                        <a href="{{ route('admin.dashboard') }}"
+                           class="hover:text-violet-400 transition-colors mono text-xs {{ request()->routeIs('admin.*') ? 'text-violet-400' : 'text-gray-600' }}">
+                            Admin
+                        </a>
+                    </li>
+                    @endif
                 </ul>
             </div>
 
@@ -81,6 +89,12 @@
                class="block py-2 text-sm {{ request()->routeIs('modulos.*') ? 'text-white' : 'text-gray-400' }} hover:text-white transition-colors">
                 Módulos
             </a>
+            @if(Auth::user()->isAdmin())
+            <a href="{{ route('admin.dashboard') }}"
+               class="block py-2 text-sm mono {{ request()->routeIs('admin.*') ? 'text-violet-400' : 'text-gray-600' }} hover:text-violet-400 transition-colors">
+                Admin
+            </a>
+            @endif
         </div>
         <div class="px-4 py-3 border-t border-white/5">
             <p class="text-xs text-gray-500 mono mb-2">{{ Auth::user()->email }}</p>

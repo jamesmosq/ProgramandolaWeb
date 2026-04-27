@@ -7,7 +7,7 @@
         </div>
         <div class="flex items-start justify-between gap-4">
             <div class="flex items-center gap-3">
-                <span class="text-3xl">{{ $modulo->icono }}</span>
+                <x-icon :name="$modulo->icono" class="w-8 h-8 text-gray-300" />
                 <div>
                     <h2 class="text-xl font-bold text-white">{{ $modulo->nombre }}</h2>
                     <p class="text-sm text-gray-400 mt-0.5">{{ $modulo->descripcion }}</p>
@@ -36,13 +36,13 @@
                 @if($taller)
                 <a href="{{ route('talleres.show', $taller) }}"
                    class="flex items-center gap-1.5 mono text-xs px-3 py-1.5 bg-cyan-400/10 text-cyan-400 border border-cyan-400/20 rounded-xl hover:bg-cyan-400/20 transition-colors">
-                    📋 Taller
+                    <x-icon name="list" class="w-3.5 h-3.5" /> Taller
                 </a>
                 @endif
                 @foreach($guiasModulo as $g)
                 <a href="{{ route('guias.show', $g['nombre']) }}"
                    class="flex items-center gap-1.5 mono text-xs px-3 py-1.5 bg-violet-400/10 text-violet-400 border border-violet-400/20 rounded-xl hover:bg-violet-400/20 transition-colors">
-                    📖 {{ $g['label'] }}
+                    <x-icon name="book-open" class="w-3.5 h-3.5" /> {{ $g['label'] }}
                 </a>
                 @endforeach
             </div>
@@ -75,7 +75,11 @@
                 {{-- Número / Check --}}
                 <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mono text-sm font-bold
                     {{ $leccion->completada ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400' : 'bg-gray-800 border border-gray-700 text-gray-500 group-hover:text-white group-hover:border-gray-600' }}">
-                    {{ $leccion->completada ? '✓' : str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}
+                    @if($leccion->completada)
+                        <x-icon name="check" class="w-4 h-4" />
+                    @else
+                        {{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}
+                    @endif
                 </div>
 
                 <div class="flex-1 min-w-0">
@@ -104,7 +108,7 @@
 
             @if($lecciones->isEmpty())
             <div class="text-center py-16 text-gray-600">
-                <p class="text-3xl mb-3">📝</p>
+                <x-icon name="list" class="w-8 h-8 text-gray-700 mx-auto mb-3" />
                 <p class="font-semibold text-gray-400">Lecciones en preparación</p>
             </div>
             @endif

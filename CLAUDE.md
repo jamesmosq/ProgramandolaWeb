@@ -24,7 +24,7 @@ La plataforma se llama **EduCode** y solo EduCode.
 |---|---|
 | Framework | Laravel 11 |
 | Auth | Laravel Breeze (Blade + Alpine.js) |
-| Admin panel | Laravel Moonshine v3 |
+| Admin panel | Integrado — `/admin/dashboard` con `EnsureIsAdmin` middleware |
 | Base de datos | MySQL (Railway) |
 | Frontend | Blade + Tailwind CSS v3 + Alpine.js |
 | Deploy | Railway (paid plan) |
@@ -49,7 +49,7 @@ app/
 │   ├── LeccionController.php
 │   ├── GuiaController.php      ← sirve las guías HTML con navbar inyectada
 │   └── ProgresoController.php
-└── MoonShine/Resources/
+└── Http/Middleware/EnsureIsAdmin.php
 
 resources/
 ├── views/
@@ -99,12 +99,16 @@ progresos: id, user_id(FK), leccion_id(FK), completada_at(TIMESTAMP nullable), t
 
 ## Módulos de contenido (en orden)
 
-1. **Bases de Datos** (cyan 🗄️) — SQL, MySQL, normalización, JOINs
-2. **PHP Puro** (violet 🐘) — variables, funciones, POO, PDO
-3. **HTML & CSS** (pink 🎨) — semántica, Tailwind, Flexbox, Grid
-4. **Laravel 11** (orange ⚡) — MVC, Eloquent, Blade, Breeze
-5. **Laravel Moonshine** (purple 🌙) — Resources, Fields, HasMany inline
-6. **Diseño Móvil** (emerald 📱) — Flutter (Dart) + Flet (Python)
+| # | Nombre | Color | Icono (`icono`) |
+|---|--------|-------|-----------------|
+| 1 | Bases de Datos | cyan | `database` |
+| 2 | PHP Puro | violet | `code` |
+| 3 | HTML & CSS | pink | `design` |
+| 4 | Laravel 11 | orange | `bolt` |
+| 5 | Laravel Moonshine | purple | `moon` |
+| 6 | Diseño Móvil | emerald | `mobile` |
+
+El campo `icono` en el seeder es **siempre un string de nombre de icono** (nunca un emoji). Los iconos disponibles están definidos en `resources/views/components/icon.blade.php`. Al agregar un nuevo módulo hay que elegir un nombre de icono existente o añadirlo al componente.
 
 Al agregar un nuevo módulo hay que añadir su color al array `$colores` en `modulos/index.blade.php`.
 
@@ -114,8 +118,8 @@ Cada vez que se añade un módulo nuevo, actualizar **`resources/views/welcome.b
 
 1. **Stat de módulos** — cambiar el número en el array `['N', 'Módulos']` del hero
 2. **Encabezado de sección** — `"N módulos, una ruta clara"`
-3. **Tarjeta del módulo** — añadir card en el grid de `#modulos` con icono, nombre, descripción y tags con el color correspondiente. Con 6+ módulos el grid de 3 cols ya no necesita `sm:col-span-2` en el último.
-4. **Ruta de aprendizaje** — añadir paso en el array de `#ruta` con emoji, título corto, descripción y color
+3. **Tarjeta del módulo** — añadir card en el grid de `#modulos` con `<x-icon name="ICONO" class="w-8 h-8 text-COLOR-400" />`, nombre, descripción y tags con el color correspondiente. Con 6+ módulos el grid de 3 cols ya no necesita `sm:col-span-2` en el último.
+4. **Ruta de aprendizaje** — añadir paso en el array de `#ruta` con el nombre del icono (string, no emoji), título corto, descripción y color
 5. **Condición step-line** — ajustar `$i < N-1` para que la línea conectora no aparezca en el último paso
 6. **Clase del color** — añadir la entrada `'bg-COLOR-400/10 border-COLOR-400/40 text-COLOR-400' => $color === 'COLOR'` al `@class` del número de paso
 
@@ -145,10 +149,19 @@ Cada vez que se añade un módulo nuevo, actualizar **`resources/views/welcome.b
 - Sin Vue, sin React — Blade puro
 - Componentes anónimos en `resources/views/components/`
 
-### Moonshine (Admin)
-- Un Resource por modelo principal
-- Usar `BelongsTo` y `HasMany` fields para relaciones
-- Proteger con middleware `moonshine.auth`
+### Iconos SVG — REGLA ESTRICTA
+- ❌ Nunca usar emojis como iconos en ninguna vista Blade (`🗄️`, `⚡`, `📱`, etc.)
+- ✅ Usar siempre el componente `<x-icon name="NOMBRE" class="w-N h-N text-COLOR" />`
+- Los iconos disponibles están en `resources/views/components/icon.blade.php`. Si el icono necesario no existe, añadirlo ahí antes de usarlo.
+- El campo `icono` del seeder (`ModulosSeeder.php`) es un string de nombre de icono, nunca un emoji.
+- En páginas sin Tailwind (ej. `errors/503.blade.php`), usar SVG inline con `style="width:Npx;height:Npx;"` en lugar de `<x-icon>`.
+
+### Admin integrado
+- Ruta: `GET /admin/dashboard` protegida por middleware `admin` (`EnsureIsAdmin`)
+- Columna `is_admin` boolean en tabla `users` (default false)
+- Para promover un usuario: `User::where('email', '...')->update(['is_admin' => true])` via tinker, o desde el panel admin UI
+- El admin puede ver stats globales y promover/degradar otros usuarios desde `/admin/dashboard`
+- No instalar Moonshine ni Spatie Permission — el sistema de roles es propio y simple
 
 ---
 
@@ -210,8 +223,8 @@ railway run php artisan db:seed --class=ModulosSeeder --force
 1. Leer este archivo completo antes de generar cualquier código
 2. Respetar la regla de marca EduCode — nunca CEFIT/SENA en UI o código
 3. Respetar el orden de migraciones (padre → hijo)
-4. Al agregar módulos: seeder + color en index.blade.php + guias en show.blade.php + GuiaController + npm run build
-5. Blade views deben ser limpias, semánticas y usar los componentes definidos
+4. Al agregar módulos: seeder (con `icono` como string de nombre, no emoji) + color en index.blade.php + guias en show.blade.php + GuiaController + npm run build
+5. Blade views deben ser limpias, semánticas y usar los componentes definidos — nunca emojis como iconos
 6. No instalar paquetes adicionales sin consultar
 
 ---

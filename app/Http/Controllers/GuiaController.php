@@ -45,7 +45,7 @@ class GuiaController extends Controller
 <div id="ec-nav" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#030712;border-bottom:1px solid rgba(255,255,255,0.08);height:50px;display:flex;align-items:center;padding:0 1.5rem;gap:1rem;font-family:'Sora',system-ui,sans-serif;box-shadow:0 2px 20px rgba(0,0,0,0.4);">
   <a href="{$urlVolver}" style="display:inline-flex;align-items:center;gap:0.4rem;text-decoration:none;color:#22d3ee;font-size:0.78rem;font-weight:500;padding:0.35rem 0.75rem;border:1px solid rgba(34,211,238,0.25);border-radius:10px;transition:background 0.2s;" onmouseover="this.style.background='rgba(34,211,238,0.08)'" onmouseout="this.style.background='transparent'">← Módulos</a>
   <div style="flex:1"></div>
-  <span style="font-size:0.75rem;color:#6b7280;">👤 {$usuario}</span>
+  <span style="display:inline-flex;align-items:center;gap:0.35rem;font-size:0.75rem;color:#6b7280;"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:15px;height:15px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg> {$usuario}</span>
   <a href="{$urlHome}" style="display:inline-flex;align-items:center;gap:0.5rem;text-decoration:none;">
     <div style="width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#22d3ee,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.72rem;color:white;flex-shrink:0;">E</div>
     <span style="font-weight:700;font-size:0.85rem;color:white;">EduCode</span>

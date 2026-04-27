@@ -17,7 +17,7 @@ class ModulosSeeder extends Seeder
             [
                 'nombre'      => 'Bases de Datos',
                 'descripcion' => 'SQL desde cero: diseño de tablas, relaciones, claves foráneas y consultas con JOINs.',
-                'icono'       => '🗄️',
+                'icono'       => 'database',
                 'color'       => 'cyan',
                 'orden'       => 1,
                 'lecciones'   => [
@@ -80,7 +80,7 @@ class ModulosSeeder extends Seeder
             [
                 'nombre'      => 'PHP Puro',
                 'descripcion' => 'Variables, funciones, arrays, POO con PHP 8.3 y conexión a base de datos con PDO.',
-                'icono'       => '🐘',
+                'icono'       => 'code',
                 'color'       => 'violet',
                 'orden'       => 2,
                 'lecciones'   => [
@@ -128,7 +128,7 @@ class ModulosSeeder extends Seeder
             [
                 'nombre'      => 'HTML & CSS',
                 'descripcion' => 'Semántica HTML5, Tailwind CSS, Flexbox, Grid y diseño responsive mobile-first.',
-                'icono'       => '🎨',
+                'icono'       => 'design',
                 'color'       => 'pink',
                 'orden'       => 3,
                 'lecciones'   => [
@@ -175,7 +175,7 @@ class ModulosSeeder extends Seeder
             [
                 'nombre'      => 'Laravel 11',
                 'descripcion' => 'MVC, Eloquent, Blade, autenticación con Breeze y deploy en Railway.',
-                'icono'       => '⚡',
+                'icono'       => 'bolt',
                 'color'       => 'orange',
                 'orden'       => 4,
                 'lecciones'   => [
@@ -238,7 +238,7 @@ class ModulosSeeder extends Seeder
             [
                 'nombre'      => 'Diseño Móvil',
                 'descripcion' => 'Apps nativas y multiplataforma con Flutter (Dart) y Flet (Python). Un solo código para Android, iOS, Web y Desktop.',
-                'icono'       => '📱',
+                'icono'       => 'mobile',
                 'color'       => 'emerald',
                 'orden'       => 6,
                 'lecciones'   => [
@@ -277,7 +277,7 @@ class ModulosSeeder extends Seeder
             [
                 'nombre'      => 'Laravel Moonshine',
                 'descripcion' => 'Panel de administración con Resources, Fields, Actions y relaciones HasMany inline.',
-                'icono'       => '🌙',
+                'icono'       => 'moon',
                 'color'       => 'purple',
                 'orden'       => 5,
                 'lecciones'   => [

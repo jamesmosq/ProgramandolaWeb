@@ -62,11 +62,12 @@
             @foreach($modulos as $modulo)
             @php
                 $colores = [
-                    'cyan'   => ['badge' => 'bg-cyan-400/10 text-cyan-400 border-cyan-400/15',   'tag' => 'bg-cyan-400/10 text-cyan-400 border-cyan-400/15',   'hover' => 'group-hover:text-cyan-400',   'bar' => 'from-cyan-500 to-cyan-400',   'border' => 'border-cyan-400/30'],
-                    'violet' => ['badge' => 'bg-violet-400/10 text-violet-400 border-violet-400/15', 'tag' => 'bg-violet-400/10 text-violet-400 border-violet-400/15', 'hover' => 'group-hover:text-violet-400', 'bar' => 'from-violet-500 to-violet-400', 'border' => 'border-violet-400/30'],
-                    'pink'   => ['badge' => 'bg-pink-400/10 text-pink-400 border-pink-400/15',   'tag' => 'bg-pink-400/10 text-pink-400 border-pink-400/15',   'hover' => 'group-hover:text-pink-400',   'bar' => 'from-pink-500 to-pink-400',   'border' => 'border-pink-400/30'],
-                    'orange' => ['badge' => 'bg-orange-400/10 text-orange-400 border-orange-400/15', 'tag' => 'bg-orange-400/10 text-orange-400 border-orange-400/15', 'hover' => 'group-hover:text-orange-400', 'bar' => 'from-orange-500 to-orange-400', 'border' => 'border-orange-400/30'],
-                    'purple' => ['badge' => 'bg-purple-400/10 text-purple-400 border-purple-400/15', 'tag' => 'bg-purple-400/10 text-purple-400 border-purple-400/15', 'hover' => 'group-hover:text-purple-400', 'bar' => 'from-purple-500 to-purple-400', 'border' => 'border-purple-400/30'],
+                    'cyan'    => ['badge' => 'bg-cyan-400/10 text-cyan-400 border-cyan-400/15',    'hover' => 'group-hover:text-cyan-400',    'bar' => 'from-cyan-500 to-cyan-400',    'border' => 'border-cyan-400/30',    'icon' => 'text-cyan-400'],
+                    'violet'  => ['badge' => 'bg-violet-400/10 text-violet-400 border-violet-400/15',  'hover' => 'group-hover:text-violet-400',  'bar' => 'from-violet-500 to-violet-400',  'border' => 'border-violet-400/30',  'icon' => 'text-violet-400'],
+                    'pink'    => ['badge' => 'bg-pink-400/10 text-pink-400 border-pink-400/15',    'hover' => 'group-hover:text-pink-400',    'bar' => 'from-pink-500 to-pink-400',    'border' => 'border-pink-400/30',    'icon' => 'text-pink-400'],
+                    'orange'  => ['badge' => 'bg-orange-400/10 text-orange-400 border-orange-400/15',  'hover' => 'group-hover:text-orange-400',  'bar' => 'from-orange-500 to-orange-400',  'border' => 'border-orange-400/30',  'icon' => 'text-orange-400'],
+                    'purple'  => ['badge' => 'bg-purple-400/10 text-purple-400 border-purple-400/15',  'hover' => 'group-hover:text-purple-400',  'bar' => 'from-purple-500 to-purple-400',  'border' => 'border-purple-400/30',  'icon' => 'text-purple-400'],
+                    'emerald' => ['badge' => 'bg-emerald-400/10 text-emerald-400 border-emerald-400/15', 'hover' => 'group-hover:text-emerald-400', 'bar' => 'from-emerald-500 to-emerald-400', 'border' => 'border-emerald-400/30', 'icon' => 'text-emerald-400'],
                 ];
                 $c = $colores[$modulo->color] ?? $colores['cyan'];
                 $pct = $modulo->lecciones_count > 0
@@ -78,7 +79,7 @@
                style="box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.3);">
 
                 <div class="flex items-start justify-between mb-5">
-                    <span class="text-3xl">{{ $modulo->icono }}</span>
+                    <x-icon :name="$modulo->icono" class="w-8 h-8 {{ $c['icon'] }}" />
                     <span class="mono text-xs {{ $c['badge'] }} border px-2.5 py-1 rounded-lg">
                         Módulo {{ str_pad($modulo->orden, 2, '0', STR_PAD_LEFT) }}
                     </span>
@@ -117,7 +118,7 @@
             {{-- Placeholder si no hay módulos --}}
             @if($modulos->isEmpty())
             <div class="col-span-full text-center py-16 text-gray-600">
-                <p class="text-4xl mb-4">🔧</p>
+                <x-icon name="wrench" class="w-10 h-10 text-gray-700 mx-auto mb-4" />
                 <p class="font-semibold text-gray-400">Módulos en preparación</p>
                 <p class="text-sm mt-1">El contenido estará disponible pronto.</p>
             </div>

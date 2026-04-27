@@ -146,7 +146,7 @@
                 </div>
                 {{-- Texto --}}
                 <div class="text-center sm:text-left">
-                    <p class="font-bold text-base text-white mb-2">📱 Escanea para acceder</p>
+                    <p class="font-bold text-base text-white mb-2 flex items-center gap-1.5"><x-icon name="mobile" class="w-4 h-4" /> Escanea para acceder</p>
                     <p class="text-gray-400 text-sm leading-relaxed max-w-[220px]">
                         Apunta la cámara de tu celular al código y abre la plataforma sin escribir nada.
                     </p>
@@ -171,7 +171,7 @@
             {{-- Módulo 1: Bases de Datos --}}
             <div class="glow-card card-hover bg-gray-900 border border-gray-800 rounded-2xl p-6 group cursor-default">
                 <div class="flex items-start justify-between mb-5">
-                    <span class="text-4xl">🗄️</span>
+                    <x-icon name="database" class="w-8 h-8 text-cyan-400" />
                     <span class="mono text-xs text-gray-600 bg-gray-800 px-2.5 py-1 rounded-lg">Módulo 01</span>
                 </div>
                 <h3 class="font-bold text-lg group-hover:text-cyan-400 transition-colors mb-2">Bases de Datos</h3>
@@ -186,7 +186,7 @@
             {{-- Módulo 2: PHP --}}
             <div class="glow-card card-hover bg-gray-900 border border-gray-800 rounded-2xl p-6 group cursor-default">
                 <div class="flex items-start justify-between mb-5">
-                    <span class="text-4xl">🐘</span>
+                    <x-icon name="code" class="w-8 h-8 text-violet-400" />
                     <span class="mono text-xs text-gray-600 bg-gray-800 px-2.5 py-1 rounded-lg">Módulo 02</span>
                 </div>
                 <h3 class="font-bold text-lg group-hover:text-violet-400 transition-colors mb-2">PHP Puro</h3>
@@ -201,7 +201,7 @@
             {{-- Módulo 3: HTML/CSS --}}
             <div class="glow-card card-hover bg-gray-900 border border-gray-800 rounded-2xl p-6 group cursor-default">
                 <div class="flex items-start justify-between mb-5">
-                    <span class="text-4xl">🎨</span>
+                    <x-icon name="design" class="w-8 h-8 text-pink-400" />
                     <span class="mono text-xs text-gray-600 bg-gray-800 px-2.5 py-1 rounded-lg">Módulo 03</span>
                 </div>
                 <h3 class="font-bold text-lg group-hover:text-pink-400 transition-colors mb-2">HTML & CSS</h3>
@@ -216,7 +216,7 @@
             {{-- Módulo 4: Laravel --}}
             <div class="glow-card card-hover bg-gray-900 border border-gray-800 rounded-2xl p-6 group cursor-default">
                 <div class="flex items-start justify-between mb-5">
-                    <span class="text-4xl">⚡</span>
+                    <x-icon name="bolt" class="w-8 h-8 text-orange-400" />
                     <span class="mono text-xs text-gray-600 bg-gray-800 px-2.5 py-1 rounded-lg">Módulo 04</span>
                 </div>
                 <h3 class="font-bold text-lg group-hover:text-orange-400 transition-colors mb-2">Laravel 11</h3>
@@ -231,7 +231,7 @@
             {{-- Módulo 5: Moonshine --}}
             <div class="glow-card card-hover bg-gray-900 border border-gray-800 rounded-2xl p-6 group cursor-default">
                 <div class="flex items-start justify-between mb-5">
-                    <span class="text-4xl">🌙</span>
+                    <x-icon name="moon" class="w-8 h-8 text-purple-400" />
                     <span class="mono text-xs text-gray-600 bg-gray-800 px-2.5 py-1 rounded-lg">Módulo 05</span>
                 </div>
                 <h3 class="font-bold text-lg group-hover:text-purple-400 transition-colors mb-2">Laravel Moonshine</h3>
@@ -246,7 +246,7 @@
             {{-- Módulo 6: Diseño Móvil --}}
             <div class="glow-card card-hover bg-gray-900 border border-gray-800 rounded-2xl p-6 group cursor-default">
                 <div class="flex items-start justify-between mb-5">
-                    <span class="text-4xl">📱</span>
+                    <x-icon name="mobile" class="w-8 h-8 text-emerald-400" />
                     <span class="mono text-xs text-gray-600 bg-gray-800 px-2.5 py-1 rounded-lg">Módulo 06</span>
                 </div>
                 <h3 class="font-bold text-lg group-hover:text-emerald-400 transition-colors mb-2">Diseño Móvil</h3>
@@ -274,13 +274,13 @@
 
         <div class="space-y-4">
             @foreach([
-                ['🗄️', 'Aprende SQL y crea la base de datos', 'Diseñas las tablas reales de la plataforma. Entiendes relaciones, claves foráneas y por qué importa el orden.', 'cyan'],
-                ['🐘', 'Domina PHP antes de Laravel', 'Variables, arrays, POO y PDO. Con esto entenderás el framework en lugar de solo copiar código.', 'violet'],
-                ['🎨', 'Diseña interfaces con HTML y Tailwind', 'Construyes la UI de la plataforma desde cero. Responsive, dark mode y componentes reutilizables.', 'pink'],
-                ['⚡', 'Construye el LMS con Laravel', 'Conectas todo: migraciones, modelos, controladores, vistas Blade y autenticación real con Breeze.', 'orange'],
-                ['🌙', 'Agrega el panel de administración', 'Moonshine convierte tu app en un producto completo con CRUD, búsquedas y gestión de contenido.', 'purple'],
-                ['📱', 'Crea apps móviles con Flutter y Flet', 'Un solo código para Android, iOS, Web y Desktop. Dart con Flutter o Python puro con Flet.', 'emerald'],
-            ] as $i => [$emoji, $titulo, $desc, $color])
+                ['database', 'Aprende SQL y crea la base de datos', 'Diseñas las tablas reales de la plataforma. Entiendes relaciones, claves foráneas y por qué importa el orden.', 'cyan'],
+                ['code',     'Domina PHP antes de Laravel', 'Variables, arrays, POO y PDO. Con esto entenderás el framework en lugar de solo copiar código.', 'violet'],
+                ['design',   'Diseña interfaces con HTML y Tailwind', 'Construyes la UI de la plataforma desde cero. Responsive, dark mode y componentes reutilizables.', 'pink'],
+                ['bolt',     'Construye el LMS con Laravel', 'Conectas todo: migraciones, modelos, controladores, vistas Blade y autenticación real con Breeze.', 'orange'],
+                ['moon',     'Agrega el panel de administración', 'Moonshine convierte tu app en un producto completo con CRUD, búsquedas y gestión de contenido.', 'purple'],
+                ['mobile',   'Crea apps móviles con Flutter y Flet', 'Un solo código para Android, iOS, Web y Desktop. Dart con Flutter o Python puro con Flet.', 'emerald'],
+            ] as $i => [$icon, $titulo, $desc, $color])
             <div class="flex gap-5 relative {{ $i < 5 ? 'step-line' : '' }}">
                 {{-- Número --}}
                 <div @class([
@@ -297,7 +297,7 @@
                 {{-- Contenido --}}
                 <div class="pb-8 flex-1">
                     <div class="flex items-center gap-2 mb-1">
-                        <span>{{ $emoji }}</span>
+                        <x-icon :name="$icon" class="w-5 h-5" />
                         <h3 class="font-bold">{{ $titulo }}</h3>
                     </div>
                     <p class="text-gray-400 text-sm leading-relaxed">{{ $desc }}</p>
@@ -329,7 +329,7 @@
                         'Acceso permanente al contenido',
                     ] as $item)
                     <li class="flex items-center gap-3 text-sm text-gray-300">
-                        <span class="w-5 h-5 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center flex-shrink-0 text-emerald-400 text-xs">✓</span>
+                        <span class="w-5 h-5 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center flex-shrink-0 text-emerald-400"><x-icon name="check" class="w-3 h-3" /></span>
                         {{ $item }}
                     </li>
                     @endforeach
@@ -339,13 +339,13 @@
             {{-- Feature cards --}}
             <div class="grid grid-cols-2 gap-4">
                 @foreach([
-                    ['⚡', 'Aprendizaje activo', 'Cada paso tiene un ejercicio para practicar, no solo leer.'],
-                    ['🎯', 'Objetivo claro', 'Al final tienes un proyecto real en tu portafolio.'],
-                    ['🔄', 'Progreso visible', 'Marca lecciones completadas y ve tu avance en tiempo real.'],
-                    ['🛠️', 'Stack moderno', 'PHP 8.3, Laravel 11, Tailwind CSS y PostgreSQL.'],
+                    ['bolt',       'Aprendizaje activo', 'Cada paso tiene un ejercicio para practicar, no solo leer.'],
+                    ['viewfinder', 'Objetivo claro', 'Al final tienes un proyecto real en tu portafolio.'],
+                    ['arrow-path', 'Progreso visible', 'Marca lecciones completadas y ve tu avance en tiempo real.'],
+                    ['wrench',     'Stack moderno', 'PHP 8.3, Laravel 11, Tailwind CSS y MySQL.'],
                 ] as [$icon, $title, $desc])
                 <div class="glow-card bg-gray-900 border border-gray-800 rounded-2xl p-5">
-                    <span class="text-2xl mb-3 block">{{ $icon }}</span>
+                    <x-icon :name="$icon" class="w-6 h-6 mb-3 text-gray-400" />
                     <h4 class="font-bold text-sm mb-1">{{ $title }}</h4>
                     <p class="text-gray-500 text-xs leading-relaxed">{{ $desc }}</p>
                 </div>
@@ -359,7 +359,7 @@
 <section class="py-24 px-4 sm:px-6">
     <div class="max-w-2xl mx-auto text-center">
         <div class="glow-card bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 border border-white/8 rounded-3xl p-10 sm:p-14">
-            <div class="text-5xl mb-6">🚀</div>
+            <x-icon name="rocket" class="w-12 h-12 mx-auto mb-6 text-cyan-400" />
             <h2 class="text-3xl sm:text-4xl font-extrabold mb-4">¿Listo para empezar?</h2>
             <p class="text-gray-400 mb-8 leading-relaxed">
                 Crea tu cuenta, elige el primer módulo y comienza a escribir tu primer <code class="mono text-cyan-400 bg-cyan-400/10 px-1.5 py-0.5 rounded">CREATE TABLE</code> hoy.

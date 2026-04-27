@@ -28,7 +28,7 @@
                 @endif
             </div>
             @if($leccion->duracion_minutos)
-            <p class="mono text-xs text-gray-600 mt-3">⏱ ~{{ $leccion->duracion_minutos }} minutos</p>
+            <p class="mono text-xs text-gray-600 mt-3 flex items-center gap-1"><x-icon name="clock" class="w-3.5 h-3.5" /> ~{{ $leccion->duracion_minutos }} minutos</p>
             @endif
         </div>
 
