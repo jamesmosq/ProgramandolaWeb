@@ -8,7 +8,10 @@
       "PowerShell(New-Item *)",
       "PowerShell(Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/davidshimjs/qrcodejs/master/qrcode.min.js\" -OutFile \"C:\\\\Users\\\\jmosquerarei\\\\Herd\\\\programando\\\\public\\\\js\\\\qrcode.min.js\" -UseBasicParsing; $size = \\(Get-Item \"C:\\\\Users\\\\jmosquerarei\\\\Herd\\\\programando\\\\public\\\\js\\\\qrcode.min.js\"\\).Length; \"Descargado: $size bytes\")",
       "WebFetch(domain:herd.laravel.com)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(xargs ls *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }
