@@ -46,6 +46,6 @@ class LeccionController extends Controller
             ['completada_at' => now()]
         );
 
-        return back()->with('success', '¡Lección marcada como completada! ✅');
+        return back()->with('success', '¡Lección marcada como completada!');
     }
 }

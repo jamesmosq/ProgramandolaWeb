@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-guest-layout title="Ingresar">
 
     <h1 class="text-xl font-bold mb-1">Ingresar</h1>
     <p class="text-gray-500 text-sm mb-6">Bienvenido de vuelta. Continúa aprendiendo.</p>

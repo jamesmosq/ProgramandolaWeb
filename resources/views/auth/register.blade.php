@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-guest-layout title="Crear cuenta">
 
     <h1 class="text-xl font-bold mb-1">Crear cuenta</h1>
     <p class="text-gray-500 text-sm mb-4">Únete a EduCode y empieza a programar hoy.</p>

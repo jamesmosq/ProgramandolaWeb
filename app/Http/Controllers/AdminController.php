@@ -38,6 +38,8 @@ class AdminController extends Controller
 
     public function toggleAdmin(Request $request, User $user): RedirectResponse
     {
+        abort_if($request->user()->id === $user->id, 403);
+
         $user->update(['is_admin' => ! $user->is_admin]);
 
         return back()->with('success',

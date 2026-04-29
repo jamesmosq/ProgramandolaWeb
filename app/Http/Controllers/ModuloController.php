@@ -26,6 +26,8 @@ class ModuloController extends Controller
 
     public function show(Modulo $modulo)
     {
+        abort_unless($modulo->activo, 404);
+
         $userId = Auth::id();
 
         $lecciones = $modulo->lecciones()

@@ -37,7 +37,7 @@ class GuiaController extends Controller
 
     private function inyectarNavbar(string $html): string
     {
-        $usuario  = Auth::user()->name;
+        $usuario  = htmlspecialchars(Auth::user()->name, ENT_QUOTES, 'UTF-8');
         $urlVolver = url('/modulos');
         $urlHome   = url('/');
 

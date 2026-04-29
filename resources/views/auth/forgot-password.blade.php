@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-guest-layout title="Recuperar contraseña">
 
     <h1 class="text-xl font-bold mb-1">Recuperar contraseña</h1>
     <p class="text-gray-500 text-sm mb-6">
