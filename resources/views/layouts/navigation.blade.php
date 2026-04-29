@@ -23,6 +23,12 @@
                             Módulos
                         </a>
                     </li>
+                    <li>
+                        <a href="{{ route('proyectos.index') }}"
+                           class="hover:text-white transition-colors {{ request()->routeIs('proyectos.*') ? 'text-white' : '' }}">
+                            Proyectos
+                        </a>
+                    </li>
                     @if(Auth::user()->isAdmin())
                     <li>
                         <a href="{{ route('admin.dashboard') }}"
@@ -88,6 +94,10 @@
             <a href="{{ route('modulos.index') }}"
                class="block py-2 text-sm {{ request()->routeIs('modulos.*') ? 'text-white' : 'text-gray-400' }} hover:text-white transition-colors">
                 Módulos
+            </a>
+            <a href="{{ route('proyectos.index') }}"
+               class="block py-2 text-sm {{ request()->routeIs('proyectos.*') ? 'text-white' : 'text-gray-400' }} hover:text-white transition-colors">
+                Proyectos
             </a>
             @if(Auth::user()->isAdmin())
             <a href="{{ route('admin.dashboard') }}"

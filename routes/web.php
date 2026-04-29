@@ -56,6 +56,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/guias/{nombre}', [GuiaController::class, 'guia'])->name('guias.show');
     Route::get('/talleres/{nombre}', [GuiaController::class, 'taller'])->name('talleres.show');
 
+    Route::get('/proyectos', fn () => view('proyectos.index'))->name('proyectos.index');
+    Route::get('/proyectos/{nombre}', [GuiaController::class, 'proyecto'])->name('proyectos.show');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
